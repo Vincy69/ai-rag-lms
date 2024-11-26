@@ -25,14 +25,27 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 3) {
       }
       
       const data = await response.json();
-      console.log('n8n response:', data);
+      console.log('n8n raw response:', data);
       
-      if (!data || (typeof data.response !== 'string' && typeof data.message !== 'string')) {
-        throw new Error('Invalid response format from n8n. Expected response or message property.');
+      // Handle different possible response formats from n8n
+      let finalResponse = '';
+      if (typeof data === 'string') {
+        finalResponse = data;
+      } else if (data.response) {
+        finalResponse = data.response;
+      } else if (data.message) {
+        finalResponse = data.message;
+      } else if (data.result) {
+        finalResponse = data.result;
+      } else if (data.answer) {
+        finalResponse = data.answer;
+      } else {
+        console.error('Unexpected n8n response format:', data);
+        throw new Error('Unexpected response format from n8n');
       }
       
       return {
-        response: data.response || data.message
+        response: finalResponse
       };
     } catch (error) {
       console.error(`Attempt ${i + 1} failed with error:`, error);
