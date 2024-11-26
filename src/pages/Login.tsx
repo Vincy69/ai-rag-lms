@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
-import { AuthError } from "@supabase/supabase-js";
+import { AuthError, AuthChangeEvent } from "@supabase/supabase-js";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -13,16 +13,16 @@ export default function Login() {
   useEffect(() => {
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
+    } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session) => {
       if (session) {
         navigate("/chat");
-      } else if (event === "user_deleted") {
+      } else if (event === "DELETED_USER") {
         toast({
           title: "Erreur d'authentification",
           description: "Votre compte a été supprimé.",
           variant: "destructive",
         });
-      } else if (event === "signed_out") {
+      } else if (event === "SIGNED_OUT") {
         // Optionally handle sign out
       }
     });
@@ -57,21 +57,6 @@ export default function Login() {
             }}
             showLinks={false}
             view="sign_in"
-            onError={(error: AuthError) => {
-              if (error.message.includes("email_provider_disabled")) {
-                toast({
-                  title: "Erreur d'authentification",
-                  description: "Les inscriptions par email sont actuellement désactivées. Veuillez contacter l'administrateur.",
-                  variant: "destructive",
-                });
-              } else {
-                toast({
-                  title: "Erreur d'authentification",
-                  description: error.message,
-                  variant: "destructive",
-                });
-              }
-            }}
           />
         </div>
       </div>
