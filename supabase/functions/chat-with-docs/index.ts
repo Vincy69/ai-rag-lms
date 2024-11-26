@@ -18,7 +18,7 @@ serve(async (req) => {
     console.log('Received message:', message)
     
     // Send message to n8n webhook
-    const response = await fetch('https://n8n.yourdomain.com/webhook/chat-trigger', {
+    const response = await fetch('https://elephorm.app.n8n.cloud/webhook/fa2836ec-b77c-49aa-8ed0-bf5dac24da66/chat', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
