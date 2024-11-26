@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Documents() {
   const [search, setSearch] = useState("");
@@ -19,6 +21,19 @@ export default function Documents() {
   const { toast } = useToast();
   const { documents, isLoading, deleteDocument, updateDocument } = useDocuments();
   const [editingDocument, setEditingDocument] = useState<{ id: string; name: string; category: string } | null>(null);
+
+  // Fetch categories
+  const { data: categories } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("categories")
+        .select("*")
+        .order("name");
+      if (error) throw error;
+      return data;
+    },
+  });
 
   const handleDelete = async (id: string) => {
     try {
@@ -177,10 +192,11 @@ export default function Documents() {
                     <SelectValue placeholder="Sélectionner une catégorie" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Documentation technique">Documentation technique</SelectItem>
-                    <SelectItem value="Procédures internes">Procédures internes</SelectItem>
-                    <SelectItem value="Rapports">Rapports</SelectItem>
-                    <SelectItem value="Autres">Autres</SelectItem>
+                    {categories?.map((cat) => (
+                      <SelectItem key={cat.name} value={cat.name}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
