@@ -2,6 +2,8 @@ import { useState } from "react";
 import Layout from "@/components/Layout";
 import { DocumentCard } from "@/components/documents/DocumentCard";
 import { DocumentFilters } from "@/components/documents/DocumentFilters";
+import { DocumentStats } from "@/components/documents/DocumentStats";
+import { CategoryManager } from "@/components/documents/CategoryManager";
 import { useToast } from "@/components/ui/use-toast";
 import { useDocuments } from "@/hooks/useDocuments";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -88,44 +90,53 @@ export default function Documents() {
           </p>
         </div>
 
-        <DocumentFilters
-          search={search}
-          category={category}
-          sortBy={sortBy}
-          onSearchChange={setSearch}
-          onCategoryChange={setCategory}
-          onSortChange={setSortBy}
-        />
+        <DocumentStats />
 
-        {isLoading ? (
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          </div>
-        ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {filteredDocuments?.map((document) => (
-              <DocumentCard
-                key={document.id}
-                document={document}
-                onView={() => {
-                  // Implement view functionality
-                  toast({
-                    title: "Visualisation",
-                    description: "Fonctionnalité de visualisation à implémenter",
-                  });
-                }}
-                onEdit={() => setEditingDocument(document)}
-                onDelete={() => handleDelete(document.id)}
-              />
-            ))}
-          </div>
-        )}
+        <div className="grid gap-8 lg:grid-cols-[1fr_300px]">
+          <div className="space-y-6">
+            <DocumentFilters
+              search={search}
+              category={category}
+              sortBy={sortBy}
+              onSearchChange={setSearch}
+              onCategoryChange={setCategory}
+              onSortChange={setSortBy}
+            />
 
-        {filteredDocuments?.length === 0 && !isLoading && (
-          <div className="text-center py-8 text-muted-foreground">
-            Aucun document ne correspond à vos critères de recherche
+            {isLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+                {filteredDocuments?.map((document) => (
+                  <DocumentCard
+                    key={document.id}
+                    document={document}
+                    onView={() => {
+                      toast({
+                        title: "Visualisation",
+                        description: "Fonctionnalité de visualisation à implémenter",
+                      });
+                    }}
+                    onEdit={() => setEditingDocument(document)}
+                    onDelete={() => handleDelete(document.id)}
+                  />
+                ))}
+              </div>
+            )}
+
+            {filteredDocuments?.length === 0 && !isLoading && (
+              <div className="text-center py-8 text-muted-foreground">
+                Aucun document ne correspond à vos critères de recherche
+              </div>
+            )}
           </div>
-        )}
+
+          <div className="space-y-6">
+            <CategoryManager />
+          </div>
+        </div>
 
         <Dialog open={!!editingDocument} onOpenChange={() => setEditingDocument(null)}>
           <DialogContent>
@@ -166,10 +177,10 @@ export default function Documents() {
                     <SelectValue placeholder="Sélectionner une catégorie" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="documentation">Documentation technique</SelectItem>
-                    <SelectItem value="procedures">Procédures internes</SelectItem>
-                    <SelectItem value="reports">Rapports</SelectItem>
-                    <SelectItem value="other">Autres</SelectItem>
+                    <SelectItem value="Documentation technique">Documentation technique</SelectItem>
+                    <SelectItem value="Procédures internes">Procédures internes</SelectItem>
+                    <SelectItem value="Rapports">Rapports</SelectItem>
+                    <SelectItem value="Autres">Autres</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
