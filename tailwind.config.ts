@@ -86,6 +86,10 @@ export default {
               backgroundColor: 'transparent',
               padding: '0',
             },
+            strong: {
+              color: 'rgba(255, 255, 255, 0.9)', // Rendre le texte en gras plus clair
+              fontWeight: '600',
+            },
           },
         },
       },

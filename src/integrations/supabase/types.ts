@@ -238,19 +238,33 @@ export type Database = {
             }
             Returns: unknown
           }
-      match_documents: {
-        Args: {
-          query_embedding: string
-          match_count?: number
-          match_threshold?: number
-        }
-        Returns: {
-          id: string
-          name: string
-          category: string
-          similarity: number
-        }[]
-      }
+      match_documents:
+        | {
+            Args: {
+              filter?: string
+              match_count?: number
+              query_embedding?: string
+            }
+            Returns: {
+              id: string
+              name: string
+              category: string
+              similarity: number
+            }[]
+          }
+        | {
+            Args: {
+              query_embedding: string
+              match_count?: number
+              match_threshold?: number
+            }
+            Returns: {
+              id: string
+              name: string
+              category: string
+              similarity: number
+            }[]
+          }
       match_feedback: {
         Args: {
           query_embedding: string
