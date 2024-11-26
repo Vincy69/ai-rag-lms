@@ -14,8 +14,11 @@ serve(async (req) => {
   try {
     const { message } = await req.json()
     
+    // Ajout de logs pour le debugging
+    console.log('Received message:', message)
+    
     // Send message to n8n webhook
-    const response = await fetch('YOUR_N8N_WEBHOOK_URL', {
+    const response = await fetch('https://n8n.yourdomain.com/webhook/chat-trigger', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -24,10 +27,12 @@ serve(async (req) => {
     })
 
     if (!response.ok) {
+      console.error('n8n response not ok:', response.status, response.statusText)
       throw new Error('Failed to get response from n8n')
     }
 
     const data = await response.json()
+    console.log('n8n response:', data)
 
     return new Response(
       JSON.stringify({ response: data.response }),
