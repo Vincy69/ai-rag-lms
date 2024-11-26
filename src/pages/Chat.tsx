@@ -3,6 +3,7 @@ import Layout from "@/components/Layout";
 import { ChatMessage } from "@/components/chat/ChatMessage";
 import { ChatInput } from "@/components/chat/ChatInput";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Message {
   id: string;
@@ -17,7 +18,7 @@ export default function Chat() {
   const { toast } = useToast();
 
   const handleSendMessage = async (content: string) => {
-    // Ajouter le message de l'utilisateur
+    // Add user message
     const userMessage: Message = {
       id: crypto.randomUUID(),
       content,
@@ -28,16 +29,23 @@ export default function Chat() {
     setIsLoading(true);
 
     try {
-      // Simuler une réponse de l'IA (à remplacer par l'appel API réel)
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Call the Edge Function that communicates with n8n
+      const { data, error } = await supabase.functions.invoke('chat-with-docs', {
+        body: { message: content }
+      });
+
+      if (error) throw error;
+
+      // Add AI response
       const aiMessage: Message = {
         id: crypto.randomUUID(),
-        content: "Je suis un assistant IA. Je peux vous aider avec vos questions.",
+        content: data.response,
         isUser: false,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, aiMessage]);
     } catch (error) {
+      console.error('Error:', error);
       toast({
         title: "Erreur",
         description: "Une erreur est survenue lors de l'envoi du message.",
@@ -54,7 +62,7 @@ export default function Chat() {
         <div className="space-y-2">
           <h1 className="text-4xl font-bold">Chat avec l'Assistant IA</h1>
           <p className="text-muted-foreground">
-            Posez vos questions à l'assistant IA
+            Posez vos questions à l'assistant IA qui utilise vos documents comme source de connaissances
           </p>
         </div>
 
