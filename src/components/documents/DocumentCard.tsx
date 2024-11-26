@@ -1,9 +1,10 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileText, Trash2, Edit2, Eye } from "lucide-react";
+import { FileText, Trash2, Edit2, Eye, FileCode, FileJson, Book, File } from "lucide-react";
 import { Document } from "@/types/document";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { formatBytes } from "@/lib/utils";
 
 interface DocumentCardProps {
   document: Document;
@@ -12,14 +13,31 @@ interface DocumentCardProps {
   onDelete: (id: string) => void;
 }
 
+const getDocumentIcon = (contentType: string) => {
+  switch (contentType) {
+    case "application/pdf":
+      return <FileText className="h-8 w-8 text-primary" />;
+    case "text/plain":
+      return <File className="h-8 w-8 text-primary" />;
+    case "application/json":
+      return <FileJson className="h-8 w-8 text-primary" />;
+    case "application/msword":
+    case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+      return <Book className="h-8 w-8 text-primary" />;
+    default:
+      return <FileCode className="h-8 w-8 text-primary" />;
+  }
+};
+
 export function DocumentCard({ document, onView, onEdit, onDelete }: DocumentCardProps) {
   return (
     <Card className="glass p-4 space-y-4">
       <div className="flex items-center gap-3">
-        <FileText className="h-8 w-8 text-primary" />
+        {getDocumentIcon(document.content_type)}
         <div className="flex-1">
           <h3 className="font-semibold">{document.name}</h3>
           <p className="text-sm text-muted-foreground">{document.category}</p>
+          <p className="text-sm text-muted-foreground">{formatBytes(document.size)}</p>
           <div className="text-xs text-muted-foreground mt-1 space-y-1">
             <p>Créé le {format(new Date(document.created_at), "dd MMMM yyyy 'à' HH:mm", { locale: fr })}</p>
             <p>Dernière modification le {format(new Date(document.updated_at), "dd MMMM yyyy 'à' HH:mm", { locale: fr })}</p>
