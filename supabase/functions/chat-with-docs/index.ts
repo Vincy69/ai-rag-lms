@@ -45,8 +45,8 @@ serve(async (req) => {
     
     console.log('Sending request to n8n:', requestBody)
 
-    // Updated n8n webhook URL with HTTPS
-    const n8nUrl = 'https://n8n.elephorm.app/webhook/fa2836ec-b77c-49aa-8ed0-bf5dac24da66/chat'
+    // Updated n8n webhook URL with the correct format
+    const n8nUrl = 'https://elephorm.app.n8n.cloud/webhook/fa2836ec-b77c-49aa-8ed0-bf5dac24da66/chat'
     
     // Send message to n8n chat trigger with retry logic
     const response = await fetchWithRetry(n8nUrl, {
