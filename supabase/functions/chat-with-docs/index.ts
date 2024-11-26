@@ -37,19 +37,39 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 3) {
         throw new Error(`n8n workflow error: ${JSON.stringify(data)}`);
       }
 
-      // Handle array format with output property
-      if (Array.isArray(data) && data.length > 0 && data[0].output) {
-        console.log('Found output in array format:', data[0].output);
-        return { response: data[0].output };
+      // Try to extract the response from various possible formats
+      if (Array.isArray(data)) {
+        console.log('Response is an array');
+        if (data.length > 0) {
+          if (data[0].output) {
+            console.log('Found output in array[0].output:', data[0].output);
+            return { response: data[0].output };
+          }
+          if (typeof data[0] === 'string') {
+            console.log('Found string in array[0]:', data[0]);
+            return { response: data[0] };
+          }
+        }
       }
 
-      // If we get here, the response format is unexpected
-      console.log('Unexpected response format:', data);
+      if (typeof data === 'string') {
+        console.log('Response is a string:', data);
+        return { response: data };
+      }
+
+      if (data.output) {
+        console.log('Found output property:', data.output);
+        return { response: data.output };
+      }
+
+      // If we get here, log the full response for debugging
+      console.log('Unexpected response structure. Full response:', JSON.stringify(data, null, 2));
       throw new Error('Format de réponse inattendu de n8n');
     } catch (error) {
       console.error(`Attempt ${i + 1} failed:`, error);
       lastError = error;
       
+      // Only retry if we haven't reached the maximum number of attempts
       if (i < retries - 1) {
         const delay = Math.pow(2, i) * 1000;
         console.log(`Waiting ${delay}ms before next attempt...`);
@@ -58,7 +78,7 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 3) {
     }
   }
   
-  throw new Error(`Échec de la communication avec n8n après ${retries} tentatives. Dernière erreur: ${lastError?.message}`);
+  throw lastError || new Error('Échec inattendu de la communication avec n8n');
 }
 
 serve(async (req) => {
