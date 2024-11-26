@@ -15,7 +15,8 @@ export function DocumentStats() {
       if (error) throw error;
 
       const totalSize = documents.reduce((acc, doc) => acc + doc.size, 0);
-      const totalVectors = documents.filter(doc => doc.embedding).length;
+      // Count only documents that have a non-null embedding
+      const totalVectors = documents.filter(doc => doc.embedding !== null).length;
       const totalDocuments = documents.length;
 
       return {
