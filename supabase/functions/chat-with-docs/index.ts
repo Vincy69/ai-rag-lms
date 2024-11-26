@@ -23,9 +23,12 @@ serve(async (req) => {
     }
     
     console.log('Sending request to n8n:', requestBody)
+
+    // Updated n8n webhook URL - make sure this matches your n8n webhook URL
+    const n8nUrl = 'https://n8n.elephorm.app/webhook/fa2836ec-b77c-49aa-8ed0-bf5dac24da66/chat'
     
-    // Send message to n8n chat trigger
-    const response = await fetch('https://elephorm.app.n8n.cloud/webhook/fa2836ec-b77c-49aa-8ed0-bf5dac24da66/chat', {
+    // Send message to n8n chat trigger with better error handling
+    const response = await fetch(n8nUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -37,9 +40,10 @@ serve(async (req) => {
       console.error('n8n response not ok:', {
         status: response.status,
         statusText: response.statusText,
+        url: n8nUrl,
         body: await response.text()
       })
-      throw new Error(`n8n returned status ${response.status}`)
+      throw new Error(`n8n returned status ${response.status}: ${response.statusText}`)
     }
 
     const data = await response.json()
@@ -66,7 +70,8 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         error: error.message,
-        details: error.stack
+        details: error.stack,
+        timestamp: new Date().toISOString()
       }),
       { 
         headers: { 

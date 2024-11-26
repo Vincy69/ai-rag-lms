@@ -190,6 +190,19 @@ export type Database = {
             }
             Returns: unknown
           }
+      match_documents: {
+        Args: {
+          query_embedding: string
+          match_count?: number
+          match_threshold?: number
+        }
+        Returns: {
+          id: string
+          name: string
+          category: string
+          similarity: number
+        }[]
+      }
       sparsevec_out: {
         Args: {
           "": unknown
