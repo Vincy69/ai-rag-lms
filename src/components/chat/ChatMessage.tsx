@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import ReactMarkdown from "react-markdown";
 
 interface ChatMessageProps {
   content: string;
@@ -22,7 +23,25 @@ export function ChatMessage({ content, isUser, timestamp }: ChatMessageProps) {
             : "bg-muted text-muted-foreground"
         )}
       >
-        <p className="text-sm">{content}</p>
+        {isUser ? (
+          <p className="text-sm whitespace-pre-wrap">{content}</p>
+        ) : (
+          <ReactMarkdown 
+            className="text-sm prose prose-sm dark:prose-invert max-w-none"
+            components={{
+              pre: ({ node, ...props }) => (
+                <div className="overflow-auto rounded-lg bg-muted/50 p-2 my-2">
+                  <pre {...props} />
+                </div>
+              ),
+              code: ({ node, ...props }) => (
+                <code className="rounded bg-muted/50 px-1 py-0.5" {...props} />
+              ),
+            }}
+          >
+            {content}
+          </ReactMarkdown>
+        )}
         <span className="text-xs opacity-70">
           {timestamp.toLocaleTimeString()}
         </span>
