@@ -26,7 +26,7 @@ export default function Account() {
 
         setEmail(session.user.email);
 
-        const { data: profile, error: profileError } = await supabase
+        const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('role')
           .eq('id', session.user.id)
@@ -36,7 +36,9 @@ export default function Account() {
           throw profileError;
         }
 
-        setRole(profile?.role || null);
+        if (profileData) {
+          setRole(profileData.role);
+        }
 
       } catch (error) {
         console.error('Error fetching profile:', error);
