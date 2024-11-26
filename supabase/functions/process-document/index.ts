@@ -6,6 +6,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+const MAX_TEXT_LENGTH = 8000; // OpenAI token limit
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
@@ -40,12 +42,14 @@ serve(async (req) => {
 
     console.log('Uploading file:', file.name, 'to path:', filePath)
 
-    // Upload file to Storage
+    // Upload file to Storage with smaller chunk size
     const { error: uploadError } = await supabase.storage
       .from('documents')
       .upload(filePath, blob, {
         contentType: file.type,
-        upsert: false
+        upsert: false,
+        duplex: 'half',
+        chunkSize: 512 * 1024 // 512KB chunks
       })
 
     if (uploadError) {
@@ -64,6 +68,9 @@ serve(async (req) => {
       textContent = `${file.name} - Document content extraction not implemented for this type`
     }
 
+    // Truncate text to avoid token limit issues
+    textContent = textContent.slice(0, MAX_TEXT_LENGTH)
+
     // Generate embedding using OpenAI
     const openAIResponse = await fetch('https://api.openai.com/v1/embeddings', {
       method: 'POST',
@@ -72,7 +79,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        input: textContent.slice(0, 8000), // OpenAI has a token limit
+        input: textContent,
         model: "text-embedding-ada-002"
       })
     })

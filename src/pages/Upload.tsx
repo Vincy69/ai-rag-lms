@@ -9,6 +9,8 @@ import { FileList } from "@/components/upload/FileList";
 import { UploadedFile } from "@/types/upload";
 import { supabase } from "@/integrations/supabase/client";
 
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
 export default function UploadPage() {
   const [dragActive, setDragActive] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
@@ -33,6 +35,16 @@ export default function UploadPage() {
       });
       return false;
     }
+
+    if (file.size > MAX_FILE_SIZE) {
+      toast({
+        title: "Fichier trop volumineux",
+        description: "La taille maximale autorisée est de 5MB.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
     return true;
   };
 
@@ -58,6 +70,34 @@ export default function UploadPage() {
     setUploadedFiles(newFiles);
   };
 
+  const processFile = async (uploadedFile: UploadedFile) => {
+    const blob = new Blob([await uploadedFile.file.arrayBuffer()], { 
+      type: uploadedFile.file.type 
+    });
+    
+    const { data, error } = await supabase.functions.invoke('process-document', {
+      body: {
+        file: {
+          name: uploadedFile.file.name,
+          type: uploadedFile.file.type,
+          size: uploadedFile.file.size,
+          data: await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.readAsDataURL(blob);
+          })
+        },
+        category: uploadedFile.category
+      }
+    });
+
+    if (error) {
+      throw new Error(`Erreur lors du traitement de ${uploadedFile.file.name}: ${error.message}`);
+    }
+
+    return data;
+  };
+
   const handleUpload = async () => {
     const hasUncategorizedFiles = uploadedFiles.some((file) => !file.category);
     if (hasUncategorizedFiles) {
@@ -80,33 +120,14 @@ export default function UploadPage() {
 
       const totalFiles = uploadedFiles.length;
       let processedFiles = 0;
+      const batchSize = 2; // Process 2 files at a time
 
-      for (const uploadedFile of uploadedFiles) {
-        const blob = new Blob([await uploadedFile.file.arrayBuffer()], { 
-          type: uploadedFile.file.type 
-        });
+      // Process files in batches
+      for (let i = 0; i < uploadedFiles.length; i += batchSize) {
+        const batch = uploadedFiles.slice(i, i + batchSize);
+        await Promise.all(batch.map(processFile));
         
-        const { data, error } = await supabase.functions.invoke('process-document', {
-          body: {
-            file: {
-              name: uploadedFile.file.name,
-              type: uploadedFile.file.type,
-              size: uploadedFile.file.size,
-              data: await new Promise<string>((resolve) => {
-                const reader = new FileReader();
-                reader.onloadend = () => resolve(reader.result as string);
-                reader.readAsDataURL(blob);
-              })
-            },
-            category: uploadedFile.category
-          }
-        });
-
-        if (error) {
-          throw new Error(`Erreur lors du traitement de ${uploadedFile.file.name}`);
-        }
-
-        processedFiles++;
+        processedFiles += batch.length;
         setUploadProgress((processedFiles / totalFiles) * 100);
       }
 
@@ -115,7 +136,6 @@ export default function UploadPage() {
         description: "Vos documents ont été uploadés et traités avec succès.",
       });
       
-      // Redirect to documents page after successful upload
       navigate("/documents");
     } catch (error) {
       toast({
