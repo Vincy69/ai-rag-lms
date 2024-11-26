@@ -18,9 +18,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="min-h-screen bg-background">
       <Header />
-      <div className="flex flex-1">
+      <div className="flex">
         <aside
           className={cn(
             "glass fixed left-0 z-30 hidden h-[calc(100vh-4rem)] transition-all duration-300 lg:block",
@@ -71,11 +71,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </aside>
         <main
           className={cn(
-            "flex-1 overflow-auto p-4 transition-all duration-300 md:p-6 lg:p-8",
+            "flex-1 p-8 transition-all duration-300",
             isCollapsed ? "lg:ml-16" : "lg:ml-64"
           )}
         >
-          {children}
+          <div className="mx-auto max-w-7xl">
+            {children}
+          </div>
         </main>
       </div>
     </div>
