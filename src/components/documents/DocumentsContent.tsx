@@ -48,7 +48,7 @@ export function DocumentsContent({
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+          <div className="space-y-2">
             {documents?.map((document) => (
               <DocumentCard
                 key={document.id}
