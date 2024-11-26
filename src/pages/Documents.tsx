@@ -1,18 +1,12 @@
 import { useState } from "react";
 import Layout from "@/components/Layout";
-import { DocumentCard } from "@/components/documents/DocumentCard";
-import { DocumentFilters } from "@/components/documents/DocumentFilters";
-import { DocumentStats } from "@/components/documents/DocumentStats";
-import { CategoryManager } from "@/components/documents/CategoryManager";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { useDocuments } from "@/hooks/useDocuments";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { DocumentsHeader } from "@/components/documents/DocumentsHeader";
+import { DocumentsContent } from "@/components/documents/DocumentsContent";
+import { EditDocumentDialog } from "@/components/documents/EditDocumentDialog";
 
 export default function Documents() {
   const [search, setSearch] = useState("");
@@ -98,117 +92,46 @@ export default function Documents() {
   return (
     <Layout>
       <div className="space-y-8 animate-fade-in">
-        <div className="space-y-2">
-          <h1 className="text-4xl font-bold">Gestion des Documents</h1>
-          <p className="text-muted-foreground">
-            Visualisez, modifiez et organisez vos documents
-          </p>
-        </div>
+        <DocumentsHeader />
+        
+        <DocumentsContent
+          documents={filteredDocuments}
+          isLoading={isLoading}
+          search={search}
+          category={category}
+          sortBy={sortBy}
+          onSearchChange={setSearch}
+          onCategoryChange={setCategory}
+          onSortChange={setSortBy}
+          onView={() => {
+            toast({
+              title: "Visualisation",
+              description: "Fonctionnalité de visualisation à implémenter",
+            });
+          }}
+          onEdit={(id) => {
+            const doc = documents?.find((d) => d.id === id);
+            if (doc) {
+              setEditingDocument({
+                id: doc.id,
+                name: doc.name,
+                category: doc.category,
+              });
+            }
+          }}
+          onDelete={handleDelete}
+        />
 
-        <DocumentStats />
-
-        <div className="grid gap-8 lg:grid-cols-[1fr_300px]">
-          <div className="space-y-6">
-            <DocumentFilters
-              search={search}
-              category={category}
-              sortBy={sortBy}
-              onSearchChange={setSearch}
-              onCategoryChange={setCategory}
-              onSortChange={setSortBy}
-            />
-
-            {isLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
-            ) : (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-                {filteredDocuments?.map((document) => (
-                  <DocumentCard
-                    key={document.id}
-                    document={document}
-                    onView={() => {
-                      toast({
-                        title: "Visualisation",
-                        description: "Fonctionnalité de visualisation à implémenter",
-                      });
-                    }}
-                    onEdit={() => setEditingDocument(document)}
-                    onDelete={() => handleDelete(document.id)}
-                  />
-                ))}
-              </div>
-            )}
-
-            {filteredDocuments?.length === 0 && !isLoading && (
-              <div className="text-center py-8 text-muted-foreground">
-                Aucun document ne correspond à vos critères de recherche
-              </div>
-            )}
-          </div>
-
-          <div className="space-y-6">
-            <CategoryManager />
-          </div>
-        </div>
-
-        <Dialog open={!!editingDocument} onOpenChange={() => setEditingDocument(null)}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Modifier le document</DialogTitle>
-              <DialogDescription>
-                Modifiez les informations du document
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <label htmlFor="name" className="text-sm font-medium">
-                  Nom
-                </label>
-                <Input
-                  id="name"
-                  value={editingDocument?.name ?? ""}
-                  onChange={(e) =>
-                    setEditingDocument(
-                      (prev) => prev && { ...prev, name: e.target.value }
-                    )
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="category" className="text-sm font-medium">
-                  Catégorie
-                </label>
-                <Select
-                  value={editingDocument?.category}
-                  onValueChange={(value) =>
-                    setEditingDocument(
-                      (prev) => prev && { ...prev, category: value }
-                    )
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionner une catégorie" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories?.map((cat) => (
-                      <SelectItem key={cat.name} value={cat.name}>
-                        {cat.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setEditingDocument(null)}>
-                  Annuler
-                </Button>
-                <Button onClick={handleEdit}>Enregistrer</Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <EditDocumentDialog
+          open={!!editingDocument}
+          onOpenChange={(open) => !open && setEditingDocument(null)}
+          document={editingDocument}
+          onDocumentChange={(field, value) =>
+            setEditingDocument((prev) => prev && { ...prev, [field]: value })
+          }
+          onSave={handleEdit}
+          categories={categories}
+        />
       </div>
     </Layout>
   );
