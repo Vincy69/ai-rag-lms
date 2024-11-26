@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import Chat from "@/pages/Chat";
@@ -15,6 +15,7 @@ const queryClient = new QueryClient();
 
 function App() {
   const { toast } = useToast();
+  const [isInitializing, setIsInitializing] = useState(true);
 
   useEffect(() => {
     const autoLogin = async () => {
@@ -26,9 +27,18 @@ function App() {
         
         if (error) {
           console.error('Auto-login error:', error);
+          
+          // Show a more specific error message based on the error type
+          let errorMessage = "Une erreur est survenue lors de la connexion automatique.";
+          if (error.message.includes("Database error")) {
+            errorMessage = "Erreur de connexion à la base de données. Veuillez réessayer plus tard.";
+          } else if (error.message.includes("Invalid login credentials")) {
+            errorMessage = "Identifiants de connexion invalides.";
+          }
+          
           toast({
             title: "Erreur de connexion",
-            description: "Une erreur est survenue lors de la connexion automatique.",
+            description: errorMessage,
             variant: "destructive",
           });
         }
@@ -36,14 +46,28 @@ function App() {
         console.error('Auto-login error:', error);
         toast({
           title: "Erreur de connexion",
-          description: "Une erreur est survenue lors de la connexion automatique.",
+          description: "Une erreur inattendue est survenue. Veuillez réessayer plus tard.",
           variant: "destructive",
         });
+      } finally {
+        setIsInitializing(false);
       }
     };
 
     autoLogin();
   }, []);
+
+  // Show loading state while initializing
+  if (isInitializing) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Chargement...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <QueryClientProvider client={queryClient}>
