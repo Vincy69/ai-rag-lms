@@ -9,7 +9,7 @@ import { FileList } from "@/components/upload/FileList";
 import { UploadedFile } from "@/types/upload";
 import { supabase } from "@/integrations/supabase/client";
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 
 export default function UploadPage() {
   const [dragActive, setDragActive] = useState(false);
@@ -39,7 +39,7 @@ export default function UploadPage() {
     if (file.size > MAX_FILE_SIZE) {
       toast({
         title: "Fichier trop volumineux",
-        description: "La taille maximale autorisée est de 5MB.",
+        description: "La taille maximale autorisée est de 50MB.",
         variant: "destructive",
       });
       return false;
