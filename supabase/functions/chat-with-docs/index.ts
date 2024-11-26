@@ -37,7 +37,12 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 3) {
         throw new Error(`n8n workflow error: ${JSON.stringify(data)}`);
       }
 
-      // Extract the response from n8n's data structure
+      // Handle the specific n8n response format where output is in data[0].output
+      if (Array.isArray(data) && data[0]?.output) {
+        return { response: data[0].output };
+      }
+
+      // Fallback handlers for other potential formats
       if (data.data && typeof data.data === 'string') {
         return { response: data.data };
       }
