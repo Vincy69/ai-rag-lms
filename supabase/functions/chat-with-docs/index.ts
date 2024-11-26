@@ -29,36 +29,33 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 3) {
         data = JSON.parse(rawResponse);
         console.log('Parsed n8n response:', data);
       } catch (e) {
-        console.log('Response is not JSON, using raw text');
-        return { response: rawResponse };
+        console.log('Response is not JSON:', e);
+        throw new Error('Invalid JSON response from n8n');
       }
       
       if (!response.ok) {
         throw new Error(`n8n workflow error: ${JSON.stringify(data)}`);
       }
+
+      // Extract the response from n8n's data structure
+      if (data.data && typeof data.data === 'string') {
+        return { response: data.data };
+      }
       
-      // Handle n8n specific response format
       if (data.result && data.result.response) {
         return { response: data.result.response };
       }
-      
-      // Fallback handlers for different response formats
-      if (typeof data === 'string') {
-        return { response: data };
-      } else if (data.response) {
+
+      if (data.response) {
         return { response: data.response };
-      } else if (data.message) {
-        return { response: data.message };
-      } else if (data.result) {
-        return { response: data.result };
-      } else if (data.answer) {
-        return { response: data.answer };
-      } else if (data.text) {
-        return { response: data.text };
-      } else {
-        console.log('Unexpected response format:', data);
-        return { response: "Je n'ai pas pu traiter votre demande. Veuillez réessayer." };
       }
+
+      if (data.message) {
+        return { response: data.message };
+      }
+
+      console.log('Unexpected response format:', data);
+      throw new Error('Format de réponse inattendu de n8n');
     } catch (error) {
       console.error(`Attempt ${i + 1} failed:`, error);
       lastError = error;
@@ -71,7 +68,7 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 3) {
     }
   }
   
-  throw new Error(`Échec de la réception d'une réponse valide de n8n après ${retries} tentatives. Dernière erreur: ${lastError?.message}`);
+  throw new Error(`Échec de la communication avec n8n après ${retries} tentatives. Dernière erreur: ${lastError?.message}`);
 }
 
 serve(async (req) => {
