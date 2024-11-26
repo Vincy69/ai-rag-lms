@@ -21,18 +21,38 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 3) {
       const response = await fetch(url, options);
       console.log(`n8n response status: ${response.status}`);
       
+      const rawResponse = await response.text();
+      console.log('Raw n8n response:', rawResponse);
+      
+      let data;
+      try {
+        data = JSON.parse(rawResponse);
+      } catch {
+        console.log('Response is not JSON, using raw text');
+        return { response: rawResponse };
+      }
+      
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`n8n workflow error: ${JSON.stringify(data)}`);
       }
       
-      const data = await response.json();
-      console.log('n8n response data:', data);
-      
-      if (data.error) {
-        throw new Error(`n8n error: ${data.error}`);
+      // Handle various response formats from n8n
+      if (typeof data === 'string') {
+        return { response: data };
+      } else if (data.response) {
+        return { response: data.response };
+      } else if (data.message) {
+        return { response: data.message };
+      } else if (data.result) {
+        return { response: data.result };
+      } else if (data.answer) {
+        return { response: data.answer };
+      } else if (data.text) {
+        return { response: data.text };
+      } else {
+        console.log('Unexpected response format:', data);
+        return { response: "I couldn't process your request. Please try again." };
       }
-      
-      return { response: data.message || data.answer || "I couldn't process your request. Please try again." };
     } catch (error) {
       console.error(`Attempt ${i + 1} failed:`, error);
       lastError = error;
@@ -45,7 +65,7 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 3) {
     }
   }
   
-  throw new Error(`Failed to get a valid response after ${retries} attempts. Last error: ${lastError?.message}`);
+  throw new Error(`Failed to get a valid response from n8n after ${retries} attempts. Last error: ${lastError?.message}`);
 }
 
 serve(async (req) => {
@@ -59,9 +79,9 @@ serve(async (req) => {
     console.log('Received message:', message)
     
     const requestBody = {
-      message,
+      sessionId: crypto.randomUUID(),
+      chatInput: message,
       metadata: {
-        sessionId: crypto.randomUUID(),
         timestamp: new Date().toISOString()
       }
     }
