@@ -2,8 +2,9 @@ import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
+import { AuthError } from "@supabase/supabase-js";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -15,13 +16,13 @@ export default function Login() {
     } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
         navigate("/chat");
-      } else if (event === "DELETED_USER") {
+      } else if (event === "user_deleted") {
         toast({
           title: "Erreur d'authentification",
           description: "Votre compte a été supprimé.",
           variant: "destructive",
         });
-      } else if (event === "SIGNED_OUT") {
+      } else if (event === "signed_out") {
         // Optionally handle sign out
       }
     });
@@ -55,7 +56,8 @@ export default function Login() {
               }
             }}
             showLinks={false}
-            onError={(error) => {
+            view="sign_in"
+            onError={(error: AuthError) => {
               if (error.message.includes("email_provider_disabled")) {
                 toast({
                   title: "Erreur d'authentification",
