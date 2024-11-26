@@ -10,7 +10,7 @@ export function Header() {
     <header className="glass sticky top-0 z-50 w-full border-b">
       <div className="container flex h-16 items-center justify-between px-4">
         <Link to="/" className="flex items-center space-x-2">
-          <span className="text-xl font-bold text-primary">AI Assistant</span>
+          <span className="text-xl font-bold text-primary">AI RAG Learning Assistant</span>
         </Link>
 
         {/* Mobile Menu Button */}
