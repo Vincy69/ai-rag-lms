@@ -16,6 +16,8 @@ const queryClient = new QueryClient();
 function App() {
   const { toast } = useToast();
   const [isInitializing, setIsInitializing] = useState(true);
+  const [retryCount, setRetryCount] = useState(0);
+  const MAX_RETRIES = 3;
 
   useEffect(() => {
     const autoLogin = async () => {
@@ -28,7 +30,16 @@ function App() {
         if (error) {
           console.error('Auto-login error:', error);
           
-          // Show a more specific error message based on the error type
+          if (error.message.includes("Database error") && retryCount < MAX_RETRIES) {
+            // Wait for a few seconds before retrying
+            const delay = Math.pow(2, retryCount) * 1000; // Exponential backoff
+            setTimeout(() => {
+              setRetryCount(prev => prev + 1);
+              setIsInitializing(true);
+            }, delay);
+            return;
+          }
+          
           let errorMessage = "Une erreur est survenue lors de la connexion automatique.";
           if (error.message.includes("Database error")) {
             errorMessage = "Erreur de connexion à la base de données. Veuillez réessayer plus tard.";
@@ -54,8 +65,10 @@ function App() {
       }
     };
 
-    autoLogin();
-  }, []);
+    if (isInitializing) {
+      autoLogin();
+    }
+  }, [isInitializing, retryCount]);
 
   // Show loading state while initializing
   if (isInitializing) {
@@ -63,7 +76,9 @@ function App() {
       <div className="flex h-screen items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Chargement...</p>
+          <p className="mt-4 text-muted-foreground">
+            {retryCount > 0 ? `Tentative de reconnexion (${retryCount}/${MAX_RETRIES})...` : 'Chargement...'}
+          </p>
         </div>
       </div>
     );
