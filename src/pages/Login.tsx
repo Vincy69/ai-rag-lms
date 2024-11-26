@@ -24,17 +24,14 @@ export default function Login() {
       }
       if (event === 'SIGNED_OUT') {
         navigate("/login");
-      }
-      if (event === 'USER_UPDATED') {
-        navigate("/");
-      }
-      // Handle authentication state changes
-      if (event === 'SIGNED_OUT') {
         toast({
           title: "Session terminée",
           description: "Vous avez été déconnecté",
           variant: "destructive",
         });
+      }
+      if (event === 'USER_UPDATED') {
+        navigate("/");
       }
     });
 
