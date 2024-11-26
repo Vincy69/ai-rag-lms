@@ -79,7 +79,7 @@ serve(async (req) => {
     
     console.log('Sending request to n8n:', requestBody)
 
-    const n8nUrl = 'https://elephorm.app.n8n.cloud/webhook/fa2836ec-b77c-49aa-8ed0-bf5dac24da66/chat'
+    const n8nUrl = 'https://elephorm.app.n8n.cloud/webhook/a7cc35a6-3fdf-4e2e-859a-5c16a15f0b99/chat'
     
     const data = await fetchWithRetry(n8nUrl, {
       method: 'POST',
