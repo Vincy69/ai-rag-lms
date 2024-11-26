@@ -28,7 +28,6 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 3) {
       try {
         data = JSON.parse(rawResponse);
       } catch {
-        // If the response is not JSON, use it as a plain text response
         return { response: rawResponse };
       }
       
@@ -36,7 +35,6 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 3) {
         throw new Error(`n8n workflow error: ${JSON.stringify(data)}`);
       }
       
-      // Handle different possible response formats from n8n
       if (typeof data === 'string') {
         return { response: data };
       } else if (data.response) {
@@ -78,8 +76,8 @@ serve(async (req) => {
     console.log('Received message:', message)
     
     const requestBody = {
-      message: message,
-      sessionId: crypto.randomUUID()
+      sessionId: crypto.randomUUID(),
+      chatInput: message
     }
     
     console.log('Sending request to n8n:', requestBody)
