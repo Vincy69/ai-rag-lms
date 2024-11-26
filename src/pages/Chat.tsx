@@ -18,7 +18,6 @@ export default function Chat() {
   const { toast } = useToast();
 
   const handleSendMessage = async (content: string) => {
-    // Add user message
     const userMessage: Message = {
       id: crypto.randomUUID(),
       content,
@@ -29,14 +28,12 @@ export default function Chat() {
     setIsLoading(true);
 
     try {
-      // Call the Edge Function that communicates with n8n
       const { data, error } = await supabase.functions.invoke('chat-with-docs', {
         body: { message: content }
       });
 
       if (error) throw error;
 
-      // Add AI response
       const aiMessage: Message = {
         id: crypto.randomUUID(),
         content: data.response,
@@ -66,10 +63,10 @@ export default function Chat() {
           </p>
         </div>
 
-        <div className="flex-1 space-y-4 overflow-y-auto rounded-lg border border-white/10 bg-black/20 backdrop-blur-sm">
+        <div className="flex-1 space-y-4 overflow-y-auto rounded-lg border border-white/20 bg-black/40 backdrop-blur-sm">
           {messages.length === 0 ? (
             <div className="flex h-full items-center justify-center">
-              <p className="text-center text-muted-foreground">
+              <p className="text-center text-white/60">
                 Aucun message. Commencez la conversation !
               </p>
             </div>
@@ -82,7 +79,7 @@ export default function Chat() {
           )}
         </div>
 
-        <div className="sticky bottom-0 glass border border-white/10 p-4 rounded-lg">
+        <div className="sticky bottom-0 glass border border-white/20 p-4 rounded-lg">
           <ChatInput onSend={handleSendMessage} disabled={isLoading} />
         </div>
       </div>

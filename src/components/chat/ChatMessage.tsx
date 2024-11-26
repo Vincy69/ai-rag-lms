@@ -11,7 +11,6 @@ interface CodeProps {
   inline?: boolean;
   className?: string;
   children?: React.ReactNode;
-  // Remove node from destructuring since it's not needed
 }
 
 export function ChatMessage({ content, isUser, timestamp }: ChatMessageProps) {
@@ -24,50 +23,50 @@ export function ChatMessage({ content, isUser, timestamp }: ChatMessageProps) {
     >
       <div
         className={cn(
-          "flex max-w-[80%] flex-col gap-2 rounded-lg p-4 shadow-lg",
+          "flex max-w-[80%] flex-col gap-2 rounded-lg p-4",
           isUser
-            ? "bg-primary text-primary-foreground"
-            : "glass border border-white/20 shadow-xl"
+            ? "bg-primary/90 text-primary-foreground shadow-lg"
+            : "glass border border-white/30 shadow-xl"
         )}
       >
         {isUser ? (
           <p className="text-sm leading-relaxed whitespace-pre-wrap">{content}</p>
         ) : (
           <ReactMarkdown 
-            className="text-sm prose prose-sm dark:prose-invert max-w-none prose-p:leading-relaxed prose-pre:my-0 prose-headings:text-foreground prose-a:text-primary text-white"
+            className="text-sm prose prose-sm dark:prose-invert max-w-none prose-p:leading-relaxed prose-pre:my-0 prose-headings:text-foreground prose-a:text-primary"
             components={{
               pre: ({ ...props }) => (
-                <div className="overflow-auto my-2 rounded-lg bg-black/30 backdrop-blur-sm border border-white/20">
+                <div className="overflow-auto my-2 rounded-lg bg-black/50 backdrop-blur-sm border border-white/30">
                   <pre {...props} className="p-3" />
                 </div>
               ),
               code: ({ inline, ...props }: CodeProps) => (
                 <code 
                   className={cn(
-                    "bg-black/30 rounded px-1.5 py-0.5 border border-white/20",
+                    "bg-black/50 rounded px-1.5 py-0.5 border border-white/30",
                     inline && "text-xs"
                   )} 
                   {...props} 
                 />
               ),
               p: ({ children }) => (
-                <p className="leading-relaxed mb-4 last:mb-0 text-white">{children}</p>
+                <p className="leading-relaxed mb-4 last:mb-0 text-white/90">{children}</p>
               ),
               ul: ({ children }) => (
-                <ul className="list-disc pl-4 mb-4 space-y-2 last:mb-0 text-white">{children}</ul>
+                <ul className="list-disc pl-4 mb-4 space-y-2 last:mb-0 text-white/90">{children}</ul>
               ),
               ol: ({ children }) => (
-                <ol className="list-decimal pl-4 mb-4 space-y-2 last:mb-0 text-white">{children}</ol>
+                <ol className="list-decimal pl-4 mb-4 space-y-2 last:mb-0 text-white/90">{children}</ol>
               ),
               li: ({ children }) => (
-                <li className="leading-relaxed text-white">{children}</li>
+                <li className="leading-relaxed text-white/90">{children}</li>
               ),
             }}
           >
             {content}
           </ReactMarkdown>
         )}
-        <span className="text-xs text-white/60">
+        <span className="text-xs text-white/70">
           {timestamp.toLocaleTimeString()}
         </span>
       </div>

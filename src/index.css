@@ -38,5 +38,5 @@
 }
 
 .glass {
-  @apply bg-black/20 backdrop-blur-sm;
+  @apply bg-black/40 backdrop-blur-sm;
 }
