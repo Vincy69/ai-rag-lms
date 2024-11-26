@@ -21,14 +21,25 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 3) {
       const response = await fetch(url, options);
       console.log(`n8n response status: ${response.status}`);
       
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`n8n error response (${response.status}):`, errorText);
-        throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
+      // Log the raw response for debugging
+      const rawResponse = await response.text();
+      console.log('Raw n8n response:', rawResponse);
+      
+      // Try to parse the response as JSON
+      let data;
+      try {
+        data = JSON.parse(rawResponse);
+      } catch (e) {
+        console.error('Failed to parse response as JSON:', e);
+        throw new Error(`Invalid JSON response: ${rawResponse}`);
       }
       
-      const data = await response.json();
-      console.log('n8n raw response:', JSON.stringify(data));
+      if (!response.ok) {
+        console.error(`n8n error response (${response.status}):`, data);
+        throw new Error(`HTTP error! status: ${response.status}, body: ${JSON.stringify(data)}`);
+      }
+      
+      console.log('n8n parsed response:', data);
       
       // Handle different possible response formats from n8n
       if (typeof data === 'string') {
@@ -116,6 +127,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error:', error)
     
+    // Return a more detailed error response
     return new Response(
       JSON.stringify({ 
         error: error.message,
