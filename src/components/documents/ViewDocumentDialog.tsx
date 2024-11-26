@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -56,7 +56,7 @@ export function ViewDocumentDialog({
   };
 
   // Fetch document content when dialog opens
-  useState(() => {
+  useEffect(() => {
     if (open && document) {
       fetchDocument();
     } else {
