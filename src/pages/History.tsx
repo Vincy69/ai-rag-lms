@@ -5,38 +5,81 @@ import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { ChatHistory } from "@/types/chat";
 import { DateRange } from "react-day-picker";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { startOfDay, endOfDay } from "date-fns";
 
 export default function History() {
   const [dateRange, setDateRange] = useState<DateRange>();
   const [scoreFilter, setScoreFilter] = useState("all");
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  // Mock data - à remplacer par les vraies données de l'API
-  const historyItems: ChatHistory[] = [
-    {
-      id: "1",
-      question: "Comment puis-je configurer mon environnement de développement ?",
-      answer: "Pour configurer votre environnement, suivez ces étapes...",
-      timestamp: new Date("2024-02-20T10:30:00"),
-      score: 0.85,
-      feedback: "Réponse claire et précise",
-    },
-    {
-      id: "2",
-      question: "Quelle est la différence entre let et const ?",
-      answer: "Let permet de réassigner une variable tandis que const...",
-      timestamp: new Date("2024-02-19T15:45:00"),
-      score: 0.92,
-      feedback: null,
-    },
-  ];
+  // Fetch chat history
+  const { data: historyItems = [], isLoading } = useQuery({
+    queryKey: ["chat-history", dateRange, scoreFilter],
+    queryFn: async () => {
+      let query = supabase
+        .from("chat_history")
+        .select("*")
+        .order("created_at", { ascending: false });
 
-  const handleFeedbackSubmit = (id: string, feedback: string) => {
-    toast({
-      title: "Feedback enregistré",
-      description: "Merci pour votre contribution à l'amélioration du chatbot.",
-    });
-  };
+      // Apply date filter if set
+      if (dateRange?.from) {
+        query = query.gte("created_at", startOfDay(dateRange.from).toISOString());
+      }
+      if (dateRange?.to) {
+        query = query.lte("created_at", endOfDay(dateRange.to).toISOString());
+      }
+
+      // Apply score filter if set
+      if (scoreFilter !== "all") {
+        query = query.gte("score", parseFloat(scoreFilter));
+      }
+
+      const { data, error } = await query;
+      
+      if (error) {
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger l'historique",
+          variant: "destructive",
+        });
+        throw error;
+      }
+
+      return data.map(item => ({
+        ...item,
+        timestamp: new Date(item.created_at),
+      })) as ChatHistory[];
+    },
+  });
+
+  // Update feedback mutation
+  const updateFeedback = useMutation({
+    mutationFn: async ({ id, feedback }: { id: string; feedback: string }) => {
+      const { error } = await supabase
+        .from("chat_history")
+        .update({ feedback })
+        .eq("id", id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["chat-history"] });
+      toast({
+        title: "Feedback enregistré",
+        description: "Merci pour votre contribution à l'amélioration du chatbot.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Erreur",
+        description: "Impossible d'enregistrer le feedback",
+        variant: "destructive",
+      });
+    },
+  });
 
   return (
     <Layout>
@@ -55,7 +98,20 @@ export default function History() {
           onScoreFilterChange={setScoreFilter}
         />
 
-        <HistoryList items={historyItems} onFeedbackSubmit={handleFeedbackSubmit} />
+        {isLoading ? (
+          <div className="text-center text-muted-foreground">
+            Chargement de l'historique...
+          </div>
+        ) : historyItems.length === 0 ? (
+          <div className="text-center text-muted-foreground">
+            Aucun historique trouvé pour les filtres sélectionnés
+          </div>
+        ) : (
+          <HistoryList 
+            items={historyItems} 
+            onFeedbackSubmit={(id, feedback) => updateFeedback.mutate({ id, feedback })} 
+          />
+        )}
       </div>
     </Layout>
   );
