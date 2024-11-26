@@ -5,6 +5,8 @@ import { Document } from "@/types/document";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { formatBytes } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface DocumentCardProps {
   document: Document;
@@ -30,21 +32,53 @@ const getDocumentIcon = (contentType: string) => {
 };
 
 export function DocumentCard({ document, onView, onEdit, onDelete }: DocumentCardProps) {
+  // Fetch category color
+  const { data: categoryData } = useQuery({
+    queryKey: ["category", document.category],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("categories")
+        .select("color")
+        .eq("name", document.category)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+  });
+
   return (
-    <Card className="glass p-4 space-y-4">
-      <div className="flex items-center gap-3">
-        {getDocumentIcon(document.content_type)}
-        <div className="flex-1">
-          <h3 className="font-semibold">{document.name}</h3>
-          <p className="text-sm text-muted-foreground">{document.category}</p>
-          <p className="text-sm text-muted-foreground">{formatBytes(document.size)}</p>
-          <div className="text-xs text-muted-foreground mt-1 space-y-1">
+    <Card className="glass p-6 space-y-6 hover:bg-white/5 transition-colors">
+      <div className="flex items-start gap-4">
+        <div className="p-2 bg-white/5 rounded-lg">
+          {getDocumentIcon(document.content_type)}
+        </div>
+        <div className="flex-1 space-y-4">
+          <div>
+            <h3 className="text-lg font-semibold mb-2">{document.name}</h3>
+            <div className="flex items-center gap-4">
+              <span 
+                className="px-3 py-1 rounded-full text-sm"
+                style={{ 
+                  backgroundColor: categoryData?.color ? `${categoryData.color}20` : 'transparent',
+                  color: categoryData?.color
+                }}
+              >
+                {document.category}
+              </span>
+              <span className="text-sm text-muted-foreground">
+                {formatBytes(document.size)}
+              </span>
+            </div>
+          </div>
+          
+          <div className="text-xs text-muted-foreground space-y-1">
             <p>Créé le {format(new Date(document.created_at), "dd MMMM yyyy 'à' HH:mm", { locale: fr })}</p>
             <p>Dernière modification le {format(new Date(document.updated_at), "dd MMMM yyyy 'à' HH:mm", { locale: fr })}</p>
           </div>
         </div>
       </div>
-      <div className="flex justify-end gap-2">
+
+      <div className="flex justify-end gap-2 border-t border-white/10 pt-4">
         <Button variant="ghost" size="icon" onClick={() => onView(document.id)}>
           <Eye className="h-4 w-4" />
         </Button>
