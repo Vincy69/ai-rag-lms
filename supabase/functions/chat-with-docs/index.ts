@@ -12,48 +12,54 @@ const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
 const supabase = createClient(supabaseUrl, supabaseKey)
 
 async function fetchWithRetry(url: string, options: RequestInit, retries = 3) {
+  let lastError;
+  
   for (let i = 0; i < retries; i++) {
     try {
+      console.log(`Attempt ${i + 1} to connect to n8n...`);
+      
       const response = await fetch(url, options);
+      console.log(`n8n response status: ${response.status}`);
+      
       if (!response.ok) {
-        console.error(`Attempt ${i + 1} failed:`, {
-          status: response.status,
-          statusText: response.statusText,
-          body: await response.text()
-        });
-        continue;
+        const errorText = await response.text();
+        console.error(`n8n error response (${response.status}):`, errorText);
+        throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
       }
       
       const data = await response.json();
-      console.log('n8n raw response:', data);
+      console.log('n8n raw response:', JSON.stringify(data));
       
       // Handle different possible response formats from n8n
-      let finalResponse = '';
       if (typeof data === 'string') {
-        finalResponse = data;
+        return { response: data };
       } else if (data.response) {
-        finalResponse = data.response;
+        return { response: data.response };
       } else if (data.message) {
-        finalResponse = data.message;
+        return { response: data.message };
       } else if (data.result) {
-        finalResponse = data.result;
+        return { response: data.result };
       } else if (data.answer) {
-        finalResponse = data.answer;
+        return { response: data.answer };
+      } else if (data.text) {
+        return { response: data.text };
       } else {
         console.error('Unexpected n8n response format:', data);
-        throw new Error('Unexpected response format from n8n');
+        throw new Error(`Unexpected response format from n8n: ${JSON.stringify(data)}`);
       }
-      
-      return {
-        response: finalResponse
-      };
     } catch (error) {
       console.error(`Attempt ${i + 1} failed with error:`, error);
-      if (i === retries - 1) throw error;
+      lastError = error;
+      
+      if (i < retries - 1) {
+        const delay = Math.pow(2, i) * 1000;
+        console.log(`Waiting ${delay}ms before next attempt...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
     }
-    await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
   }
-  throw new Error(`Failed after ${retries} attempts`);
+  
+  throw new Error(`Failed after ${retries} attempts. Last error: ${lastError?.message}`);
 }
 
 serve(async (req) => {
