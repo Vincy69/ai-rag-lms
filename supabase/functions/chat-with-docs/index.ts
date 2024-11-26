@@ -27,7 +27,8 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 3) {
       let data;
       try {
         data = JSON.parse(rawResponse);
-      } catch {
+        console.log('Parsed n8n response:', data);
+      } catch (e) {
         console.log('Response is not JSON, using raw text');
         return { response: rawResponse };
       }
@@ -36,7 +37,12 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 3) {
         throw new Error(`n8n workflow error: ${JSON.stringify(data)}`);
       }
       
-      // Handle various response formats from n8n
+      // Handle n8n specific response format
+      if (data.result && data.result.response) {
+        return { response: data.result.response };
+      }
+      
+      // Fallback handlers for different response formats
       if (typeof data === 'string') {
         return { response: data };
       } else if (data.response) {
@@ -51,7 +57,7 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 3) {
         return { response: data.text };
       } else {
         console.log('Unexpected response format:', data);
-        return { response: "I couldn't process your request. Please try again." };
+        return { response: "Je n'ai pas pu traiter votre demande. Veuillez réessayer." };
       }
     } catch (error) {
       console.error(`Attempt ${i + 1} failed:`, error);
@@ -65,7 +71,7 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 3) {
     }
   }
   
-  throw new Error(`Failed to get a valid response from n8n after ${retries} attempts. Last error: ${lastError?.message}`);
+  throw new Error(`Échec de la réception d'une réponse valide de n8n après ${retries} tentatives. Dernière erreur: ${lastError?.message}`);
 }
 
 serve(async (req) => {
@@ -127,7 +133,7 @@ serve(async (req) => {
     
     return new Response(
       JSON.stringify({ 
-        error: "An error occurred while processing your request. Please try again.",
+        error: "Une erreur s'est produite lors du traitement de votre demande. Veuillez réessayer.",
         details: error.message,
         timestamp: new Date().toISOString()
       }),
