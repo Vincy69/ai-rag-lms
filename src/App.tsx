@@ -2,11 +2,12 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Upload from "./pages/Upload";
 import Documents from "./pages/Documents";
 import Chat from "./pages/Chat";
+import History from "./pages/History";
 
 const queryClient = new QueryClient();
 
@@ -21,8 +22,7 @@ const App = () => (
           <Route path="/upload" element={<Upload />} />
           <Route path="/documents" element={<Documents />} />
           <Route path="/chat" element={<Chat />} />
-          <Route path="/history" element={<Navigate to="/" />} />
-          <Route path="/settings" element={<Navigate to="/" />} />
+          <Route path="/history" element={<History />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
