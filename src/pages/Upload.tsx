@@ -71,12 +71,26 @@ export default function UploadPage() {
       });
 
       for (const uploadedFile of uploadedFiles) {
-        const formData = new FormData();
-        formData.append('file', uploadedFile.file);
-        formData.append('category', uploadedFile.category);
-
+        // Create a blob from the file to ensure proper data transfer
+        const blob = new Blob([await uploadedFile.file.arrayBuffer()], { 
+          type: uploadedFile.file.type 
+        });
+        
         const { data, error } = await supabase.functions.invoke('process-document', {
-          body: formData,
+          body: {
+            file: {
+              name: uploadedFile.file.name,
+              type: uploadedFile.file.type,
+              size: uploadedFile.file.size,
+              // Convert blob to base64 for transmission
+              data: await new Promise<string>((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result as string);
+                reader.readAsDataURL(blob);
+              })
+            },
+            category: uploadedFile.category
+          }
         });
 
         if (error) {
