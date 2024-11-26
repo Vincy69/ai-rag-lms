@@ -37,29 +37,35 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 3) {
         throw new Error(`n8n workflow error: ${JSON.stringify(data)}`);
       }
 
-      // Try to extract the response from various possible formats
+      // Try to extract the response and confidence score from various possible formats
       if (Array.isArray(data)) {
         console.log('Response is an array');
         if (data.length > 0) {
-          if (data[0].output) {
-            console.log('Found output in array[0].output:', data[0].output);
-            return { response: data[0].output };
+          if (data[0].output && data[0].confidence) {
+            console.log('Found output and confidence in array[0]:', data[0]);
+            return { 
+              response: data[0].output,
+              confidence: parseFloat(data[0].confidence) || 0.8 // Default to 0.8 if parsing fails
+            };
           }
           if (typeof data[0] === 'string') {
             console.log('Found string in array[0]:', data[0]);
-            return { response: data[0] };
+            return { response: data[0], confidence: 0.8 }; // Default confidence
           }
         }
       }
 
       if (typeof data === 'string') {
         console.log('Response is a string:', data);
-        return { response: data };
+        return { response: data, confidence: 0.8 }; // Default confidence
       }
 
       if (data.output) {
         console.log('Found output property:', data.output);
-        return { response: data.output };
+        return { 
+          response: data.output,
+          confidence: parseFloat(data.confidence) || 0.8 // Default to 0.8 if not provided
+        };
       }
 
       // If we get here, log the full response for debugging
@@ -69,7 +75,6 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 3) {
       console.error(`Attempt ${i + 1} failed:`, error);
       lastError = error;
       
-      // Only retry if we haven't reached the maximum number of attempts
       if (i < retries - 1) {
         const delay = Math.pow(2, i) * 1000;
         console.log(`Waiting ${delay}ms before next attempt...`);
@@ -113,13 +118,13 @@ serve(async (req) => {
 
     console.log('Processed n8n response:', data);
 
-    // Save the chat interaction to the database
+    // Save the chat interaction with the confidence score to the database
     const { error: insertError } = await supabase
       .from('chat_history')
       .insert({
         question: message,
         answer: data.response,
-        score: 0 // Default score, can be updated later with feedback
+        score: data.confidence // Save the confidence score
       });
 
     if (insertError) {

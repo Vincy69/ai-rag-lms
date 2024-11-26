@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ChatHistory } from "@/types/chat";
 import { useState } from "react";
-import { ThumbsUp, ThumbsDown, MessageSquare } from "lucide-react";
+import { ThumbsUp, ThumbsDown, MessageSquare, Gauge } from "lucide-react";
 
 interface HistoryListProps {
   items: ChatHistory[];
@@ -32,15 +32,20 @@ export function HistoryList({ items, onFeedbackSubmit }: HistoryListProps) {
               </div>
               <p className="text-sm text-muted-foreground">{item.answer}</p>
             </div>
-            <div className="flex items-center gap-2">
-              {item.score >= 0.8 ? (
-                <ThumbsUp className="h-5 w-5 text-green-500" />
-              ) : (
-                <ThumbsDown className="h-5 w-5 text-red-500" />
-              )}
-              <span className="text-sm font-medium">
-                {Math.round(item.score * 100)}%
-              </span>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 bg-black/10 px-3 py-1.5 rounded-full">
+                <Gauge className="h-4 w-4" />
+                <span className="text-sm font-medium">
+                  Score: {Math.round(item.score * 100)}%
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                {item.score >= 0.8 ? (
+                  <ThumbsUp className="h-5 w-5 text-green-500" />
+                ) : (
+                  <ThumbsDown className="h-5 w-5 text-red-500" />
+                )}
+              </div>
             </div>
           </div>
 
