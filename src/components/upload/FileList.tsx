@@ -2,6 +2,8 @@ import { File, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UploadedFile } from "@/types/upload";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface FileListProps {
   files: UploadedFile[];
@@ -10,6 +12,19 @@ interface FileListProps {
 }
 
 export function FileList({ files, onRemoveFile, onUpdateCategory }: FileListProps) {
+  // Fetch categories from Supabase
+  const { data: categories } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("categories")
+        .select("name")
+        .order("name");
+      if (error) throw error;
+      return data;
+    },
+  });
+
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-semibold">Documents à uploader</h2>
@@ -32,10 +47,11 @@ export function FileList({ files, onRemoveFile, onUpdateCategory }: FileListProp
                   <SelectValue placeholder="Sélectionner une catégorie" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Documentation technique">Documentation technique</SelectItem>
-                  <SelectItem value="Procédures internes">Procédures internes</SelectItem>
-                  <SelectItem value="Rapports">Rapports</SelectItem>
-                  <SelectItem value="Autres">Autres</SelectItem>
+                  {categories?.map((category) => (
+                    <SelectItem key={category.name} value={category.name}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               <Button
