@@ -30,6 +30,33 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_history: {
+        Row: {
+          answer: string
+          created_at: string
+          feedback: string | null
+          id: string
+          question: string
+          score: number
+        }
+        Insert: {
+          answer: string
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          question: string
+          score?: number
+        }
+        Update: {
+          answer?: string
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          question?: string
+          score?: number
+        }
+        Relationships: []
+      }
       documents: {
         Row: {
           category: string

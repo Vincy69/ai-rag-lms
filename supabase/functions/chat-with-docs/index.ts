@@ -1,10 +1,15 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
+import { createClient } from '@supabase/supabase-js'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
+
+const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
+const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+const supabase = createClient(supabaseUrl, supabaseKey)
 
 async function fetchWithRetry(url: string, options: RequestInit, retries = 3) {
   for (let i = 0; i < retries; i++) {
@@ -22,19 +27,17 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 3) {
       const data = await response.json();
       console.log('n8n response:', data);
       
-      // Validate response format
       if (!data || (typeof data.response !== 'string' && typeof data.message !== 'string')) {
         throw new Error('Invalid response format from n8n. Expected response or message property.');
       }
       
       return {
-        response: data.response || data.message // Handle both possible response formats
+        response: data.response || data.message
       };
     } catch (error) {
       console.error(`Attempt ${i + 1} failed with error:`, error);
       if (i === retries - 1) throw error;
     }
-    // Wait before retrying (exponential backoff)
     await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
   }
   throw new Error(`Failed after ${retries} attempts`);
@@ -50,18 +53,15 @@ serve(async (req) => {
     
     console.log('Received message:', message)
     
-    // Format the request body for n8n chat trigger
     const requestBody = {
       message: message,
-      sessionId: crypto.randomUUID() // Add a session ID for tracking
+      sessionId: crypto.randomUUID()
     }
     
     console.log('Sending request to n8n:', requestBody)
 
-    // Updated n8n webhook URL with the correct format
     const n8nUrl = 'https://elephorm.app.n8n.cloud/webhook/fa2836ec-b77c-49aa-8ed0-bf5dac24da66/chat'
     
-    // Send message to n8n chat trigger with retry logic
     const data = await fetchWithRetry(n8nUrl, {
       method: 'POST',
       headers: {
@@ -71,6 +71,19 @@ serve(async (req) => {
     });
 
     console.log('Processed n8n response:', data);
+
+    // Save the chat interaction to the database
+    const { error: insertError } = await supabase
+      .from('chat_history')
+      .insert({
+        question: message,
+        answer: data.response,
+        score: 0 // Default score, can be updated later with feedback
+      });
+
+    if (insertError) {
+      console.error('Error saving chat history:', insertError);
+    }
 
     return new Response(
       JSON.stringify(data),
