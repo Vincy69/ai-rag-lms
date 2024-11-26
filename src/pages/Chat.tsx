@@ -58,7 +58,7 @@ export default function Chat() {
       <div className="flex h-[calc(100vh-8rem)] flex-col gap-4 animate-fade-in">
         <div className="space-y-2">
           <h1 className="text-4xl font-bold tracking-tight">Chat avec l'Assistant IA</h1>
-          <p className="text-muted-foreground">
+          <p className="text-white/80">
             Posez vos questions à l'assistant IA qui utilise vos documents comme source de connaissances
           </p>
         </div>
@@ -66,7 +66,7 @@ export default function Chat() {
         <div className="flex-1 space-y-4 overflow-y-auto rounded-lg border border-white/20 bg-black/40 backdrop-blur-sm">
           {messages.length === 0 ? (
             <div className="flex h-full items-center justify-center">
-              <p className="text-center text-white/60">
+              <p className="text-center text-white/80">
                 Aucun message. Commencez la conversation !
               </p>
             </div>

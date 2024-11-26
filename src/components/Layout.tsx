@@ -52,7 +52,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   "hover:bg-white/10",
                   location.pathname === item.path
                     ? "bg-primary/20 text-primary"
-                    : "text-foreground"
+                    : "text-white/90"
                 )}
               >
                 <item.icon className="h-5 w-5" />
