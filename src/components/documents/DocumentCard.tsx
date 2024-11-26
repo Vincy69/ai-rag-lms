@@ -52,7 +52,7 @@ export function DocumentCard({ document, onView, onEdit, onDelete }: DocumentCar
         <div className="p-2 bg-white/5 rounded-lg">
           {getDocumentIcon(document.content_type)}
         </div>
-        <div className="flex-1 space-y-4">
+        <div className="flex-1 space-y-4 text-left">
           <div>
             <h3 className="text-lg font-semibold mb-2">{document.name}</h3>
             <div className="flex items-center gap-4">
