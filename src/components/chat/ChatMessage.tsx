@@ -34,7 +34,7 @@ export function ChatMessage({ content, isUser, timestamp }: ChatMessageProps) {
           <p className="text-sm leading-relaxed whitespace-pre-wrap">{content}</p>
         ) : (
           <ReactMarkdown 
-            className="text-sm prose prose-sm dark:prose-invert max-w-none prose-p:leading-relaxed prose-pre:my-0 prose-headings:text-foreground prose-a:text-primary"
+            className="text-sm prose prose-sm dark:prose-invert max-w-none prose-p:leading-relaxed prose-pre:my-0 prose-headings:text-foreground prose-a:text-primary text-white"
             components={{
               pre: ({ ...props }) => (
                 <div className="overflow-auto my-2 rounded-lg bg-black/30 backdrop-blur-sm border border-white/20">
@@ -51,16 +51,16 @@ export function ChatMessage({ content, isUser, timestamp }: ChatMessageProps) {
                 />
               ),
               p: ({ children }) => (
-                <p className="leading-relaxed mb-4 last:mb-0">{children}</p>
+                <p className="leading-relaxed mb-4 last:mb-0 text-white">{children}</p>
               ),
               ul: ({ children }) => (
-                <ul className="list-disc pl-4 mb-4 space-y-2 last:mb-0">{children}</ul>
+                <ul className="list-disc pl-4 mb-4 space-y-2 last:mb-0 text-white">{children}</ul>
               ),
               ol: ({ children }) => (
-                <ol className="list-decimal pl-4 mb-4 space-y-2 last:mb-0">{children}</ol>
+                <ol className="list-decimal pl-4 mb-4 space-y-2 last:mb-0 text-white">{children}</ol>
               ),
               li: ({ children }) => (
-                <li className="leading-relaxed">{children}</li>
+                <li className="leading-relaxed text-white">{children}</li>
               ),
             }}
           >
