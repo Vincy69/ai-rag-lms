@@ -53,13 +53,22 @@ export function ChatMessage({ content, isUser, timestamp }: ChatMessageProps) {
                 <p className="leading-relaxed mb-4 last:mb-0 text-white/90">{children}</p>
               ),
               ul: ({ children }) => (
-                <ul className="list-disc pl-4 mb-4 space-y-2 last:mb-0 text-white/90">{children}</ul>
+                <ul className="list-disc pl-4 mb-4 space-y-2 last:mb-0">{children}</ul>
               ),
               ol: ({ children }) => (
-                <ol className="list-decimal pl-4 mb-4 space-y-2 last:mb-0 text-white/90">{children}</ol>
+                <ol className="list-decimal pl-4 mb-4 space-y-2 last:mb-0">{children}</ol>
               ),
               li: ({ children }) => (
-                <li className="leading-relaxed text-white/90">{children}</li>
+                <li className="leading-relaxed text-white">
+                  {typeof children === 'string' && children.includes(':') ? (
+                    <>
+                      <span className="font-medium text-primary">{children.split(':')[0]}</span>
+                      <span className="text-white/90">{children.split(':')[1]}</span>
+                    </>
+                  ) : (
+                    <span className="text-white/90">{children}</span>
+                  )}
+                </li>
               ),
             }}
           >
