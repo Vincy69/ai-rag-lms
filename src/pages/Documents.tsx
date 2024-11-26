@@ -7,6 +7,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { DocumentsHeader } from "@/components/documents/DocumentsHeader";
 import { DocumentsContent } from "@/components/documents/DocumentsContent";
 import { EditDocumentDialog } from "@/components/documents/EditDocumentDialog";
+import { ViewDocumentDialog } from "@/components/documents/ViewDocumentDialog";
+import { Document } from "@/types/document";
 
 export default function Documents() {
   const [search, setSearch] = useState("");
@@ -15,6 +17,7 @@ export default function Documents() {
   const { toast } = useToast();
   const { documents, isLoading, deleteDocument, updateDocument } = useDocuments();
   const [editingDocument, setEditingDocument] = useState<{ id: string; name: string; category: string } | null>(null);
+  const [viewingDocument, setViewingDocument] = useState<Document | null>(null);
 
   // Fetch categories
   const { data: categories } = useQuery({
@@ -103,11 +106,11 @@ export default function Documents() {
           onSearchChange={setSearch}
           onCategoryChange={setCategory}
           onSortChange={setSortBy}
-          onView={() => {
-            toast({
-              title: "Visualisation",
-              description: "Fonctionnalité de visualisation à implémenter",
-            });
+          onView={(id) => {
+            const doc = documents?.find((d) => d.id === id);
+            if (doc) {
+              setViewingDocument(doc);
+            }
           }}
           onEdit={(id) => {
             const doc = documents?.find((d) => d.id === id);
@@ -131,6 +134,12 @@ export default function Documents() {
           }
           onSave={handleEdit}
           categories={categories}
+        />
+
+        <ViewDocumentDialog
+          open={!!viewingDocument}
+          onOpenChange={(open) => !open && setViewingDocument(null)}
+          document={viewingDocument}
         />
       </div>
     </Layout>
