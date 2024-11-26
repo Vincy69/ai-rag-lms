@@ -15,13 +15,13 @@ export default function Login() {
     } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
         navigate("/chat");
-      } else if (event === 'USER_DELETED') {
+      } else if (event === "DELETED_USER") {
         toast({
           title: "Erreur d'authentification",
           description: "Votre compte a été supprimé.",
           variant: "destructive",
         });
-      } else if (event === 'SIGNED_OUT') {
+      } else if (event === "SIGNED_OUT") {
         // Optionally handle sign out
       }
     });
@@ -46,6 +46,15 @@ export default function Login() {
             appearance={{ theme: ThemeSupa }}
             theme="dark"
             providers={[]}
+            localization={{
+              variables: {
+                sign_in: {
+                  email_label: "Email",
+                  password_label: "Mot de passe",
+                }
+              }
+            }}
+            showLinks={false}
             onError={(error) => {
               if (error.message.includes("email_provider_disabled")) {
                 toast({
