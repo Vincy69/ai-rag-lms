@@ -2,10 +2,12 @@ import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function Login() {
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     supabase.auth.onAuthStateChange((event, session) => {
@@ -13,7 +15,30 @@ export default function Login() {
         navigate("/chat");
       }
     });
-  }, [navigate]);
+
+    // Handle auth errors
+    const {
+      data: { subscription },
+    } = supabase.auth.onError((error) => {
+      if (error.message.includes("email_provider_disabled")) {
+        toast({
+          title: "Erreur d'authentification",
+          description: "Les inscriptions par email sont actuellement désactivées. Veuillez contacter l'administrateur.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Erreur d'authentification",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [navigate, toast]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
