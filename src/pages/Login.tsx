@@ -28,8 +28,8 @@ export default function Login() {
       if (event === 'USER_UPDATED') {
         navigate("/");
       }
-      // Handle authentication errors
-      if (event === 'USER_DELETED' || event === 'SIGNED_OUT') {
+      // Handle authentication state changes
+      if (event === 'SIGNED_OUT') {
         toast({
           title: "Session terminée",
           description: "Vous avez été déconnecté",
@@ -65,13 +65,6 @@ export default function Login() {
           }}
           providers={[]}
           redirectTo={window.location.origin}
-          onError={(error) => {
-            toast({
-              title: "Erreur d'authentification",
-              description: error.message,
-              variant: "destructive",
-            });
-          }}
           localization={{
             variables: {
               sign_in: {
