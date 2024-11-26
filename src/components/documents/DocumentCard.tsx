@@ -2,6 +2,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FileText, Trash2, Edit2, Eye } from "lucide-react";
 import { Document } from "@/types/document";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 
 interface DocumentCardProps {
   document: Document;
@@ -18,6 +20,10 @@ export function DocumentCard({ document, onView, onEdit, onDelete }: DocumentCar
         <div className="flex-1">
           <h3 className="font-semibold">{document.name}</h3>
           <p className="text-sm text-muted-foreground">{document.category}</p>
+          <div className="text-xs text-muted-foreground mt-1 space-y-1">
+            <p>Créé le {format(new Date(document.created_at), "dd MMMM yyyy 'à' HH:mm", { locale: fr })}</p>
+            <p>Dernière modification le {format(new Date(document.updated_at), "dd MMMM yyyy 'à' HH:mm", { locale: fr })}</p>
+          </div>
         </div>
       </div>
       <div className="flex justify-end gap-2">
