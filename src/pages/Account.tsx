@@ -19,19 +19,17 @@ export default function Account() {
         
         if (sessionError) throw sessionError;
         
-        if (!session) {
+        if (!session?.user) {
           navigate("/login");
           return;
         }
 
-        const { user } = session;
-        setEmail(user.email);
+        setEmail(session.user.email);
 
-        // Get user role from profiles table using the authenticated client
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('role')
-          .eq('id', user.id)
+          .eq('id', session.user.id)
           .single();
 
         if (profileError) {
