@@ -39,6 +39,7 @@ export type Database = {
           id: string
           question: string
           score: number
+          user_id: string | null
         }
         Insert: {
           answer: string
@@ -48,6 +49,7 @@ export type Database = {
           id?: string
           question: string
           score?: number
+          user_id?: string | null
         }
         Update: {
           answer?: string
@@ -57,8 +59,17 @@ export type Database = {
           id?: string
           question?: string
           score?: number
+          user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "chat_history_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       documents: {
         Row: {
@@ -119,6 +130,21 @@ export type Database = {
           id?: number
           message?: Json
           session_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
         }
         Relationships: []
       }

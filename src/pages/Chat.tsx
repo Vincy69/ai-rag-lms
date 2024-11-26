@@ -28,6 +28,9 @@ export default function Chat() {
     setIsLoading(true);
 
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("User not authenticated");
+
       const { data, error } = await supabase.functions.invoke('chat-with-docs', {
         body: { message: content }
       });
@@ -41,6 +44,14 @@ export default function Chat() {
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, aiMessage]);
+
+      // Save chat history
+      await supabase.from('chat_history').insert({
+        question: content,
+        answer: data.response,
+        score: data.confidence || 0.8,
+        user_id: user.id
+      });
     } catch (error) {
       console.error('Error:', error);
       toast({
