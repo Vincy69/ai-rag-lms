@@ -21,6 +21,12 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 3) {
       const response = await fetch(url, options);
       console.log(`n8n response status: ${response.status}`);
       
+      // Check if response is HTML (indicating n8n error page)
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('text/html')) {
+        throw new Error('n8n server returned HTML instead of JSON. The server might be down.');
+      }
+
       const rawResponse = await response.text();
       console.log('Raw n8n response:', rawResponse);
       
@@ -30,7 +36,7 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 3) {
         console.log('Parsed n8n response:', data);
       } catch (e) {
         console.log('Response is not JSON:', e);
-        throw new Error('Invalid JSON response from n8n');
+        throw new Error(`Invalid response from n8n: ${rawResponse.slice(0, 100)}...`);
       }
       
       if (!response.ok) {
@@ -108,6 +114,12 @@ serve(async (req) => {
       }),
     });
 
+    if (!embeddingResponse.ok) {
+      const error = await embeddingResponse.text();
+      console.error('OpenAI API error:', error);
+      throw new Error('Error generating embedding');
+    }
+
     const { data: [{ embedding }] } = await embeddingResponse.json();
 
     // Find similar feedback using the match_feedback function
@@ -171,8 +183,8 @@ serve(async (req) => {
     
     return new Response(
       JSON.stringify({ 
-        error: "Une erreur s'est produite lors du traitement de votre demande. Veuillez réessayer.",
-        details: error.message,
+        error: error.message || "Une erreur s'est produite lors du traitement de votre demande. Veuillez réessayer.",
+        details: error.stack,
         timestamp: new Date().toISOString()
       }),
       { 
