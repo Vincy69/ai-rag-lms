@@ -58,7 +58,7 @@ export default function Chat() {
 
   return (
     <Layout>
-      <div className="flex h-full flex-col gap-4 animate-fade-in">
+      <div className="flex h-[calc(100vh-8rem)] flex-col gap-4 animate-fade-in">
         <div className="space-y-2">
           <h1 className="text-4xl font-bold">Chat avec l'Assistant IA</h1>
           <p className="text-muted-foreground">
@@ -66,19 +66,23 @@ export default function Chat() {
           </p>
         </div>
 
-        <div className="flex-1 space-y-4 overflow-y-auto rounded-lg border bg-background p-4">
+        <div className="flex-1 space-y-4 overflow-y-auto rounded-lg border bg-background/50 backdrop-blur-sm">
           {messages.length === 0 ? (
-            <p className="text-center text-muted-foreground">
-              Aucun message. Commencez la conversation !
-            </p>
+            <div className="flex h-full items-center justify-center">
+              <p className="text-center text-muted-foreground">
+                Aucun message. Commencez la conversation !
+              </p>
+            </div>
           ) : (
-            messages.map((message) => (
-              <ChatMessage key={message.id} {...message} />
-            ))
+            <div className="flex flex-col gap-4 py-4">
+              {messages.map((message) => (
+                <ChatMessage key={message.id} {...message} />
+              ))}
+            </div>
           )}
         </div>
 
-        <div className="sticky bottom-0 bg-background p-4">
+        <div className="sticky bottom-0 bg-background/80 backdrop-blur-sm p-4 rounded-lg border">
           <ChatInput onSend={handleSendMessage} disabled={isLoading} />
         </div>
       </div>

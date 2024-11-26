@@ -11,7 +11,7 @@ export function ChatMessage({ content, isUser, timestamp }: ChatMessageProps) {
   return (
     <div
       className={cn(
-        "flex w-full gap-2 p-4",
+        "flex w-full gap-4 px-4",
         isUser ? "flex-row-reverse" : "flex-row"
       )}
     >
@@ -20,7 +20,7 @@ export function ChatMessage({ content, isUser, timestamp }: ChatMessageProps) {
           "flex max-w-[80%] flex-col gap-2 rounded-lg p-4",
           isUser
             ? "bg-primary text-primary-foreground"
-            : "bg-muted text-muted-foreground"
+            : "glass"
         )}
       >
         {isUser ? (
@@ -30,12 +30,12 @@ export function ChatMessage({ content, isUser, timestamp }: ChatMessageProps) {
             className="text-sm prose prose-sm dark:prose-invert max-w-none"
             components={{
               pre: ({ node, ...props }) => (
-                <div className="overflow-auto rounded-lg bg-muted/50 p-2 my-2">
+                <div className="overflow-auto rounded-lg bg-background/50 p-2 my-2">
                   <pre {...props} />
                 </div>
               ),
               code: ({ node, ...props }) => (
-                <code className="rounded bg-muted/50 px-1 py-0.5" {...props} />
+                <code className="rounded bg-background/50 px-1 py-0.5" {...props} />
               ),
             }}
           >
