@@ -12,6 +12,7 @@ export function Header() {
     { label: "Upload", path: "/upload" },
     { label: "Documents", path: "/documents" },
     { label: "Historique", path: "/history" },
+    { label: "Formations", path: "/formations" },
   ];
 
   return (

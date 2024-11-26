@@ -7,6 +7,7 @@ import Chat from "@/pages/Chat";
 import Documents from "@/pages/Documents";
 import Upload from "@/pages/Upload";
 import History from "@/pages/History";
+import Formations from "@/pages/Formations";
 import "./App.css";
 
 const queryClient = new QueryClient();
@@ -37,6 +38,7 @@ function App() {
           <Route path="/documents" element={<Documents />} />
           <Route path="/upload" element={<Upload />} />
           <Route path="/history" element={<History />} />
+          <Route path="/formations" element={<Formations />} />
         </Routes>
       </Router>
       <Toaster />
