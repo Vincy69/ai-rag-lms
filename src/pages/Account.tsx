@@ -13,14 +13,18 @@ export default function Account() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    async function getProfile() {
+    const getProfile = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) throw sessionError;
+        
+        if (!session) {
           navigate("/login");
           return;
         }
-        
+
+        const { user } = session;
         setEmail(user.email);
 
         // Get user role from profiles table
@@ -44,7 +48,7 @@ export default function Account() {
           variant: "destructive",
         });
       }
-    }
+    };
     
     getProfile();
   }, [navigate, toast]);
