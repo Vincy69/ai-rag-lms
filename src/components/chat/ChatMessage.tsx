@@ -11,6 +11,7 @@ interface CodeProps {
   inline?: boolean;
   className?: string;
   children?: React.ReactNode;
+  // Remove node from destructuring since it's not needed
 }
 
 export function ChatMessage({ content, isUser, timestamp }: ChatMessageProps) {
@@ -35,12 +36,12 @@ export function ChatMessage({ content, isUser, timestamp }: ChatMessageProps) {
           <ReactMarkdown 
             className="text-sm prose prose-sm dark:prose-invert max-w-none prose-p:leading-relaxed prose-pre:my-0 prose-headings:text-foreground prose-a:text-primary"
             components={{
-              pre: ({ node, ...props }) => (
+              pre: ({ ...props }) => (
                 <div className="overflow-auto my-2 rounded-lg bg-black/30 backdrop-blur-sm border border-white/20">
                   <pre {...props} className="p-3" />
                 </div>
               ),
-              code: ({ node, inline, ...props }: CodeProps) => (
+              code: ({ inline, ...props }: CodeProps) => (
                 <code 
                   className={cn(
                     "bg-black/30 rounded px-1.5 py-0.5 border border-white/20",
