@@ -10,28 +10,19 @@ export default function Login() {
   const { toast } = useToast();
 
   useEffect(() => {
-    supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        navigate("/chat");
-      }
-    });
-
-    // Handle auth errors
     const {
       data: { subscription },
-    } = supabase.auth.onError((error) => {
-      if (error.message.includes("email_provider_disabled")) {
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        navigate("/chat");
+      } else if (event === 'USER_DELETED') {
         toast({
           title: "Erreur d'authentification",
-          description: "Les inscriptions par email sont actuellement désactivées. Veuillez contacter l'administrateur.",
+          description: "Votre compte a été supprimé.",
           variant: "destructive",
         });
-      } else {
-        toast({
-          title: "Erreur d'authentification",
-          description: error.message,
-          variant: "destructive",
-        });
+      } else if (event === 'SIGNED_OUT') {
+        // Optionally handle sign out
       }
     });
 
@@ -55,6 +46,21 @@ export default function Login() {
             appearance={{ theme: ThemeSupa }}
             theme="dark"
             providers={[]}
+            onError={(error) => {
+              if (error.message.includes("email_provider_disabled")) {
+                toast({
+                  title: "Erreur d'authentification",
+                  description: "Les inscriptions par email sont actuellement désactivées. Veuillez contacter l'administrateur.",
+                  variant: "destructive",
+                });
+              } else {
+                toast({
+                  title: "Erreur d'authentification",
+                  description: error.message,
+                  variant: "destructive",
+                });
+              }
+            }}
           />
         </div>
       </div>
