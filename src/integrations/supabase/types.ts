@@ -35,6 +35,7 @@ export type Database = {
           answer: string
           created_at: string
           feedback: string | null
+          feedback_embedding: string | null
           id: string
           question: string
           score: number
@@ -43,6 +44,7 @@ export type Database = {
           answer: string
           created_at?: string
           feedback?: string | null
+          feedback_embedding?: string | null
           id?: string
           question: string
           score?: number
@@ -51,6 +53,7 @@ export type Database = {
           answer?: string
           created_at?: string
           feedback?: string | null
+          feedback_embedding?: string | null
           id?: string
           question?: string
           score?: number
@@ -245,6 +248,18 @@ export type Database = {
           id: string
           name: string
           category: string
+          similarity: number
+        }[]
+      }
+      match_feedback: {
+        Args: {
+          query_embedding: string
+          match_count?: number
+          match_threshold?: number
+        }
+        Returns: {
+          id: string
+          feedback: string
           similarity: number
         }[]
       }

@@ -24,7 +24,6 @@ export default function History() {
         .select("*")
         .order("created_at", { ascending: false });
 
-      // Apply date filter if set
       if (dateRange?.from) {
         query = query.gte("created_at", startOfDay(dateRange.from).toISOString());
       }
@@ -32,7 +31,6 @@ export default function History() {
         query = query.lte("created_at", endOfDay(dateRange.to).toISOString());
       }
 
-      // Apply score filter if set
       if (scoreFilter !== "all") {
         query = query.gte("score", parseFloat(scoreFilter));
       }
@@ -55,12 +53,32 @@ export default function History() {
     },
   });
 
-  // Update feedback mutation
+  // Update feedback mutation with embedding generation
   const updateFeedback = useMutation({
     mutationFn: async ({ id, feedback }: { id: string; feedback: string }) => {
+      // First, generate the embedding for the feedback
+      const response = await fetch('/functions/v1/generate-embedding', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.SUPABASE_ANON_KEY}`,
+        },
+        body: JSON.stringify({ text: feedback }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate embedding');
+      }
+
+      const { embedding } = await response.json();
+
+      // Then, update the chat history with both feedback and its embedding
       const { error } = await supabase
         .from("chat_history")
-        .update({ feedback })
+        .update({ 
+          feedback,
+          feedback_embedding: embedding
+        })
         .eq("id", id);
 
       if (error) throw error;

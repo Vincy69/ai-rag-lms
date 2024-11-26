@@ -45,30 +45,29 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 3) {
             console.log('Found output and confidence in array[0]:', data[0]);
             return { 
               response: data[0].output,
-              confidence: parseFloat(data[0].confidence) || 0.8 // Default to 0.8 if parsing fails
+              confidence: parseFloat(data[0].confidence) || 0.8
             };
           }
           if (typeof data[0] === 'string') {
             console.log('Found string in array[0]:', data[0]);
-            return { response: data[0], confidence: 0.8 }; // Default confidence
+            return { response: data[0], confidence: 0.8 };
           }
         }
       }
 
       if (typeof data === 'string') {
         console.log('Response is a string:', data);
-        return { response: data, confidence: 0.8 }; // Default confidence
+        return { response: data, confidence: 0.8 };
       }
 
       if (data.output) {
         console.log('Found output property:', data.output);
         return { 
           response: data.output,
-          confidence: parseFloat(data.confidence) || 0.8 // Default to 0.8 if not provided
+          confidence: parseFloat(data.confidence) || 0.8
         };
       }
 
-      // If we get here, log the full response for debugging
       console.log('Unexpected response structure. Full response:', JSON.stringify(data, null, 2));
       throw new Error('Format de réponse inattendu de n8n');
     } catch (error) {
@@ -95,10 +94,37 @@ serve(async (req) => {
     const { message } = await req.json()
     
     console.log('Received message:', message)
+
+    // Generate embedding for the message to find similar feedback
+    const embeddingResponse = await fetch('https://api.openai.com/v1/embeddings', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'text-embedding-3-small',
+        input: message,
+      }),
+    });
+
+    const { data: [{ embedding }] } = await embeddingResponse.json();
+
+    // Find similar feedback using the match_feedback function
+    const { data: similarFeedback } = await supabase.rpc('match_feedback', {
+      query_embedding: embedding,
+      match_count: 5,
+      match_threshold: 0.8
+    });
+
+    // Add relevant feedback to the context if any was found
+    const feedbackContext = similarFeedback?.length > 0
+      ? `\nPrevious relevant feedback: ${similarFeedback.map(f => f.feedback).join('. ')}`
+      : '';
     
     const requestBody = {
       sessionId: crypto.randomUUID(),
-      chatInput: message,
+      chatInput: message + feedbackContext,
       metadata: {
         timestamp: new Date().toISOString()
       }
@@ -124,7 +150,7 @@ serve(async (req) => {
       .insert({
         question: message,
         answer: data.response,
-        score: data.confidence // Save the confidence score
+        score: data.confidence
       });
 
     if (insertError) {
