@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { MessageSquare, Upload, Files, History } from "lucide-react";
+import { MessageSquare, Upload, Files, History, GraduationCap, User } from "lucide-react";
 import { Header } from "./Header";
 
 const navItems = [
@@ -9,12 +9,13 @@ const navItems = [
   { icon: Upload, label: "Upload", path: "/upload" },
   { icon: Files, label: "Documents", path: "/documents" },
   { icon: History, label: "Historique", path: "/history" },
+  { icon: GraduationCap, label: "Formations", path: "/formations" },
+  { icon: User, label: "Mon compte", path: "/account" },
 ];
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-background">
