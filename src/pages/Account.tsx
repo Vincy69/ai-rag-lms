@@ -14,35 +14,48 @@ export default function Account() {
 
   useEffect(() => {
     async function getProfile() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        navigate("/login");
-        return;
-      }
-      
-      setEmail(user.email);
-      
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .single();
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          navigate("/login");
+          return;
+        }
         
-      if (profile) {
-        setRole(profile.role);
+        setEmail(user.email);
+
+        // Get user role from auth metadata instead of profiles table
+        const userRole = user.user_metadata?.role || 'user';
+        setRole(userRole);
+
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load profile information",
+          variant: "destructive",
+        });
       }
     }
     
     getProfile();
-  }, [navigate]);
+  }, [navigate, toast]);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    toast({
-      title: "Déconnexion réussie",
-      description: "Vous avez été déconnecté avec succès",
-    });
-    navigate("/login");
+    try {
+      await supabase.auth.signOut();
+      toast({
+        title: "Déconnexion réussie",
+        description: "Vous avez été déconnecté avec succès",
+      });
+      navigate("/login");
+    } catch (error) {
+      console.error('Error during logout:', error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la déconnexion",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
