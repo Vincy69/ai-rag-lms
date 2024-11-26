@@ -10,13 +10,26 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 3) {
   for (let i = 0; i < retries; i++) {
     try {
       const response = await fetch(url, options);
-      if (response.ok) return response;
+      if (!response.ok) {
+        console.error(`Attempt ${i + 1} failed:`, {
+          status: response.status,
+          statusText: response.statusText,
+          body: await response.text()
+        });
+        continue;
+      }
       
-      console.error(`Attempt ${i + 1} failed:`, {
-        status: response.status,
-        statusText: response.statusText,
-        body: await response.text()
-      });
+      const data = await response.json();
+      console.log('n8n response:', data);
+      
+      // Validate response format
+      if (!data || (typeof data.response !== 'string' && typeof data.message !== 'string')) {
+        throw new Error('Invalid response format from n8n. Expected response or message property.');
+      }
+      
+      return {
+        response: data.response || data.message // Handle both possible response formats
+      };
     } catch (error) {
       console.error(`Attempt ${i + 1} failed with error:`, error);
       if (i === retries - 1) throw error;
@@ -49,7 +62,7 @@ serve(async (req) => {
     const n8nUrl = 'https://elephorm.app.n8n.cloud/webhook/fa2836ec-b77c-49aa-8ed0-bf5dac24da66/chat'
     
     // Send message to n8n chat trigger with retry logic
-    const response = await fetchWithRetry(n8nUrl, {
+    const data = await fetchWithRetry(n8nUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -57,16 +70,10 @@ serve(async (req) => {
       body: JSON.stringify(requestBody)
     });
 
-    const data = await response.json()
-    console.log('n8n response:', data)
-
-    // Ensure we have a response from n8n
-    if (!data || !data.response) {
-      throw new Error('Invalid response format from n8n')
-    }
+    console.log('Processed n8n response:', data);
 
     return new Response(
-      JSON.stringify({ response: data.response }),
+      JSON.stringify(data),
       { 
         headers: { 
           ...corsHeaders, 
@@ -77,7 +84,6 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error:', error)
     
-    // Return a more detailed error response
     return new Response(
       JSON.stringify({ 
         error: error.message,
