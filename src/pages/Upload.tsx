@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
+import { Progress } from "@/components/ui/progress";
 import { UploadZone } from "@/components/upload/UploadZone";
 import { FileList } from "@/components/upload/FileList";
 import { UploadedFile } from "@/types/upload";
@@ -10,7 +12,10 @@ import { supabase } from "@/integrations/supabase/client";
 export default function UploadPage() {
   const [dragActive, setDragActive] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const validateFile = (file: File) => {
     const acceptedTypes = [
@@ -64,14 +69,19 @@ export default function UploadPage() {
       return;
     }
 
+    setIsUploading(true);
+    setUploadProgress(0);
+
     try {
       toast({
         title: "Upload en cours",
         description: "Vos documents sont en cours de traitement...",
       });
 
+      const totalFiles = uploadedFiles.length;
+      let processedFiles = 0;
+
       for (const uploadedFile of uploadedFiles) {
-        // Create a blob from the file to ensure proper data transfer
         const blob = new Blob([await uploadedFile.file.arrayBuffer()], { 
           type: uploadedFile.file.type 
         });
@@ -82,7 +92,6 @@ export default function UploadPage() {
               name: uploadedFile.file.name,
               type: uploadedFile.file.type,
               size: uploadedFile.file.size,
-              // Convert blob to base64 for transmission
               data: await new Promise<string>((resolve) => {
                 const reader = new FileReader();
                 reader.onloadend = () => resolve(reader.result as string);
@@ -96,6 +105,9 @@ export default function UploadPage() {
         if (error) {
           throw new Error(`Erreur lors du traitement de ${uploadedFile.file.name}`);
         }
+
+        processedFiles++;
+        setUploadProgress((processedFiles / totalFiles) * 100);
       }
 
       toast({
@@ -103,13 +115,18 @@ export default function UploadPage() {
         description: "Vos documents ont été uploadés et traités avec succès.",
       });
       
-      setUploadedFiles([]);
+      // Redirect to documents page after successful upload
+      navigate("/documents");
     } catch (error) {
       toast({
         title: "Erreur lors de l'upload",
         description: error instanceof Error ? error.message : "Une erreur est survenue lors de l'upload des documents.",
         variant: "destructive",
       });
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(0);
+      setUploadedFiles([]);
     }
   };
 
@@ -135,8 +152,20 @@ export default function UploadPage() {
               onRemoveFile={removeFile}
               onUpdateCategory={updateFileCategory}
             />
-            <Button onClick={handleUpload} className="w-full">
-              Uploader les documents
+            {isUploading && (
+              <div className="space-y-2">
+                <Progress value={uploadProgress} className="w-full" />
+                <p className="text-sm text-muted-foreground text-center">
+                  Upload en cours... {Math.round(uploadProgress)}%
+                </p>
+              </div>
+            )}
+            <Button 
+              onClick={handleUpload} 
+              className="w-full"
+              disabled={isUploading}
+            >
+              {isUploading ? "Upload en cours..." : "Uploader les documents"}
             </Button>
           </div>
         )}
