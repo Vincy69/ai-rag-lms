@@ -7,7 +7,6 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -42,7 +41,7 @@ serve(async (req) => {
     console.log('Uploading file:', file.name, 'to path:', filePath)
 
     // Upload file to Storage
-    const { data: storageData, error: uploadError } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from('documents')
       .upload(filePath, blob, {
         contentType: file.type,
@@ -54,20 +53,16 @@ serve(async (req) => {
       throw uploadError
     }
 
-    console.log('File uploaded successfully')
-
-    // Get text content for vectorization
+    // Extract text content for vectorization
     let textContent = ''
     if (file.type === 'application/pdf') {
-      // TODO: Extract text from PDF
+      // TODO: Extract text from PDF using PDF.js or similar
       textContent = 'PDF content extraction to be implemented'
     } else if (file.type === 'text/plain') {
       textContent = await blob.text()
     } else {
-      textContent = file.name // Fallback to filename if content can't be extracted
+      textContent = `${file.name} - Document content extraction not implemented for this type`
     }
-
-    console.log('Generating embedding for text content')
 
     // Generate embedding using OpenAI
     const openAIResponse = await fetch('https://api.openai.com/v1/embeddings', {
@@ -77,7 +72,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        input: textContent,
+        input: textContent.slice(0, 8000), // OpenAI has a token limit
         model: "text-embedding-ada-002"
       })
     })
@@ -90,8 +85,6 @@ serve(async (req) => {
 
     const embedData = await openAIResponse.json()
     const embedding = embedData.data[0].embedding
-
-    console.log('Saving document metadata to database')
 
     // Save document metadata and embedding to database
     const { error: dbError } = await supabase
@@ -111,7 +104,11 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ message: 'Document processed successfully', filePath }),
+      JSON.stringify({ 
+        message: 'Document processed successfully', 
+        filePath,
+        embedding: embedding.slice(0, 5) // Return first 5 dimensions for debugging
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
