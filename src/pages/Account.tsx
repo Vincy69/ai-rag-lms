@@ -27,7 +27,7 @@ export default function Account() {
         const { user } = session;
         setEmail(user.email);
 
-        // Get user role from profiles table
+        // Get user role from profiles table using the authenticated client
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('role')
