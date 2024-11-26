@@ -36,7 +36,7 @@ export default function Account() {
           throw profileError;
         }
 
-        setRole(profile?.role || 'user');
+        setRole(profile?.role || null);
 
       } catch (error) {
         console.error('Error fetching profile:', error);
