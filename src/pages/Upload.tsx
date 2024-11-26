@@ -5,6 +5,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { UploadZone } from "@/components/upload/UploadZone";
 import { FileList } from "@/components/upload/FileList";
 import { UploadedFile } from "@/types/upload";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function UploadPage() {
   const [dragActive, setDragActive] = useState(false);
@@ -74,12 +75,11 @@ export default function UploadPage() {
         formData.append('file', uploadedFile.file);
         formData.append('category', uploadedFile.category);
 
-        const response = await fetch('/functions/process-document', {
-          method: 'POST',
+        const { data, error } = await supabase.functions.invoke('process-document', {
           body: formData,
         });
 
-        if (!response.ok) {
+        if (error) {
           throw new Error(`Erreur lors du traitement de ${uploadedFile.file.name}`);
         }
       }
