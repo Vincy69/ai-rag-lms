@@ -4,10 +4,11 @@ import { HistoryFilters } from "@/components/history/HistoryFilters";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { ChatHistory } from "@/types/chat";
+import { DateRange } from "react-day-picker";
 
 export default function History() {
-  const [dateRange, setDateRange] = useState<[Date | undefined, Date | undefined]>([undefined, undefined]);
-  const [scoreFilter, setScoreFilter] = useState<number | null>(null);
+  const [dateRange, setDateRange] = useState<DateRange>();
+  const [scoreFilter, setScoreFilter] = useState("all");
   const { toast } = useToast();
 
   // Mock data - à remplacer par les vraies données de l'API

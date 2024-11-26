@@ -1,11 +1,12 @@
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DateRange } from "react-day-picker";
 
 interface HistoryFiltersProps {
-  dateRange: [Date | undefined, Date | undefined];
-  onDateRangeChange: (range: [Date | undefined, Date | undefined]) => void;
-  scoreFilter: number | null;
-  onScoreFilterChange: (score: number | null) => void;
+  dateRange: DateRange | undefined;
+  onDateRangeChange: (range: DateRange | undefined) => void;
+  scoreFilter: string;
+  onScoreFilterChange: (score: string) => void;
 }
 
 export function HistoryFilters({
@@ -22,14 +23,14 @@ export function HistoryFilters({
         placeholder="Sélectionner une période"
       />
       <Select
-        value={scoreFilter?.toString() || ""}
-        onValueChange={(value) => onScoreFilterChange(value ? Number(value) : null)}
+        value={scoreFilter}
+        onValueChange={onScoreFilterChange}
       >
         <SelectTrigger className="w-[200px]">
           <SelectValue placeholder="Score minimum" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">Tous les scores</SelectItem>
+          <SelectItem value="all">Tous les scores</SelectItem>
           <SelectItem value="0.7">70% et plus</SelectItem>
           <SelectItem value="0.8">80% et plus</SelectItem>
           <SelectItem value="0.9">90% et plus</SelectItem>
