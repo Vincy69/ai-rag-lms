@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, User } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 
@@ -23,19 +23,31 @@ export function Header() {
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center space-x-6">
-          {menuItems.map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={`text-sm transition-colors hover:text-primary ${
-                location.pathname === item.path ? "text-primary" : "text-muted-foreground"
-              }`}
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+        <div className="hidden md:flex items-center space-x-6">
+          <nav className="flex items-center space-x-6">
+            {menuItems.map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`text-sm transition-colors hover:text-primary ${
+                  location.pathname === item.path ? "text-primary" : "text-muted-foreground"
+                }`}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+          
+          <Link
+            to="/account"
+            className={`flex items-center space-x-2 text-sm transition-colors hover:text-primary ${
+              location.pathname === "/account" ? "text-primary" : "text-muted-foreground"
+            }`}
+          >
+            <User className="h-4 w-4" />
+            <span>Mon compte</span>
+          </Link>
+        </div>
 
         {/* Mobile Menu Button */}
         <Button
@@ -67,6 +79,16 @@ export function Header() {
                   {item.label}
                 </Link>
               ))}
+              <Link
+                to="/account"
+                className={`flex items-center space-x-2 text-sm transition-colors hover:text-primary ${
+                  location.pathname === "/account" ? "text-primary" : "text-muted-foreground"
+                }`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <User className="h-4 w-4" />
+                <span>Mon compte</span>
+              </Link>
             </nav>
           </div>
         )}

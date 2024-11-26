@@ -3,12 +3,12 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
 import Chat from "@/pages/Chat";
 import Documents from "@/pages/Documents";
 import Upload from "@/pages/Upload";
 import History from "@/pages/History";
 import Formations from "@/pages/Formations";
+import Account from "@/pages/Account";
 import Login from "@/pages/Login";
 import "./App.css";
 
@@ -91,6 +91,14 @@ function App() {
             element={
               <PrivateRoute>
                 <Formations />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/account"
+            element={
+              <PrivateRoute>
+                <Account />
               </PrivateRoute>
             }
           />
