@@ -32,10 +32,10 @@ export function FileList({ files, onRemoveFile, onUpdateCategory }: FileListProp
                   <SelectValue placeholder="Sélectionner une catégorie" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="documentation">Documentation technique</SelectItem>
-                  <SelectItem value="procedures">Procédures internes</SelectItem>
-                  <SelectItem value="reports">Rapports</SelectItem>
-                  <SelectItem value="other">Autres</SelectItem>
+                  <SelectItem value="Documentation technique">Documentation technique</SelectItem>
+                  <SelectItem value="Procédures internes">Procédures internes</SelectItem>
+                  <SelectItem value="Rapports">Rapports</SelectItem>
+                  <SelectItem value="Autres">Autres</SelectItem>
                 </SelectContent>
               </Select>
               <Button
