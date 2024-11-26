@@ -37,28 +37,13 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 3) {
         throw new Error(`n8n workflow error: ${JSON.stringify(data)}`);
       }
 
-      // Handle the specific n8n response format where output is in data[0].output
-      if (Array.isArray(data) && data[0]?.output) {
+      // Handle array format with output property
+      if (Array.isArray(data) && data.length > 0 && data[0].output) {
+        console.log('Found output in array format:', data[0].output);
         return { response: data[0].output };
       }
 
-      // Fallback handlers for other potential formats
-      if (data.data && typeof data.data === 'string') {
-        return { response: data.data };
-      }
-      
-      if (data.result && data.result.response) {
-        return { response: data.result.response };
-      }
-
-      if (data.response) {
-        return { response: data.response };
-      }
-
-      if (data.message) {
-        return { response: data.message };
-      }
-
+      // If we get here, the response format is unexpected
       console.log('Unexpected response format:', data);
       throw new Error('Format de réponse inattendu de n8n');
     } catch (error) {
