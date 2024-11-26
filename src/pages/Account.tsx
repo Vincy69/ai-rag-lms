@@ -23,9 +23,18 @@ export default function Account() {
         
         setEmail(user.email);
 
-        // Get user role from auth metadata instead of profiles table
-        const userRole = user.user_metadata?.role || 'user';
-        setRole(userRole);
+        // Get user role from profiles table
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+
+        if (profileError) {
+          throw profileError;
+        }
+
+        setRole(profile?.role || 'user');
 
       } catch (error) {
         console.error('Error fetching profile:', error);
