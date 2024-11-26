@@ -21,25 +21,20 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 3) {
       const response = await fetch(url, options);
       console.log(`n8n response status: ${response.status}`);
       
-      // Log the raw response for debugging
       const rawResponse = await response.text();
       console.log('Raw n8n response:', rawResponse);
       
-      // Try to parse the response as JSON
       let data;
       try {
         data = JSON.parse(rawResponse);
-      } catch (e) {
-        console.error('Failed to parse response as JSON:', e);
-        throw new Error(`Invalid JSON response: ${rawResponse}`);
+      } catch {
+        // If the response is not JSON, use it as a plain text response
+        return { response: rawResponse };
       }
       
       if (!response.ok) {
-        console.error(`n8n error response (${response.status}):`, data);
-        throw new Error(`HTTP error! status: ${response.status}, body: ${JSON.stringify(data)}`);
+        throw new Error(`n8n workflow error: ${JSON.stringify(data)}`);
       }
-      
-      console.log('n8n parsed response:', data);
       
       // Handle different possible response formats from n8n
       if (typeof data === 'string') {
@@ -55,11 +50,10 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 3) {
       } else if (data.text) {
         return { response: data.text };
       } else {
-        console.error('Unexpected n8n response format:', data);
-        throw new Error(`Unexpected response format from n8n: ${JSON.stringify(data)}`);
+        return { response: "I couldn't process your request. Please try again." };
       }
     } catch (error) {
-      console.error(`Attempt ${i + 1} failed with error:`, error);
+      console.error(`Attempt ${i + 1} failed:`, error);
       lastError = error;
       
       if (i < retries - 1) {
@@ -70,7 +64,7 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 3) {
     }
   }
   
-  throw new Error(`Failed after ${retries} attempts. Last error: ${lastError?.message}`);
+  throw new Error(`Failed to get a valid response from n8n after ${retries} attempts. Last error: ${lastError?.message}`);
 }
 
 serve(async (req) => {
@@ -127,11 +121,10 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error:', error)
     
-    // Return a more detailed error response
     return new Response(
       JSON.stringify({ 
-        error: error.message,
-        details: error.stack,
+        error: "An error occurred while processing your request. Please try again.",
+        details: error.message,
         timestamp: new Date().toISOString()
       }),
       { 
