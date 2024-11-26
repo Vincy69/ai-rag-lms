@@ -66,12 +66,12 @@ export function ViewDocumentDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl h-[80vh]">
+      <DialogContent className="max-w-4xl h-[80vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>{document?.name}</DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 overflow-auto">
+        <div className="flex-1 overflow-hidden">
           {loading ? (
             <div className="flex items-center justify-center h-full">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -79,11 +79,12 @@ export function ViewDocumentDialog({
           ) : document?.content_type === "application/pdf" ? (
             <iframe
               src={content || ""}
-              className="w-full h-full"
+              className="w-full h-full border-0"
+              style={{ minHeight: "calc(80vh - 4rem)" }}
               title={document.name}
             />
           ) : (
-            <pre className="whitespace-pre-wrap font-mono text-sm p-4">
+            <pre className="whitespace-pre-wrap font-mono text-sm p-4 h-full overflow-auto">
               {content}
             </pre>
           )}
