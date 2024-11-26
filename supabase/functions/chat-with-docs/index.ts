@@ -6,6 +6,27 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+async function fetchWithRetry(url: string, options: RequestInit, retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const response = await fetch(url, options);
+      if (response.ok) return response;
+      
+      console.error(`Attempt ${i + 1} failed:`, {
+        status: response.status,
+        statusText: response.statusText,
+        body: await response.text()
+      });
+    } catch (error) {
+      console.error(`Attempt ${i + 1} failed with error:`, error);
+      if (i === retries - 1) throw error;
+    }
+    // Wait before retrying (exponential backoff)
+    await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+  }
+  throw new Error(`Failed after ${retries} attempts`);
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
@@ -24,27 +45,17 @@ serve(async (req) => {
     
     console.log('Sending request to n8n:', requestBody)
 
-    // Updated n8n webhook URL - make sure this matches your n8n webhook URL
+    // Updated n8n webhook URL with HTTPS
     const n8nUrl = 'https://n8n.elephorm.app/webhook/fa2836ec-b77c-49aa-8ed0-bf5dac24da66/chat'
     
-    // Send message to n8n chat trigger with better error handling
-    const response = await fetch(n8nUrl, {
+    // Send message to n8n chat trigger with retry logic
+    const response = await fetchWithRetry(n8nUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(requestBody)
-    })
-
-    if (!response.ok) {
-      console.error('n8n response not ok:', {
-        status: response.status,
-        statusText: response.statusText,
-        url: n8nUrl,
-        body: await response.text()
-      })
-      throw new Error(`n8n returned status ${response.status}: ${response.statusText}`)
-    }
+    });
 
     const data = await response.json()
     console.log('n8n response:', data)
