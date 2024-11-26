@@ -8,9 +8,9 @@ export function Header() {
   const location = useLocation();
 
   const menuItems = [
+    { label: "Chat", path: "/chat" },
     { label: "Upload", path: "/upload" },
     { label: "Documents", path: "/documents" },
-    { label: "Chat", path: "/chat" },
     { label: "Historique", path: "/history" },
   ];
 

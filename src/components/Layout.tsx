@@ -1,15 +1,14 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Upload, MessageSquare, Files, History, Settings } from "lucide-react";
+import { MessageSquare, Upload, Files, History } from "lucide-react";
 import { Header } from "./Header";
 
 const navItems = [
+  { icon: MessageSquare, label: "Chat", path: "/chat" },
   { icon: Upload, label: "Upload", path: "/upload" },
   { icon: Files, label: "Documents", path: "/documents" },
-  { icon: MessageSquare, label: "Chat", path: "/chat" },
   { icon: History, label: "Historique", path: "/history" },
-  { icon: Settings, label: "Paramètres", path: "/settings" },
 ];
 
 export default function Layout({ children }: { children: React.ReactNode }) {

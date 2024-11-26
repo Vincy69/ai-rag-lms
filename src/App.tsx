@@ -1,7 +1,6 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
-import Index from "@/pages/Index";
 import Chat from "@/pages/Chat";
 import Documents from "@/pages/Documents";
 import Upload from "@/pages/Upload";
@@ -15,7 +14,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <Router>
         <Routes>
-          <Route path="/" element={<Index />} />
+          <Route path="/" element={<Navigate to="/chat" replace />} />
           <Route path="/chat" element={<Chat />} />
           <Route path="/documents" element={<Documents />} />
           <Route path="/upload" element={<Upload />} />
