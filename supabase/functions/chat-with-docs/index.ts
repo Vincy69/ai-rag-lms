@@ -21,12 +21,6 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 3) {
       const response = await fetch(url, options);
       console.log(`n8n response status: ${response.status}`);
       
-      // Check if response is HTML (indicating n8n error page)
-      const contentType = response.headers.get('content-type');
-      if (contentType && contentType.includes('text/html')) {
-        throw new Error('n8n server returned HTML instead of JSON. The server might be down.');
-      }
-
       const rawResponse = await response.text();
       console.log('Raw n8n response:', rawResponse);
       
@@ -35,47 +29,40 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 3) {
         data = JSON.parse(rawResponse);
         console.log('Parsed n8n response:', data);
       } catch (e) {
-        console.log('Response is not JSON:', e);
-        throw new Error(`Invalid response from n8n: ${rawResponse.slice(0, 100)}...`);
+        console.error('Failed to parse JSON response:', e);
+        throw new Error(`Invalid JSON response from n8n: ${rawResponse.slice(0, 100)}...`);
       }
       
       if (!response.ok) {
-        throw new Error(`n8n workflow error: ${JSON.stringify(data)}`);
+        throw new Error(`n8n error: ${JSON.stringify(data)}`);
       }
 
-      // Try to extract the response and confidence score from various possible formats
-      if (Array.isArray(data)) {
-        console.log('Response is an array');
-        if (data.length > 0) {
-          if (data[0].output && data[0].confidence) {
-            console.log('Found output and confidence in array[0]:', data[0]);
-            return { 
-              response: data[0].output,
-              confidence: parseFloat(data[0].confidence) || 0.8
-            };
-          }
-          if (typeof data[0] === 'string') {
-            console.log('Found string in array[0]:', data[0]);
-            return { response: data[0], confidence: 0.8 };
-          }
-        }
-      }
-
+      // Normalize the response format
       if (typeof data === 'string') {
-        console.log('Response is a string:', data);
         return { response: data, confidence: 0.8 };
       }
 
+      if (Array.isArray(data) && data.length > 0) {
+        const firstItem = data[0];
+        if (typeof firstItem === 'string') {
+          return { response: firstItem, confidence: 0.8 };
+        }
+        if (firstItem.output) {
+          return { 
+            response: firstItem.output,
+            confidence: firstItem.confidence || 0.8
+          };
+        }
+      }
+
       if (data.output) {
-        console.log('Found output property:', data.output);
         return { 
           response: data.output,
-          confidence: parseFloat(data.confidence) || 0.8
+          confidence: data.confidence || 0.8
         };
       }
 
-      console.log('Unexpected response structure. Full response:', JSON.stringify(data, null, 2));
-      throw new Error('Format de réponse inattendu de n8n');
+      throw new Error(`Unexpected response format from n8n: ${JSON.stringify(data)}`);
     } catch (error) {
       console.error(`Attempt ${i + 1} failed:`, error);
       lastError = error;
@@ -88,7 +75,7 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 3) {
     }
   }
   
-  throw lastError || new Error('Échec inattendu de la communication avec n8n');
+  throw lastError || new Error('Failed to communicate with n8n');
 }
 
 serve(async (req) => {
@@ -144,7 +131,6 @@ serve(async (req) => {
     
     console.log('Sending request to n8n:', requestBody)
 
-    // Fixed the URL by removing the colon after the domain
     const n8nUrl = 'https://elephorm.app.n8n.cloud/webhook/a7cc35a6-3fdf-4e2e-859a-5c16a15f0b99/chat'
     
     const data = await fetchWithRetry(n8nUrl, {
@@ -157,13 +143,17 @@ serve(async (req) => {
 
     console.log('Processed n8n response:', data);
 
+    // Get the authenticated user
+    const { data: { user } } = await supabase.auth.getUser();
+
     // Save the chat interaction with the confidence score to the database
     const { error: insertError } = await supabase
       .from('chat_history')
       .insert({
         question: message,
         answer: data.response,
-        score: data.confidence
+        score: data.confidence,
+        user_id: user?.id
       });
 
     if (insertError) {
