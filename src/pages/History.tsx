@@ -1,34 +1,59 @@
 import Layout from "@/components/Layout";
 import { HistoryList } from "@/components/history/HistoryList";
 import { HistoryFilters } from "@/components/history/HistoryFilters";
+import { UserSelector } from "@/components/history/UserSelector";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
-import { ChatHistory } from "@/types/chat";
 import { DateRange } from "react-day-picker";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { startOfDay, endOfDay } from "date-fns";
 
 export default function History() {
   const [dateRange, setDateRange] = useState<DateRange>();
   const [scoreFilter, setScoreFilter] = useState("all");
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Fetch current user's role
+  const { data: currentUserRole } = useQuery({
+    queryKey: ["currentUserRole"],
+    queryFn: async () => {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error) throw error;
+
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user?.id)
+        .single();
+
+      if (profileError) throw profileError;
+      return profile.role;
+    },
+  });
+
   // Fetch chat history
   const { data: historyItems = [], isLoading } = useQuery({
-    queryKey: ["chat-history", dateRange, scoreFilter],
+    queryKey: ["chat-history", dateRange, scoreFilter, selectedUserId],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
       let query = supabase
         .from("chat_history")
         .select("*")
         .order("created_at", { ascending: false });
 
+      // Apply user filtering based on role and selection
+      if (currentUserRole !== "admin" || (currentUserRole === "admin" && selectedUserId)) {
+        query = query.eq("user_id", selectedUserId || user?.id);
+      }
+
       if (dateRange?.from) {
-        query = query.gte("created_at", startOfDay(dateRange.from).toISOString());
+        query = query.gte("created_at", dateRange.from.toISOString());
       }
       if (dateRange?.to) {
-        query = query.lte("created_at", endOfDay(dateRange.to).toISOString());
+        query = query.lte("created_at", dateRange.to.toISOString());
       }
 
       if (scoreFilter !== "all") {
@@ -49,14 +74,13 @@ export default function History() {
       return data.map(item => ({
         ...item,
         timestamp: new Date(item.created_at),
-      })) as ChatHistory[];
+      }));
     },
   });
 
-  // Update feedback mutation with embedding generation
+  // Update feedback mutation
   const updateFeedback = useMutation({
     mutationFn: async ({ id, feedback }: { id: string; feedback: string }) => {
-      // First, generate the embedding for the feedback
       const response = await fetch('/functions/v1/generate-embedding', {
         method: 'POST',
         headers: {
@@ -72,7 +96,6 @@ export default function History() {
 
       const { embedding } = await response.json();
 
-      // Then, update the chat history with both feedback and its embedding
       const { error } = await supabase
         .from("chat_history")
         .update({ 
@@ -109,12 +132,21 @@ export default function History() {
           </p>
         </div>
 
-        <HistoryFilters
-          dateRange={dateRange}
-          onDateRangeChange={setDateRange}
-          scoreFilter={scoreFilter}
-          onScoreFilterChange={setScoreFilter}
-        />
+        <div className="flex flex-col gap-4">
+          {currentUserRole === "admin" && (
+            <UserSelector
+              selectedUserId={selectedUserId}
+              onUserChange={setSelectedUserId}
+            />
+          )}
+          
+          <HistoryFilters
+            dateRange={dateRange}
+            onDateRangeChange={setDateRange}
+            scoreFilter={scoreFilter}
+            onScoreFilterChange={setScoreFilter}
+          />
+        </div>
 
         {isLoading ? (
           <div className="text-center text-muted-foreground">
