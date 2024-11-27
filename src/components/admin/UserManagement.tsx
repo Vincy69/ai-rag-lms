@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabaseAdmin } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import {
   Table,
@@ -35,19 +35,27 @@ export function UserManagement() {
 
   const loadUsers = async () => {
     try {
-      const { data: profiles, error: profilesError } = await supabase
+      const { data: profiles, error: profilesError } = await supabaseAdmin
         .from("profiles")
         .select("*");
 
       if (profilesError) throw profilesError;
 
-      // Since we can't access admin APIs, we'll just use the profiles data
-      const mergedUsers = profiles.map(profile => ({
-        id: profile.id,
-        email: profile.id, // We'll use the ID as a fallback since we can't get the email
-        role: profile.role as UserRole,
-        created_at: profile.created_at,
-      }));
+      // Get all users from profiles and fetch their emails from auth metadata
+      const { data: { users }, error: usersError } = await supabaseAdmin.auth.admin.listUsers();
+      
+      if (usersError) throw usersError;
+
+      // Merge profiles with user data
+      const mergedUsers = profiles.map(profile => {
+        const user = users.find(u => u.id === profile.id);
+        return {
+          id: profile.id,
+          email: user?.email || profile.id,
+          role: profile.role as UserRole,
+          created_at: profile.created_at,
+        };
+      });
 
       setUsers(mergedUsers);
     } catch (error) {
