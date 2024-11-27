@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UserDialog } from "./UserDialog";
 import { UserEnrollments } from "./UserEnrollments";
 import { UserHistory } from "./UserHistory";
+import { UserEnrollmentManager } from "./UserEnrollmentManager";
 import { UsersTable } from "./UsersTable";
 import { useUsers } from "@/hooks/useUsers";
 import type { User } from "@/hooks/useUsers";
@@ -14,6 +15,7 @@ export function UserManagement() {
   const [dialogType, setDialogType] = useState<"edit" | "create" | null>(null);
   const [showEnrollments, setShowEnrollments] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [showEnrollmentManager, setShowEnrollmentManager] = useState(false);
 
   if (isLoading) {
     return (
@@ -31,6 +33,7 @@ export function UserManagement() {
           setSelectedUser(null);
           setDialogType("create");
         }}>
+          <UserPlus className="h-4 w-4 mr-2" />
           Créer un utilisateur
         </Button>
       </div>
@@ -48,6 +51,10 @@ export function UserManagement() {
         onShowHistory={(user) => {
           setSelectedUser(user);
           setShowHistory(true);
+        }}
+        onManageEnrollments={(user) => {
+          setSelectedUser(user);
+          setShowEnrollmentManager(true);
         }}
       />
 
@@ -78,6 +85,12 @@ export function UserManagement() {
         user={selectedUser}
         open={showHistory}
         onOpenChange={setShowHistory}
+      />
+
+      <UserEnrollmentManager
+        user={selectedUser}
+        open={showEnrollmentManager}
+        onOpenChange={setShowEnrollmentManager}
       />
     </div>
   );

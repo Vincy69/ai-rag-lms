@@ -14,13 +14,15 @@ interface UsersTableProps {
   onEdit: (user: User) => void;
   onShowEnrollments: (user: User) => void;
   onShowHistory: (user: User) => void;
+  onManageEnrollments: (user: User) => void;
 }
 
 export function UsersTable({ 
   users, 
   onEdit, 
   onShowEnrollments, 
-  onShowHistory 
+  onShowHistory,
+  onManageEnrollments
 }: UsersTableProps) {
   return (
     <Table>
@@ -55,6 +57,13 @@ export function UsersTable({
                   onClick={() => onShowEnrollments(user)}
                 >
                   Inscriptions
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onManageEnrollments(user)}
+                >
+                  Gérer inscriptions
                 </Button>
                 <Button
                   variant="outline"
