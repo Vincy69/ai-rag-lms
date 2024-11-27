@@ -112,10 +112,10 @@ export type Database = {
           category: string
           content_type: string
           created_at: string | null
-          embedding: string | null
           file_path: string
           id: string
           name: string
+          pinecone_id: string | null
           size: number
           updated_at: string | null
         }
@@ -123,10 +123,10 @@ export type Database = {
           category: string
           content_type: string
           created_at?: string | null
-          embedding?: string | null
           file_path: string
           id?: string
           name: string
+          pinecone_id?: string | null
           size: number
           updated_at?: string | null
         }
@@ -134,10 +134,10 @@ export type Database = {
           category?: string
           content_type?: string
           created_at?: string | null
-          embedding?: string | null
           file_path?: string
           id?: string
           name?: string
+          pinecone_id?: string | null
           size?: number
           updated_at?: string | null
         }

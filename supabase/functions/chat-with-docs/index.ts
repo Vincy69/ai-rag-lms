@@ -1,12 +1,16 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
-import { corsHeaders } from './utils/cors.ts';
-import { callN8nWebhook } from './utils/n8nClient.ts';
-import { generateEmbedding } from './utils/openai.ts';
-import { getUserData, findSimilarFeedback, saveChatInteraction } from './utils/supabase.ts';
+import { PineconeClient } from 'https://esm.sh/@pinecone-database/pinecone@1.1.2'
+import { corsHeaders } from './utils/cors.ts'
+import { callN8nWebhook } from './utils/n8nClient.ts'
+import { generateEmbedding } from './utils/openai.ts'
+import { getUserData, findSimilarFeedback, saveChatInteraction } from './utils/supabase.ts'
+
+const PINECONE_API_KEY = 'pcsk_nv6Gw_BqfSG3WczY3ft9kAofzDAn66khKLLDEp494gXvHD5QLdY4Ak9yK5FCFJMgHT2a4';
+const PINECONE_ENVIRONMENT = 'gcp-starter';
+const PINECONE_INDEX = 'elephorm';
 
 serve(async (req) => {
-  // Always handle CORS preflight requests first
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -23,19 +27,45 @@ serve(async (req) => {
     // Get user data
     const { profile, formations, blocks } = await getUserData(userId);
 
-    // Generate embedding and find similar feedback
+    // Generate embedding for the query
     const embedding = await generateEmbedding(message);
-    const { data: similarFeedback } = await findSimilarFeedback(embedding);
 
+    // Initialize Pinecone client
+    const pinecone = new PineconeClient();
+    await pinecone.init({
+      apiKey: PINECONE_API_KEY,
+      environment: PINECONE_ENVIRONMENT,
+    });
+
+    const index = pinecone.Index(PINECONE_INDEX);
+
+    // Query Pinecone for similar documents
+    const queryResponse = await index.query({
+      queryRequest: {
+        vector: embedding,
+        topK: 5,
+        includeMetadata: true
+      }
+    });
+
+    // Extract relevant context from matched documents
+    const context = queryResponse.matches
+      .map(match => match.metadata?.text || '')
+      .join('\n\n');
+
+    // Find similar feedback
+    const { data: similarFeedback } = await findSimilarFeedback(embedding);
+    
     // Prepare context
     const feedbackContext = similarFeedback?.length > 0
       ? `\nPrevious relevant feedback: ${similarFeedback.map(f => f.feedback).join('. ')}`
       : '';
     
-    // Prepare request body for n8n
+    // Prepare request body for n8n with document context
     const requestBody = {
       sessionId: crypto.randomUUID(),
-      input: message + feedbackContext,
+      input: message,
+      context: context + feedbackContext,
       user: {
         id: userId,
         role: profile.role,

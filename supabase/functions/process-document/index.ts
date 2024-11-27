@@ -1,12 +1,17 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
+import { PineconeClient } from 'https://esm.sh/@pinecone-database/pinecone@1.1.2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const MAX_TEXT_LENGTH = 8000; // OpenAI token limit
+const PINECONE_API_KEY = 'pcsk_nv6Gw_BqfSG3WczY3ft9kAofzDAn66khKLLDEp494gXvHD5QLdY4Ak9yK5FCFJMgHT2a4';
+const PINECONE_ENVIRONMENT = 'gcp-starter';
+const PINECONE_INDEX = 'elephorm';
+
+const MAX_TEXT_LENGTH = 8000;
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -42,14 +47,12 @@ serve(async (req) => {
 
     console.log('Uploading file:', file.name, 'to path:', filePath)
 
-    // Upload file to Storage with smaller chunk size
+    // Upload file to Storage
     const { error: uploadError } = await supabase.storage
       .from('documents')
       .upload(filePath, blob, {
         contentType: file.type,
-        upsert: false,
-        duplex: 'half',
-        chunkSize: 512 * 1024 // 512KB chunks
+        upsert: false
       })
 
     if (uploadError) {
@@ -75,12 +78,12 @@ serve(async (req) => {
     const openAIResponse = await fetch('https://api.openai.com/v1/embeddings', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${Deno.env.get('openai')}`,
+        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         input: textContent,
-        model: "text-embedding-ada-002"
+        model: "text-embedding-3-small"
       })
     })
 
@@ -93,7 +96,32 @@ serve(async (req) => {
     const embedData = await openAIResponse.json()
     const embedding = embedData.data[0].embedding
 
-    // Save document metadata and embedding to database
+    // Initialize Pinecone client
+    const pinecone = new PineconeClient();
+    await pinecone.init({
+      apiKey: PINECONE_API_KEY,
+      environment: PINECONE_ENVIRONMENT,
+    });
+
+    const index = pinecone.Index(PINECONE_INDEX);
+    const pineconeId = crypto.randomUUID();
+
+    // Upsert the embedding to Pinecone
+    await index.upsert({
+      upsertRequest: {
+        vectors: [{
+          id: pineconeId,
+          values: embedding,
+          metadata: {
+            text: textContent,
+            fileName: file.name,
+            fileType: file.type
+          }
+        }]
+      }
+    });
+
+    // Save document metadata to database
     const { error: dbError } = await supabase
       .from('documents')
       .insert({
@@ -102,7 +130,7 @@ serve(async (req) => {
         file_path: filePath,
         content_type: file.type,
         size: file.size,
-        embedding
+        pinecone_id: pineconeId
       })
 
     if (dbError) {
@@ -114,7 +142,7 @@ serve(async (req) => {
       JSON.stringify({ 
         message: 'Document processed successfully', 
         filePath,
-        embedding: embedding.slice(0, 5) // Return first 5 dimensions for debugging
+        pineconeId
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
