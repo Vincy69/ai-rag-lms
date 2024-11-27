@@ -2,9 +2,8 @@ import { useState } from "react";
 import { Loader2, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UserDialog } from "./UserDialog";
-import { UserEnrollments } from "./UserEnrollments";
 import { UserHistory } from "./UserHistory";
-import { UserEnrollmentManager } from "./UserEnrollmentManager";
+import { UserEnrollmentManager } from "./enrollment/UserEnrollmentManager";
 import { UsersTable } from "./UsersTable";
 import { useUsers } from "@/hooks/useUsers";
 import type { User } from "@/hooks/useUsers";
@@ -13,7 +12,6 @@ export function UserManagement() {
   const { users, isLoading, loadUsers } = useUsers();
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [dialogType, setDialogType] = useState<"edit" | "create" | null>(null);
-  const [showEnrollments, setShowEnrollments] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [showEnrollmentManager, setShowEnrollmentManager] = useState(false);
 
@@ -44,10 +42,6 @@ export function UserManagement() {
           setSelectedUser(user);
           setDialogType("edit");
         }}
-        onShowEnrollments={(user) => {
-          setSelectedUser(user);
-          setShowEnrollments(true);
-        }}
         onShowHistory={(user) => {
           setSelectedUser(user);
           setShowHistory(true);
@@ -73,12 +67,6 @@ export function UserManagement() {
           setDialogType(null);
           setSelectedUser(null);
         }}
-      />
-
-      <UserEnrollments
-        user={selectedUser}
-        open={showEnrollments}
-        onOpenChange={setShowEnrollments}
       />
 
       <UserHistory
