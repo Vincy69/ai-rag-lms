@@ -62,8 +62,8 @@ export default function Account() {
         if (profileError) throw profileError;
         if (profileData) setRole(profileData.role as UserRole);
 
-        // Fetch formations with blocks and skills progress
-        const { data: formationData, error: formationError } = await supabase
+        // First, get all formations the user is enrolled in
+        const { data: enrollments, error: enrollmentsError } = await supabase
           .from('formation_enrollments')
           .select(`
             formation_id,
@@ -73,15 +73,26 @@ export default function Account() {
               id,
               name,
               description
-            ),
-            block_enrollments!inner (
-              id,
-              status,
-              progress,
-              skill_block:skill_blocks (
+            )
+          `)
+          .eq('user_id', session.user.id);
+
+        if (enrollmentsError) throw enrollmentsError;
+
+        // For each formation, get the blocks and their progress
+        const formationsWithProgress = await Promise.all(
+          enrollments.map(async (enrollment) => {
+            // Get blocks for this formation
+            const { data: blocks, error: blocksError } = await supabase
+              .from('skill_blocks')
+              .select(`
                 id,
                 name,
                 description,
+                block_enrollments!inner (
+                  status,
+                  progress
+                ),
                 skills (
                   id,
                   name,
@@ -91,37 +102,37 @@ export default function Account() {
                     attempts
                   )
                 )
-              )
-            )
-          `)
-          .eq('user_id', session.user.id);
+              `)
+              .eq('formation_id', enrollment.formation_id)
+              .eq('block_enrollments.user_id', session.user.id);
 
-        if (formationError) throw formationError;
+            if (blocksError) throw blocksError;
 
-        // Transform the data to match our component structure
-        const transformedFormations = formationData.map(enrollment => ({
-          id: enrollment.formation_id,
-          name: enrollment.formations?.name || '',
-          description: enrollment.formations?.description,
-          status: enrollment.status,
-          progress: enrollment.progress,
-          blocks: enrollment.block_enrollments.map(blockEnrollment => ({
-            id: blockEnrollment.id,
-            name: blockEnrollment.skill_block?.name || '',
-            description: blockEnrollment.skill_block?.description,
-            status: blockEnrollment.status,
-            progress: blockEnrollment.progress,
-            skills: blockEnrollment.skill_block?.skills.map(skill => ({
-              id: skill.id,
-              name: skill.name,
-              level: skill.skill_progress[0]?.level,
-              score: skill.skill_progress[0]?.score,
-              attempts: skill.skill_progress[0]?.attempts,
-            })) || [],
-          })),
-        }));
+            return {
+              id: enrollment.formation_id,
+              name: enrollment.formations?.name || '',
+              description: enrollment.formations?.description,
+              status: enrollment.status,
+              progress: enrollment.progress,
+              blocks: blocks.map(block => ({
+                id: block.id,
+                name: block.name,
+                description: block.description,
+                status: block.block_enrollments[0]?.status || 'not_started',
+                progress: block.block_enrollments[0]?.progress || 0,
+                skills: block.skills.map(skill => ({
+                  id: skill.id,
+                  name: skill.name,
+                  level: skill.skill_progress[0]?.level || null,
+                  score: skill.skill_progress[0]?.score || null,
+                  attempts: skill.skill_progress[0]?.attempts || null,
+                })),
+              })),
+            };
+          })
+        );
 
-        setFormations(transformedFormations);
+        setFormations(formationsWithProgress);
 
       } catch (error) {
         console.error('Error fetching profile:', error);
