@@ -26,7 +26,7 @@ serve(async (req) => {
     // Generate embedding for the query
     const embedding = await generateEmbedding(message);
 
-    // Initialize Pinecone client with proper error handling and direct host URL
+    // Initialize Pinecone client
     const pineconeApiKey = Deno.env.get('PINECONE_API_KEY');
     if (!pineconeApiKey) {
       console.error('PINECONE_API_KEY is not set');
@@ -36,7 +36,7 @@ serve(async (req) => {
     console.log('Initializing Pinecone client...');
     const pinecone = new Pinecone({
       apiKey: pineconeApiKey,
-      host: 'https://cours-nzobyk1.svc.aped-4627-b74a.pinecone.io'
+      environment: 'aped-4627-b74a'
     });
 
     // Get Pinecone index
