@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 import Chat from "@/pages/Chat";
 import Documents from "@/pages/Documents";
 import Upload from "@/pages/Upload";
@@ -16,18 +17,40 @@ const queryClient = new QueryClient();
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<boolean | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Initial session check
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.error('Error checking session:', error);
+        toast({
+          title: "Session Error",
+          description: "Please try logging in again",
+          variant: "destructive",
+        });
+      }
       setSession(!!session);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event);
       setSession(!!session);
+      
+      if (event === 'SIGNED_OUT') {
+        // Clear any stored session data
+        await supabase.auth.signOut();
+        setSession(false);
+      }
     });
 
-    return () => subscription.unsubscribe();
-  }, []);
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [toast]);
 
   if (session === null) {
     return (
