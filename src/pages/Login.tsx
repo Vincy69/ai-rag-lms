@@ -87,16 +87,6 @@ export default function Login() {
           }}
           providers={[]}
           redirectTo={window.location.origin}
-          onError={(error) => {
-            console.error('Auth error:', error);
-            toast({
-              title: "Erreur d'authentification",
-              description: error.message === "Invalid login credentials" 
-                ? "Email ou mot de passe incorrect"
-                : "Une erreur est survenue lors de la connexion",
-              variant: "destructive",
-            });
-          }}
           localization={{
             variables: {
               sign_in: {
@@ -116,6 +106,14 @@ export default function Login() {
                 email_input_placeholder: 'Votre email',
                 password_input_placeholder: 'Votre mot de passe',
                 link_text: "Vous n'avez pas de compte ? Inscrivez-vous",
+              },
+              forgotten_password: {
+                link_text: 'Mot de passe oublié ?',
+                email_label: 'Email',
+                password_label: 'Mot de passe',
+                button_label: 'Envoyer les instructions',
+                loading_button_label: 'Envoi en cours...',
+                confirmation_text: 'Vérifiez vos emails pour réinitialiser votre mot de passe',
               },
             },
           }}
