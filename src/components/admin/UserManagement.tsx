@@ -1,106 +1,19 @@
-import { useState, useEffect } from "react";
-import { supabaseAdmin } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UserDialog } from "./UserDialog";
 import { UserEnrollments } from "./UserEnrollments";
 import { UserHistory } from "./UserHistory";
-import { Loader2 } from "lucide-react";
-import type { Database } from "@/integrations/supabase/types";
-
-type UserRole = Database['public']['Enums']['user_role'];
-type Profile = Database['public']['Tables']['profiles']['Row'];
-
-interface AuthUser {
-  id: string;
-  email?: string;
-  created_at: string;
-}
-
-interface User {
-  id: string;
-  email: string;
-  role: UserRole;
-  created_at: string;
-}
+import { UsersTable } from "./UsersTable";
+import { useUsers } from "@/hooks/useUsers";
+import type { User } from "@/hooks/useUsers";
 
 export function UserManagement() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { users, isLoading, loadUsers } = useUsers();
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [dialogType, setDialogType] = useState<"edit" | "create" | null>(null);
   const [showEnrollments, setShowEnrollments] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
-  const { toast } = useToast();
-
-  const loadUsers = async () => {
-    try {
-      // Fetch profiles
-      const { data: profiles, error: profilesError } = await supabaseAdmin
-        .from("profiles")
-        .select("*") as { data: Profile[] | null, error: Error | null };
-
-      if (profilesError) throw profilesError;
-
-      if (!profiles) {
-        throw new Error("No profiles found");
-      }
-
-      // Fetch users from auth.admin API with pagination parameters
-      const { data: authData, error: authError } = await supabaseAdmin
-        .auth.admin.listUsers({
-          page: 1,
-          perPage: 100
-        });
-
-      if (authError) {
-        console.error("Error fetching auth users:", authError);
-        // Continue with profiles only if auth users fetch fails
-        const mergedUsers = profiles.map(profile => ({
-          id: profile.id,
-          email: 'Email non disponible',
-          role: profile.role,
-          created_at: profile.created_at,
-        }));
-        setUsers(mergedUsers);
-        return;
-      }
-
-      // Merge profiles with auth users data
-      const mergedUsers = profiles.map(profile => {
-        const authUser = authData?.users?.find(u => u.id === profile.id);
-        return {
-          id: profile.id,
-          email: authUser?.email || 'Email non disponible',
-          role: profile.role,
-          created_at: profile.created_at,
-        };
-      });
-
-      setUsers(mergedUsers);
-    } catch (error) {
-      console.error("Error loading users:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger la liste des utilisateurs",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadUsers();
-  }, [toast]);
 
   if (isLoading) {
     return (
@@ -122,59 +35,21 @@ export function UserManagement() {
         </Button>
       </div>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Email</TableHead>
-            <TableHead>Rôle</TableHead>
-            <TableHead>Date de création</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {users.map((user) => (
-            <TableRow key={user.id}>
-              <TableCell>{user.email}</TableCell>
-              <TableCell className="capitalize">{user.role}</TableCell>
-              <TableCell>{new Date(user.created_at).toLocaleDateString()}</TableCell>
-              <TableCell>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setSelectedUser(user);
-                      setDialogType("edit");
-                    }}
-                  >
-                    Modifier
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setSelectedUser(user);
-                      setShowEnrollments(true);
-                    }}
-                  >
-                    Inscriptions
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setSelectedUser(user);
-                      setShowHistory(true);
-                    }}
-                  >
-                    Historique
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      <UsersTable 
+        users={users}
+        onEdit={(user) => {
+          setSelectedUser(user);
+          setDialogType("edit");
+        }}
+        onShowEnrollments={(user) => {
+          setSelectedUser(user);
+          setShowEnrollments(true);
+        }}
+        onShowHistory={(user) => {
+          setSelectedUser(user);
+          setShowHistory(true);
+        }}
+      />
 
       <UserDialog
         user={selectedUser}
