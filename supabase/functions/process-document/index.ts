@@ -5,6 +5,7 @@ import { Document } from 'https://esm.sh/langchain/document'
 import { RecursiveCharacterTextSplitter } from 'https://esm.sh/langchain/text_splitter'
 import { PineconeStore } from 'https://esm.sh/@langchain/pinecone@0.0.1'
 import { Pinecone } from 'https://esm.sh/@pinecone-database/pinecone@1.1.2'
+import * as pdfjs from 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/+esm'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -63,11 +64,23 @@ serve(async (req) => {
       throw uploadError
     }
 
-    // Extract text content
+    // Extract text content based on file type
     let textContent = ''
     if (file.type === 'application/pdf') {
-      // TODO: Extract text from PDF using PDF.js or similar
-      textContent = 'PDF content extraction to be implemented'
+      console.log('Extracting text from PDF...');
+      const arrayBuffer = await blob.arrayBuffer();
+      const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
+      
+      const numPages = pdf.numPages;
+      const textPromises = [];
+      
+      for (let i = 1; i <= numPages; i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        textPromises.push(textContent.items.map(item => item.str).join(' '));
+      }
+      
+      textContent = (await Promise.all(textPromises)).join('\n\n');
     } else if (file.type === 'text/plain') {
       textContent = await blob.text()
     } else {
@@ -89,7 +102,6 @@ serve(async (req) => {
 
     try {
       console.log('Initializing Pinecone...');
-      // Initialize Pinecone with proper configuration
       const pinecone = new Pinecone({
         apiKey: PINECONE_API_KEY,
         environment: PINECONE_ENVIRONMENT,
