@@ -164,24 +164,24 @@ serve(async (req) => {
     
     const requestBody = {
       sessionId: crypto.randomUUID(),
-      chatInput: message + feedbackContext,
-      metadata: {
-        timestamp: new Date().toISOString(),
-        user: {
-          id: userId,
-          role: profile.role
-        },
-        formations: formations.map(f => ({
-          name: f.formations.name,
-          progress: f.progress,
-          status: f.status
-        })),
-        blocks: blocks.map(b => ({
-          name: b.skill_blocks.name,
-          progress: b.progress,
-          status: b.status
-        }))
-      }
+      input: message + feedbackContext,
+      user: {
+        id: userId,
+        role: profile.role,
+        firstName: profile.first_name,
+        lastName: profile.last_name
+      },
+      formations: formations.map(f => ({
+        name: f.formations.name,
+        progress: f.progress,
+        status: f.status
+      })),
+      blocks: blocks.map(b => ({
+        name: b.skill_blocks.name,
+        progress: b.progress,
+        status: b.status
+      })),
+      timestamp: new Date().toISOString()
     }
     
     console.log('Sending request to n8n:', requestBody)
