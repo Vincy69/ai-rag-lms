@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { MessageSquare, Upload, Files, History, GraduationCap, User } from "lucide-react";
+import { MessageSquare, Upload, Files, History, GraduationCap, User, Settings } from "lucide-react";
 import { Header } from "./Header";
+import { supabase } from "@/integrations/supabase/client";
 
-const navItems = [
+const baseNavItems = [
   { icon: MessageSquare, label: "Chat", path: "/chat" },
   { icon: Upload, label: "Upload", path: "/upload" },
   { icon: Files, label: "Documents", path: "/documents" },
@@ -16,6 +17,31 @@ const navItems = [
 export default function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [navItems, setNavItems] = useState(baseNavItems);
+
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+
+      if (profile?.role === "admin") {
+        setIsAdmin(true);
+        setNavItems([
+          ...baseNavItems,
+          { icon: Settings, label: "Administration", path: "/admin" },
+        ]);
+      }
+    };
+
+    checkAdminStatus();
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">

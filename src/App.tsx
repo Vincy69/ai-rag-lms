@@ -10,6 +10,7 @@ import Upload from "@/pages/Upload";
 import History from "@/pages/History";
 import Formations from "@/pages/Formations";
 import Account from "@/pages/Account";
+import Admin from "@/pages/Admin";
 import Login from "@/pages/Login";
 import "./App.css";
 
@@ -122,6 +123,14 @@ function App() {
             element={
               <PrivateRoute>
                 <Account />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <PrivateRoute>
+                <Admin />
               </PrivateRoute>
             }
           />
