@@ -15,12 +15,12 @@ export default function History() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch current user's role
-  const { data: currentUserRole } = useQuery({
-    queryKey: ["currentUserRole"],
+  // Fetch current user's role and id
+  const { data: currentUser } = useQuery({
+    queryKey: ["currentUser"],
     queryFn: async () => {
-      const { data: { user }, error } = await supabase.auth.getUser();
-      if (error) throw error;
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError) throw authError;
 
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
@@ -29,7 +29,11 @@ export default function History() {
         .single();
 
       if (profileError) throw profileError;
-      return profile.role;
+
+      return {
+        id: user?.id,
+        role: profile?.role
+      };
     },
   });
 
@@ -37,16 +41,14 @@ export default function History() {
   const { data: historyItems = [], isLoading } = useQuery({
     queryKey: ["chat-history", dateRange, scoreFilter, selectedUserId],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      
       let query = supabase
         .from("chat_history")
         .select("*")
         .order("created_at", { ascending: false });
 
       // Apply user filtering based on role and selection
-      if (currentUserRole !== "admin" || (currentUserRole === "admin" && selectedUserId)) {
-        query = query.eq("user_id", selectedUserId || user?.id);
+      if (currentUser?.role !== "admin" || (currentUser?.role === "admin" && selectedUserId)) {
+        query = query.eq("user_id", selectedUserId || currentUser?.id);
       }
 
       if (dateRange?.from) {
@@ -76,6 +78,7 @@ export default function History() {
         timestamp: new Date(item.created_at),
       }));
     },
+    enabled: !!currentUser, // Only run query when we have user data
   });
 
   // Update feedback mutation
@@ -133,7 +136,7 @@ export default function History() {
         </div>
 
         <div className="flex flex-col gap-4">
-          {currentUserRole === "admin" && (
+          {currentUser?.role === "admin" && (
             <UserSelector
               selectedUserId={selectedUserId}
               onUserChange={setSelectedUserId}
