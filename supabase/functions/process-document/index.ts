@@ -1,6 +1,10 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
-import { PineconeClient } from 'https://esm.sh/@pinecone-database/pinecone@1.1.2'
+import { OpenAIEmbeddings } from 'https://esm.sh/@langchain/openai@0.0.7'
+import { Document } from 'https://esm.sh/langchain/document'
+import { RecursiveCharacterTextSplitter } from 'https://esm.sh/langchain/text_splitter'
+import { PineconeStore } from 'https://esm.sh/@langchain/pinecone@0.0.1'
+import { Pinecone } from 'https://esm.sh/@pinecone-database/pinecone@1.1.2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -8,10 +12,7 @@ const corsHeaders = {
 }
 
 const PINECONE_API_KEY = 'pcsk_nv6Gw_BqfSG3WczY3ft9kAofzDAn66khKLLDEp494gXvHD5QLdY4Ak9yK5FCFJMgHT2a4';
-const PINECONE_ENVIRONMENT = 'gcp-starter';
 const PINECONE_INDEX = 'elephorm';
-
-const MAX_TEXT_LENGTH = 8000;
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -60,7 +61,7 @@ serve(async (req) => {
       throw uploadError
     }
 
-    // Extract text content for vectorization
+    // Extract text content
     let textContent = ''
     if (file.type === 'application/pdf') {
       // TODO: Extract text from PDF using PDF.js or similar
@@ -71,55 +72,32 @@ serve(async (req) => {
       textContent = `${file.name} - Document content extraction not implemented for this type`
     }
 
-    // Truncate text to avoid token limit issues
-    textContent = textContent.slice(0, MAX_TEXT_LENGTH)
+    // Split text into chunks using LangChain
+    const splitter = new RecursiveCharacterTextSplitter({
+      chunkSize: 1000,
+      chunkOverlap: 200,
+    });
 
-    // Generate embedding using OpenAI
-    const openAIResponse = await fetch('https://api.openai.com/v1/embeddings', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        input: textContent,
-        model: "text-embedding-3-small"
-      })
-    })
+    const docs = await splitter.createDocuments([textContent], [{
+      source: file.name,
+      type: file.type,
+      category: category
+    }]);
 
-    if (!openAIResponse.ok) {
-      const error = await openAIResponse.text()
-      console.error('OpenAI API error:', error)
-      throw new Error(`OpenAI API error: ${error}`)
-    }
-
-    const embedData = await openAIResponse.json()
-    const embedding = embedData.data[0].embedding
-
-    // Initialize Pinecone client
-    const pinecone = new PineconeClient();
-    await pinecone.init({
+    // Initialize Pinecone and LangChain components
+    const pinecone = new Pinecone({
       apiKey: PINECONE_API_KEY,
-      environment: PINECONE_ENVIRONMENT,
     });
 
-    const index = pinecone.Index(PINECONE_INDEX);
-    const pineconeId = crypto.randomUUID();
-
-    // Upsert the embedding to Pinecone
-    await index.upsert({
-      upsertRequest: {
-        vectors: [{
-          id: pineconeId,
-          values: embedding,
-          metadata: {
-            text: textContent,
-            fileName: file.name,
-            fileType: file.type
-          }
-        }]
-      }
+    const embeddings = new OpenAIEmbeddings({
+      openAIApiKey: Deno.env.get('OPENAI_API_KEY'),
     });
+
+    const index = pinecone.index(PINECONE_INDEX);
+    const vectorStore = await PineconeStore.fromExistingIndex(embeddings, { pineconeIndex: index });
+
+    // Add documents to vector store
+    await vectorStore.addDocuments(docs);
 
     // Save document metadata to database
     const { error: dbError } = await supabase
@@ -130,7 +108,6 @@ serve(async (req) => {
         file_path: filePath,
         content_type: file.type,
         size: file.size,
-        pinecone_id: pineconeId
       })
 
     if (dbError) {
@@ -142,7 +119,6 @@ serve(async (req) => {
       JSON.stringify({ 
         message: 'Document processed successfully', 
         filePath,
-        pineconeId
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
