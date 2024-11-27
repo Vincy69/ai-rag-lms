@@ -41,18 +41,27 @@ export function UserManagement() {
 
       if (profilesError) throw profilesError;
 
-      const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
-      if (authError) throw authError;
-
-      const mergedUsers = profiles.map(profile => {
-        const authUser = authUsers.users.find(u => u.id === profile.id);
-        return {
-          id: profile.id,
-          email: authUser?.email || "N/A",
-          role: profile.role as UserRole,
-          created_at: profile.created_at,
-        };
-      });
+      // Get all users from profiles and fetch their emails from auth metadata
+      const mergedUsers = await Promise.all(
+        profiles.map(async (profile) => {
+          const { data: { user }, error: userError } = await supabase.auth.admin.getUserById(profile.id);
+          if (userError) {
+            console.error("Error fetching user:", userError);
+            return {
+              id: profile.id,
+              email: "N/A",
+              role: profile.role as UserRole,
+              created_at: profile.created_at,
+            };
+          }
+          return {
+            id: profile.id,
+            email: user?.email || "N/A",
+            role: profile.role as UserRole,
+            created_at: profile.created_at,
+          };
+        })
+      );
 
       setUsers(mergedUsers);
     } catch (error) {

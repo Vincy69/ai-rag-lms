@@ -73,20 +73,21 @@ export function UserDialog({
         if (profileError) throw profileError;
 
       } else if (type === "edit" && user) {
-        if (password) {
-          const { error: passwordError } = await supabase.auth.admin.updateUserById(
-            user.id,
-            { password }
-          );
-          if (passwordError) throw passwordError;
-        }
-
         const { error: profileError } = await supabase
           .from("profiles")
           .update({ role })
           .eq("id", user.id);
 
         if (profileError) throw profileError;
+
+        if (password) {
+          // Note: Password update will need to be handled differently
+          // as it requires admin privileges
+          toast({
+            title: "Information",
+            description: "La modification du mot de passe n'est pas disponible pour le moment",
+          });
+        }
       }
 
       toast({
