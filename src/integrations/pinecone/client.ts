@@ -9,7 +9,7 @@ export async function getPineconeClient() {
   if (!pineconeClient) {
     pineconeClient = new Pinecone({
       apiKey: PINECONE_API_KEY,
-      environment: 'aped-4627-b74a'
+      host: 'https://cours-nzobyk1.svc.aped-4627-b74a.pinecone.io'
     });
   }
   return pineconeClient;
