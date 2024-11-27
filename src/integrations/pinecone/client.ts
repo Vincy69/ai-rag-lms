@@ -9,7 +9,7 @@ export async function getPineconeClient() {
   if (!pineconeClient) {
     pineconeClient = new Pinecone({
       apiKey: PINECONE_API_KEY,
-      serverUrl: 'https://elephorm-gcp-starter.svc.gcp-starter.pinecone.io'
+      environment: 'aped-4627-b74a'
     });
   }
   return pineconeClient;
