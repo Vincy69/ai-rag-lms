@@ -13,6 +13,7 @@ const corsHeaders = {
 
 const PINECONE_API_KEY = 'pcsk_nv6Gw_BqfSG3WczY3ft9kAofzDAn66khKLLDEp494gXvHD5QLdY4Ak9yK5FCFJMgHT2a4';
 const PINECONE_INDEX = 'elephorm';
+const PINECONE_ENVIRONMENT = 'gcp-starter';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -84,16 +85,17 @@ serve(async (req) => {
       category: category
     }]);
 
-    // Initialize Pinecone and LangChain components
+    // Initialize Pinecone with proper configuration
     const pinecone = new Pinecone({
       apiKey: PINECONE_API_KEY,
+      environment: PINECONE_ENVIRONMENT,
     });
 
     const embeddings = new OpenAIEmbeddings({
       openAIApiKey: Deno.env.get('OPENAI_API_KEY'),
     });
 
-    const index = pinecone.index(PINECONE_INDEX);
+    const index = pinecone.Index(PINECONE_INDEX);
     const vectorStore = await PineconeStore.fromExistingIndex(embeddings, { pineconeIndex: index });
 
     // Add documents to vector store
