@@ -9,6 +9,8 @@ export async function callN8nWebhook(requestBody: any): Promise<N8nResponse> {
   const n8nUrl = 'https://elephorm.app.n8n.cloud/webhook/a7cc35a6-3fdf-4e2e-859a-5c16a15f0b99/chat';
   
   try {
+    console.log('Calling n8n webhook with body:', JSON.stringify(requestBody));
+    
     const response = await fetch(n8nUrl, {
       method: 'POST',
       headers: {
