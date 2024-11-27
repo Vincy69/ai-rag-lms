@@ -11,7 +11,16 @@ export default function Login() {
 
   useEffect(() => {
     // Check if user is already logged in
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.error('Session error:', error);
+        toast({
+          title: "Erreur de session",
+          description: "Une erreur est survenue lors de la vérification de votre session",
+          variant: "destructive",
+        });
+        return;
+      }
       if (session) {
         navigate("/");
       }
@@ -78,6 +87,16 @@ export default function Login() {
           }}
           providers={[]}
           redirectTo={window.location.origin}
+          onError={(error) => {
+            console.error('Auth error:', error);
+            toast({
+              title: "Erreur d'authentification",
+              description: error.message === "Invalid login credentials" 
+                ? "Email ou mot de passe incorrect"
+                : "Une erreur est survenue lors de la connexion",
+              variant: "destructive",
+            });
+          }}
           localization={{
             variables: {
               sign_in: {
