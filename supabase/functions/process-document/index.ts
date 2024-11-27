@@ -16,7 +16,6 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -103,16 +102,12 @@ serve(async (req) => {
     try {
       console.log('Initializing Pinecone...');
       const pineconeApiKey = Deno.env.get('PINECONE_API_KEY');
-      const pineconeEnv = Deno.env.get('PINECONE_ENV');
+      const pineconeEnv = 'gcp-starter';
       
       if (!pineconeApiKey) {
         throw new Error('PINECONE_API_KEY environment variable is not set');
       }
       
-      if (!pineconeEnv) {
-        throw new Error('PINECONE_ENV environment variable is not set');
-      }
-
       console.log('Using Pinecone environment:', pineconeEnv);
       
       const pinecone = new Pinecone({
@@ -125,7 +120,7 @@ serve(async (req) => {
       });
 
       console.log('Getting Pinecone index...');
-      const index = pinecone.Index('elephorm');
+      const index = pinecone.Index('cours');
       
       console.log('Creating vector store...');
       const vectorStore = await PineconeStore.fromExistingIndex(embeddings, {
@@ -139,7 +134,6 @@ serve(async (req) => {
       throw new Error(`Pinecone processing failed: ${error.message}`);
     }
 
-    // Save document metadata to database
     const { error: dbError } = await supabase
       .from('documents')
       .insert({
@@ -167,6 +161,7 @@ serve(async (req) => {
         } 
       }
     );
+
   } catch (error) {
     console.error('Process document error:', error);
     return new Response(
