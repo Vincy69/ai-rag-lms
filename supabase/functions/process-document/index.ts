@@ -5,7 +5,7 @@ import { Document } from 'https://esm.sh/langchain/document'
 import { RecursiveCharacterTextSplitter } from 'https://esm.sh/langchain/text_splitter'
 import { PineconeStore } from 'https://esm.sh/@langchain/pinecone@0.0.1'
 import { Pinecone } from 'https://esm.sh/@pinecone-database/pinecone@1.1.2'
-import * as pdfjs from 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/+esm'
+import * as pdfjsLib from 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/+esm'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -15,6 +15,9 @@ const corsHeaders = {
 const PINECONE_API_KEY = 'pcsk_nv6Gw_BqfSG3WczY3ft9kAofzDAn66khKLLDEp494gXvHD5QLdY4Ak9yK5FCFJMgHT2a4';
 const PINECONE_INDEX = 'elephorm';
 const PINECONE_ENVIRONMENT = 'gcp-starter';
+
+// Initialize PDF.js worker
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js`;
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -69,7 +72,8 @@ serve(async (req) => {
     if (file.type === 'application/pdf') {
       console.log('Extracting text from PDF...');
       const arrayBuffer = await blob.arrayBuffer();
-      const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
+      const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+      const pdf = await loadingTask.promise;
       
       const numPages = pdf.numPages;
       const textPromises = [];
