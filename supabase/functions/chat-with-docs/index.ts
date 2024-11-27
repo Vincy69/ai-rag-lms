@@ -6,10 +6,6 @@ import { callN8nWebhook } from './utils/n8nClient.ts'
 import { generateEmbedding } from './utils/openai.ts'
 import { getUserData, findSimilarFeedback, saveChatInteraction } from './utils/supabase.ts'
 
-const PINECONE_API_KEY = 'pcsk_nv6Gw_BqfSG3WczY3ft9kAofzDAn66khKLLDEp494gXvHD5QLdY4Ak9yK5FCFJMgHT2a4';
-const PINECONE_ENVIRONMENT = 'gcp-starter';
-const PINECONE_INDEX = 'elephorm';
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -31,15 +27,18 @@ serve(async (req) => {
     const embedding = await generateEmbedding(message);
 
     // Initialize Pinecone client
+    console.log('Initializing Pinecone client...');
     const pinecone = new PineconeClient();
     await pinecone.init({
-      apiKey: PINECONE_API_KEY,
-      environment: PINECONE_ENVIRONMENT,
+      apiKey: Deno.env.get('PINECONE_API_KEY') || '',
+      environment: Deno.env.get('PINECONE_ENV') || 'gcp-starter',
     });
 
-    const index = pinecone.Index(PINECONE_INDEX);
+    const index = pinecone.Index(Deno.env.get('PINECONE_INDEX_NAME') || 'elephorm');
+    console.log('Successfully initialized Pinecone index');
 
     // Query Pinecone for similar documents
+    console.log('Querying Pinecone...');
     const queryResponse = await index.query({
       queryRequest: {
         vector: embedding,
@@ -47,6 +46,7 @@ serve(async (req) => {
         includeMetadata: true
       }
     });
+    console.log('Successfully queried Pinecone');
 
     // Extract relevant context from matched documents
     const context = queryResponse.matches
