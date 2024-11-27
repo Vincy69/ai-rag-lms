@@ -13,7 +13,7 @@ export async function getPineconeClient() {
   if (!pineconeClient) {
     pineconeClient = new Pinecone({
       apiKey: PINECONE_API_KEY,
-      host: `${PINECONE_INDEX}-nzobyk1.svc.${PINECONE_ENVIRONMENT}.pinecone.io`
+      environment: PINECONE_ENVIRONMENT
     });
   }
   return pineconeClient;

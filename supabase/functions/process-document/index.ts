@@ -110,7 +110,7 @@ serve(async (req) => {
       
       const pinecone = new Pinecone({
         apiKey: pineconeApiKey,
-        host: `${pineconeIndex}-nzobyk1.svc.gcp-starter.pinecone.io`
+        environment: 'gcp-starter'
       });
 
       const embeddings = new OpenAIEmbeddings({
