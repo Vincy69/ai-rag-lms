@@ -21,7 +21,8 @@ export async function getPineconeClient() {
 
 export async function getPineconeIndex() {
   const client = await getPineconeClient();
-  return client.Index(PINECONE_INDEX);
+  const index = client.Index(PINECONE_INDEX);
+  return index;
 }
 
 export async function getVectorStore() {
@@ -32,8 +33,11 @@ export async function getVectorStore() {
     vectorStore = await PineconeStore.fromExistingIndex(
       new OpenAIEmbeddings({
         openAIApiKey: process.env.OPENAI_API_KEY,
-      }),
-      { pineconeIndex: index }
+      }), 
+      {
+        pineconeIndex: index,
+        namespace: PINECONE_INDEX,
+      }
     );
   }
   return vectorStore;
