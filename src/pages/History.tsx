@@ -7,6 +7,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { DateRange } from "react-day-picker";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { ChatHistory, ChatMessage } from "@/types/chat";
 
 export default function History() {
   const [dateRange, setDateRange] = useState<DateRange>();
@@ -80,14 +81,28 @@ export default function History() {
       return data.map(item => ({
         ...item,
         timestamp: new Date(item.created_at),
-      }));
+        message: item.message as ChatMessage
+      })) as ChatHistory[];
     },
-    enabled: !!userProfile, // Only run query when we have user profile
+    enabled: !!userProfile,
   });
 
   // Update feedback mutation
   const updateFeedback = useMutation({
     mutationFn: async ({ id, feedback }: { id: string; feedback: string }) => {
+      const { data: chatItem } = await supabase
+        .from("chat_history")
+        .select("message")
+        .eq("id", id)
+        .single();
+
+      if (!chatItem) throw new Error("Chat item not found");
+
+      const updatedMessage = {
+        ...chatItem.message,
+        feedback
+      };
+
       const response = await fetch('/functions/v1/generate-embedding', {
         method: 'POST',
         headers: {
@@ -106,7 +121,7 @@ export default function History() {
       const { error } = await supabase
         .from("chat_history")
         .update({ 
-          feedback,
+          message: updatedMessage,
           feedback_embedding: embedding
         })
         .eq("id", id);
