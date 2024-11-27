@@ -52,7 +52,17 @@ export function UserHistory({ user, open, onOpenChange }: UserHistoryProps) {
 
       if (error) throw error;
 
-      setMessages(data || []);
+      // Ensure the message is properly typed
+      const typedMessages: ChatMessage[] = (data || []).map(item => ({
+        id: item.id,
+        message: typeof item.message === 'object' ? item.message as { role: string; content: string } : {
+          role: 'unknown',
+          content: String(item.message)
+        },
+        created_at: item.created_at
+      }));
+
+      setMessages(typedMessages);
     } catch (error) {
       console.error("Error loading chat history:", error);
     } finally {

@@ -67,20 +67,26 @@ export function UserDialog({
       setIsLoading(true);
 
       if (type === "create") {
-        const { error } = await supabaseAdmin.from("profiles").insert({
-          first_name: values.firstName,
-          last_name: values.lastName,
-          role: values.role,
-        });
+        // For new users, we'll generate a UUID
+        const { data: newUser, error: createError } = await supabaseAdmin
+          .from("profiles")
+          .insert({
+            id: crypto.randomUUID(),
+            first_name: values.firstName,
+            last_name: values.lastName,
+            role: values.role,
+          })
+          .select()
+          .single();
 
-        if (error) throw error;
+        if (createError) throw createError;
 
         toast({
           title: "Succès",
           description: "L'utilisateur a été créé avec succès",
         });
       } else if (type === "edit" && user) {
-        const { error } = await supabaseAdmin
+        const { error: updateError } = await supabaseAdmin
           .from("profiles")
           .update({
             first_name: values.firstName,
@@ -89,7 +95,7 @@ export function UserDialog({
           })
           .eq("id", user.id);
 
-        if (error) throw error;
+        if (updateError) throw updateError;
 
         toast({
           title: "Succès",
