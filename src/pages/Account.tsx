@@ -3,49 +3,39 @@ import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/Layout";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import type { UserRole } from "@/integrations/supabase/types/enums";
+import { FormationProgressCard } from "@/components/account/FormationProgressCard";
 
-interface Enrollment {
+interface FormationProgress {
   id: string;
+  name: string;
+  description: string | null;
   status: string;
-  progress: number;
-  formation: {
+  progress: number | null;
+  blocks: Array<{
+    id: string;
     name: string;
     description: string | null;
-  } | null;
-}
-
-interface BlockEnrollment {
-  id: string;
-  status: string;
-  progress: number;
-  skill_block: {
-    name: string;
-    description: string | null;
-  } | null;
-}
-
-interface SkillProgress {
-  id: string;
-  level: number;
-  score: number;
-  attempts: number;
-  skill: {
-    name: string;
-  } | null;
+    status: string;
+    progress: number | null;
+    skills: Array<{
+      id: string;
+      name: string;
+      level: number | null;
+      score: number | null;
+      attempts: number | null;
+    }>;
+  }>;
 }
 
 export default function Account() {
   const [email, setEmail] = useState<string | null>(null);
   const [role, setRole] = useState<UserRole | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
-  const [blockEnrollments, setBlockEnrollments] = useState<BlockEnrollment[]>([]);
-  const [skillProgress, setSkillProgress] = useState<SkillProgress[]>([]);
+  const [formations, setFormations] = useState<FormationProgress[]>([]);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -72,56 +62,66 @@ export default function Account() {
         if (profileError) throw profileError;
         if (profileData) setRole(profileData.role as UserRole);
 
-        // Fetch formation enrollments
+        // Fetch formations with blocks and skills progress
         const { data: formationData, error: formationError } = await supabase
           .from('formation_enrollments')
           .select(`
-            id,
+            formation_id,
             status,
             progress,
-            formation:formations (
+            formations (
+              id,
               name,
               description
+            ),
+            block_enrollments!inner (
+              id,
+              status,
+              progress,
+              skill_block:skill_blocks (
+                id,
+                name,
+                description,
+                skills (
+                  id,
+                  name,
+                  skill_progress!inner (
+                    level,
+                    score,
+                    attempts
+                  )
+                )
+              )
             )
           `)
           .eq('user_id', session.user.id);
 
         if (formationError) throw formationError;
-        setEnrollments(formationData);
 
-        // Fetch block enrollments
-        const { data: blockData, error: blockError } = await supabase
-          .from('block_enrollments')
-          .select(`
-            id,
-            status,
-            progress,
-            skill_block:skill_blocks (
-              name,
-              description
-            )
-          `)
-          .eq('user_id', session.user.id);
+        // Transform the data to match our component structure
+        const transformedFormations = formationData.map(enrollment => ({
+          id: enrollment.formation_id,
+          name: enrollment.formations?.name || '',
+          description: enrollment.formations?.description,
+          status: enrollment.status,
+          progress: enrollment.progress,
+          blocks: enrollment.block_enrollments.map(blockEnrollment => ({
+            id: blockEnrollment.id,
+            name: blockEnrollment.skill_block?.name || '',
+            description: blockEnrollment.skill_block?.description,
+            status: blockEnrollment.status,
+            progress: blockEnrollment.progress,
+            skills: blockEnrollment.skill_block?.skills.map(skill => ({
+              id: skill.id,
+              name: skill.name,
+              level: skill.skill_progress[0]?.level,
+              score: skill.skill_progress[0]?.score,
+              attempts: skill.skill_progress[0]?.attempts,
+            })) || [],
+          })),
+        }));
 
-        if (blockError) throw blockError;
-        setBlockEnrollments(blockData);
-
-        // Fetch skill progress
-        const { data: skillData, error: skillError } = await supabase
-          .from('skill_progress')
-          .select(`
-            id,
-            level,
-            score,
-            attempts,
-            skill:skills (
-              name
-            )
-          `)
-          .eq('user_id', session.user.id);
-
-        if (skillError) throw skillError;
-        setSkillProgress(skillData);
+        setFormations(transformedFormations);
 
       } catch (error) {
         console.error('Error fetching profile:', error);
@@ -192,68 +192,15 @@ export default function Account() {
           </CardContent>
         </Card>
 
-        {enrollments.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Mes formations</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {enrollments.map((enrollment) => (
-                <div key={enrollment.id} className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <h3 className="font-medium">{enrollment.formation?.name}</h3>
-                    <span className="text-sm text-muted-foreground capitalize">{enrollment.status}</span>
-                  </div>
-                  <Progress value={enrollment.progress} className="h-2" />
-                  <p className="text-sm text-muted-foreground">{enrollment.formation?.description}</p>
-                </div>
+        {formations.length > 0 && (
+          <div className="space-y-6">
+            <h2 className="text-xl font-semibold">Mes formations</h2>
+            <div className="space-y-6">
+              {formations.map((formation) => (
+                <FormationProgressCard key={formation.id} formation={formation} />
               ))}
-            </CardContent>
-          </Card>
-        )}
-
-        {blockEnrollments.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Mes blocs de compétences</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {blockEnrollments.map((block) => (
-                <div key={block.id} className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <h3 className="font-medium">{block.skill_block?.name}</h3>
-                    <span className="text-sm text-muted-foreground capitalize">{block.status}</span>
-                  </div>
-                  <Progress value={block.progress} className="h-2" />
-                  <p className="text-sm text-muted-foreground">{block.skill_block?.description}</p>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        )}
-
-        {skillProgress.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Progression des compétences</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {skillProgress.map((progress) => (
-                <div key={progress.id} className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <h3 className="font-medium">{progress.skill?.name}</h3>
-                    <span className="text-sm text-muted-foreground">
-                      Niveau {progress.level} • Score {progress.score}%
-                    </span>
-                  </div>
-                  <Progress value={progress.score} className="h-2" />
-                  <p className="text-sm text-muted-foreground">
-                    {progress.attempts} tentative{progress.attempts !== 1 ? 's' : ''}
-                  </p>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         )}
       </div>
     </Layout>
