@@ -45,10 +45,10 @@ export default function Chat() {
       };
       setMessages((prev) => [...prev, aiMessage]);
 
-      // Save chat history
+      // Save chat history with new column names
       await supabase.from('chat_history').insert({
-        question: content,
-        answer: data.response,
+        message: content,
+        response: data.response,
         score: data.confidence || 0.8,
         user_id: user.id
       });

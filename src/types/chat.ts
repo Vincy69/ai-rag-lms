@@ -1,7 +1,7 @@
 export interface ChatHistory {
   id: string;
-  question: string;
-  answer: string;
+  message: string;
+  response: string;
   timestamp: Date;
   score: number;
   feedback: string | null;
