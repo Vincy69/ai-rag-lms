@@ -28,19 +28,19 @@ export function HistoryList({ items, onFeedbackSubmit }: HistoryListProps) {
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <MessageSquare className="h-5 w-5 text-primary" />
-                <h3 className="font-semibold">{item.message}</h3>
+                <h3 className="font-semibold">{item.message.input}</h3>
               </div>
-              <p className="text-sm text-muted-foreground">{item.response}</p>
+              <p className="text-sm text-muted-foreground">{item.message.output}</p>
             </div>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2 bg-black/10 px-3 py-1.5 rounded-full">
                 <Gauge className="h-4 w-4" />
                 <span className="text-sm font-medium">
-                  Score: {Math.round(item.score * 100)}%
+                  Score: {Math.round(item.message.score * 100)}%
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                {item.score >= 0.8 ? (
+                {item.message.score >= 0.8 ? (
                   <ThumbsUp className="h-5 w-5 text-green-500" />
                 ) : (
                   <ThumbsDown className="h-5 w-5 text-red-500" />
@@ -53,9 +53,9 @@ export function HistoryList({ items, onFeedbackSubmit }: HistoryListProps) {
             <p className="text-sm text-muted-foreground">
               {new Date(item.timestamp).toLocaleString()}
             </p>
-            {item.feedback && (
+            {item.message.feedback && (
               <p className="text-sm bg-muted p-2 rounded">
-                Feedback: {item.feedback}
+                Feedback: {item.message.feedback}
               </p>
             )}
           </div>

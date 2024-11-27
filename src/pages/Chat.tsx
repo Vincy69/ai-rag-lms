@@ -45,11 +45,15 @@ export default function Chat() {
       };
       setMessages((prev) => [...prev, aiMessage]);
 
-      // Save chat history with new column names
+      // Save chat history with new structure
       await supabase.from('chat_history').insert({
-        message: content,
-        response: data.response,
-        score: data.confidence || 0.8,
+        session_id: crypto.randomUUID(),
+        message: {
+          input: content,
+          output: data.response,
+          score: data.confidence || 0.8,
+          feedback: null
+        },
         user_id: user.id
       });
     } catch (error) {

@@ -78,32 +78,23 @@ export type Database = {
       chat_history: {
         Row: {
           created_at: string
-          feedback: string | null
-          feedback_embedding: string | null
           id: string
-          message: string
-          response: string
-          score: number
+          message: Json
+          session_id: string
           user_id: string | null
         }
         Insert: {
           created_at?: string
-          feedback?: string | null
-          feedback_embedding?: string | null
           id?: string
-          message?: string
-          response?: string
-          score?: number
+          message: Json
+          session_id: string
           user_id?: string | null
         }
         Update: {
           created_at?: string
-          feedback?: string | null
-          feedback_embedding?: string | null
           id?: string
-          message?: string
-          response?: string
-          score?: number
+          message?: Json
+          session_id?: string
           user_id?: string | null
         }
         Relationships: [
