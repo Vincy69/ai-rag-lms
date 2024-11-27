@@ -15,33 +15,50 @@ let vectorStore: PineconeStore | null = null;
 
 export async function getPineconeClient() {
   if (!pineconeClient) {
-    pineconeClient = new Pinecone({
-      apiKey: PINECONE_API_KEY,
-      environment: PINECONE_ENVIRONMENT
-    });
+    try {
+      pineconeClient = new Pinecone({
+        apiKey: PINECONE_API_KEY,
+        environment: PINECONE_ENVIRONMENT,
+      });
+      console.log('Pinecone client initialized successfully');
+    } catch (error) {
+      console.error('Error initializing Pinecone client:', error);
+      throw new Error('Failed to initialize Pinecone client');
+    }
   }
   return pineconeClient;
 }
 
 export async function getPineconeIndex() {
-  const client = await getPineconeClient();
-  const index = client.Index(PINECONE_INDEX);
-  return index;
+  try {
+    const client = await getPineconeClient();
+    const index = client.Index(PINECONE_INDEX);
+    return index;
+  } catch (error) {
+    console.error('Error getting Pinecone index:', error);
+    throw new Error('Failed to get Pinecone index');
+  }
 }
 
 export async function getVectorStore() {
   if (!vectorStore) {
-    const index = await getPineconeIndex();
-    
-    vectorStore = await PineconeStore.fromExistingIndex(
-      new OpenAIEmbeddings({
-        openAIApiKey: import.meta.env.VITE_OPENAI_API_KEY,
-      }), 
-      {
-        pineconeIndex: index as any, // Type assertion to avoid compatibility issues
-        namespace: PINECONE_INDEX,
-      }
-    );
+    try {
+      const index = await getPineconeIndex();
+      
+      vectorStore = await PineconeStore.fromExistingIndex(
+        new OpenAIEmbeddings({
+          openAIApiKey: import.meta.env.VITE_OPENAI_API_KEY,
+        }), 
+        {
+          pineconeIndex: index,
+          namespace: PINECONE_INDEX,
+        }
+      );
+      console.log('Vector store initialized successfully');
+    } catch (error) {
+      console.error('Error initializing vector store:', error);
+      throw new Error('Failed to initialize vector store');
+    }
   }
   return vectorStore;
 }
