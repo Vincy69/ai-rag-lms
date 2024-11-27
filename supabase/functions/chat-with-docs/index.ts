@@ -6,6 +6,7 @@ import { generateEmbedding } from './utils/openai.ts';
 import { getUserData, findSimilarFeedback, saveChatInteraction } from './utils/supabase.ts';
 
 serve(async (req) => {
+  // Always handle CORS preflight requests first
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -14,6 +15,10 @@ serve(async (req) => {
     const { message, userId } = await req.json();
     console.log('Received message:', message);
     console.log('User ID:', userId);
+
+    if (!message || !userId) {
+      throw new Error('Message and userId are required');
+    }
 
     // Get user data
     const { profile, formations, blocks } = await getUserData(userId);

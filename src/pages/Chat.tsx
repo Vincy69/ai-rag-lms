@@ -18,6 +18,8 @@ export default function Chat() {
   const { toast } = useToast();
 
   const handleSendMessage = async (content: string) => {
+    if (!content.trim()) return;
+
     const userMessage: Message = {
       id: crypto.randomUUID(),
       content,
@@ -29,7 +31,14 @@ export default function Chat() {
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("User not authenticated");
+      if (!user) {
+        toast({
+          title: "Erreur d'authentification",
+          description: "Vous devez être connecté pour utiliser le chat.",
+          variant: "destructive",
+        });
+        return;
+      }
 
       const { data, error } = await supabase.functions.invoke('chat-with-docs', {
         body: { 
@@ -38,7 +47,14 @@ export default function Chat() {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw error;
+      }
+
+      if (!data || !data.response) {
+        throw new Error('Invalid response format from chat service');
+      }
 
       const aiMessage: Message = {
         id: crypto.randomUUID(),
@@ -49,10 +65,10 @@ export default function Chat() {
       setMessages((prev) => [...prev, aiMessage]);
 
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Chat error:', error);
       toast({
         title: "Erreur",
-        description: "Une erreur est survenue lors de l'envoi du message.",
+        description: "Une erreur est survenue lors de l'envoi du message. Veuillez réessayer.",
         variant: "destructive",
       });
     } finally {
