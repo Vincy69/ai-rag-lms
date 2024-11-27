@@ -26,14 +26,19 @@ export default function Account() {
 
         setEmail(session.user.email);
 
-        const { data: profileData, error: profileError } = await supabase.auth.getUser();
+        // Fetch the user's role from the profiles table
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', session.user.id)
+          .single();
 
         if (profileError) {
           throw profileError;
         }
 
-        if (profileData?.user) {
-          setRole(profileData.user.role || 'user');
+        if (profileData) {
+          setRole(profileData.role);
         }
 
       } catch (error) {
