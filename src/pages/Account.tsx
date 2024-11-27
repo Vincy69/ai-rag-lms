@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
-import type { UserRole } from "@/integrations/supabase/types";
+import type { UserRole } from "@/integrations/supabase/types/enums";
 
 export default function Account() {
   const [email, setEmail] = useState<string | null>(null);
@@ -27,6 +27,7 @@ export default function Account() {
 
         setEmail(session.user.email);
 
+        // Fetch profile with role
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('role')
@@ -39,8 +40,8 @@ export default function Account() {
         }
 
         if (profileData) {
-          console.log('Profile data:', profileData); // Debug log
-          setRole(profileData.role);
+          console.log('Profile data:', profileData);
+          setRole(profileData.role as UserRole);
         }
 
       } catch (error) {
