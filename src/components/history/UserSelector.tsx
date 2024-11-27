@@ -17,6 +17,9 @@ export function UserSelector({ selectedUserId, onUserChange }: UserSelectorProps
   const { data: users } = useQuery({
     queryKey: ["users"],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
       const { data: profiles, error } = await supabase
         .from("profiles")
         .select("id, role");

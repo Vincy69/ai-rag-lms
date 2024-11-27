@@ -15,25 +15,29 @@ export default function History() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch current user's role and id
-  const { data: currentUser } = useQuery({
-    queryKey: ["currentUser"],
+  // Fetch current user's role
+  const { data: userProfile, isLoading: isLoadingProfile } = useQuery({
+    queryKey: ["userProfile"],
     queryFn: async () => {
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError) throw authError;
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
 
-      const { data: profile, error: profileError } = await supabase
+      const { data: profile, error } = await supabase
         .from("profiles")
         .select("role")
-        .eq("id", user?.id)
+        .eq("id", user.id)
         .single();
 
-      if (profileError) throw profileError;
+      if (error) {
+        toast({
+          title: "Error",
+          description: "Failed to fetch user profile",
+          variant: "destructive",
+        });
+        throw error;
+      }
 
-      return {
-        id: user?.id,
-        role: profile?.role
-      };
+      return { id: user.id, role: profile.role };
     },
   });
 
@@ -47,8 +51,8 @@ export default function History() {
         .order("created_at", { ascending: false });
 
       // Apply user filtering based on role and selection
-      if (currentUser?.role !== "admin" || (currentUser?.role === "admin" && selectedUserId)) {
-        query = query.eq("user_id", selectedUserId || currentUser?.id);
+      if (userProfile?.role !== "admin" || (userProfile?.role === "admin" && selectedUserId)) {
+        query = query.eq("user_id", selectedUserId || userProfile?.id);
       }
 
       if (dateRange?.from) {
@@ -66,8 +70,8 @@ export default function History() {
       
       if (error) {
         toast({
-          title: "Erreur",
-          description: "Impossible de charger l'historique",
+          title: "Error",
+          description: "Failed to load chat history",
           variant: "destructive",
         });
         throw error;
@@ -78,7 +82,7 @@ export default function History() {
         timestamp: new Date(item.created_at),
       }));
     },
-    enabled: !!currentUser, // Only run query when we have user data
+    enabled: !!userProfile, // Only run query when we have user profile
   });
 
   // Update feedback mutation
@@ -112,18 +116,28 @@ export default function History() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["chat-history"] });
       toast({
-        title: "Feedback enregistré",
-        description: "Merci pour votre contribution à l'amélioration du chatbot.",
+        title: "Success",
+        description: "Feedback saved successfully",
       });
     },
     onError: () => {
       toast({
-        title: "Erreur",
-        description: "Impossible d'enregistrer le feedback",
+        title: "Error",
+        description: "Failed to save feedback",
         variant: "destructive",
       });
     },
   });
+
+  if (isLoadingProfile) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
@@ -136,7 +150,7 @@ export default function History() {
         </div>
 
         <div className="flex flex-col gap-4">
-          {currentUser?.role === "admin" && (
+          {userProfile?.role === "admin" && (
             <UserSelector
               selectedUserId={selectedUserId}
               onUserChange={setSelectedUserId}
