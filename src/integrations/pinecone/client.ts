@@ -21,19 +21,20 @@ export async function getPineconeClient() {
 
 export async function getPineconeIndex() {
   const client = await getPineconeClient();
-  return client.Index(PINECONE_INDEX);
+  const index = client.Index(PINECONE_INDEX);
+  return index;
 }
 
 export async function getVectorStore() {
   if (!vectorStore) {
     const index = await getPineconeIndex();
-
+    
     vectorStore = await PineconeStore.fromExistingIndex(
       new OpenAIEmbeddings({
         openAIApiKey: process.env.OPENAI_API_KEY,
       }), 
       {
-        pineconeIndex: index,
+        pineconeIndex: index as any, // Type assertion to avoid compatibility issues
         namespace: PINECONE_INDEX,
       }
     );
