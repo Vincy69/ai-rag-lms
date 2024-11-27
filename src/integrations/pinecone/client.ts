@@ -1,6 +1,4 @@
 import { Pinecone } from '@pinecone-database/pinecone';
-import { PineconeStore } from '@langchain/pinecone';
-import { OpenAIEmbeddings } from '@langchain/openai';
 
 const PINECONE_API_KEY = import.meta.env.VITE_PINECONE_API_KEY;
 const PINECONE_INDEX = import.meta.env.VITE_PINECONE_INDEX_NAME || 'elephorm';
@@ -11,7 +9,6 @@ if (!PINECONE_API_KEY) {
 }
 
 let pineconeClient: Pinecone | null = null;
-let vectorStore: PineconeStore | null = null;
 
 export async function getPineconeClient() {
   if (!pineconeClient) {
@@ -39,28 +36,4 @@ export async function getPineconeIndex() {
     console.error('Error getting Pinecone index:', error);
     throw new Error('Failed to get Pinecone index');
   }
-}
-
-export async function getVectorStore() {
-  if (!vectorStore) {
-    try {
-      const index = await getPineconeIndex();
-      
-      // Use type assertion to match LangChain's expected type
-      vectorStore = await PineconeStore.fromExistingIndex(
-        new OpenAIEmbeddings({
-          openAIApiKey: import.meta.env.VITE_OPENAI_API_KEY,
-        }), 
-        {
-          pineconeIndex: index as any, // Type assertion needed for compatibility
-          namespace: PINECONE_INDEX,
-        }
-      );
-      console.log('Vector store initialized successfully');
-    } catch (error) {
-      console.error('Error initializing vector store:', error);
-      throw new Error('Failed to initialize vector store');
-    }
-  }
-  return vectorStore;
 }
