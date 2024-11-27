@@ -99,7 +99,7 @@ export default function Account() {
             <div>
               <label className="text-sm font-medium text-muted-foreground">Rôle</label>
               <p className="mt-1 capitalize">
-                {isLoading ? 'Chargement...' : role || 'Non défini'}
+                {isLoading ? 'Chargement...' : role}
               </p>
             </div>
             
