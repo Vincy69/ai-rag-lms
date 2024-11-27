@@ -28,15 +28,19 @@ serve(async (req) => {
 
     // Initialize Pinecone client
     const pineconeApiKey = Deno.env.get('PINECONE_API_KEY');
+    const pineconeEnv = Deno.env.get('PINECONE_ENV') || 'gcp-starter';
+    
     if (!pineconeApiKey) {
       console.error('PINECONE_API_KEY is not set');
       throw new Error('Pinecone API key is not configured');
     }
 
     console.log('Initializing Pinecone client...');
+    console.log('Using Pinecone environment:', pineconeEnv);
+    
     const pinecone = new Pinecone({
       apiKey: pineconeApiKey,
-      environment: 'aped-4627-b74a'
+      environment: pineconeEnv
     });
 
     // Get Pinecone index
