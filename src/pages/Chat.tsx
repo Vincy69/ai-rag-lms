@@ -42,7 +42,9 @@ export default function Chat() {
 
       const { data, error } = await supabase.functions.invoke('chat-with-docs', {
         body: { 
-          message: content,
+          sessionId: crypto.randomUUID(),
+          action: "sendMessage",
+          chatInput: content,
           userId: user.id
         }
       });
