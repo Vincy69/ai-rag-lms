@@ -5,10 +5,11 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
+import type { UserRole } from "@/integrations/supabase/types";
 
 export default function Account() {
   const [email, setEmail] = useState<string | null>(null);
-  const [role, setRole] = useState<string | null>(null);
+  const [role, setRole] = useState<UserRole | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -26,7 +27,8 @@ export default function Account() {
 
         setEmail(session.user.email);
 
-        // Fetch the user's role from the profiles table
+        console.log("Fetching profile for user:", session.user.id);
+        
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('role')
@@ -34,11 +36,16 @@ export default function Account() {
           .single();
 
         if (profileError) {
+          console.error('Profile fetch error:', profileError);
           throw profileError;
         }
 
+        console.log("Profile data received:", profileData);
+
         if (profileData) {
           setRole(profileData.role);
+        } else {
+          console.error('No profile data found');
         }
 
       } catch (error) {
@@ -89,7 +96,7 @@ export default function Account() {
             
             <div>
               <label className="text-sm font-medium text-muted-foreground">Rôle</label>
-              <p className="mt-1 capitalize">{role}</p>
+              <p className="mt-1 capitalize">{role || 'Chargement...'}</p>
             </div>
             
             <Button variant="destructive" onClick={handleLogout}>
