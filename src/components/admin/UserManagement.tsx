@@ -37,6 +37,7 @@ export function UserManagement() {
 
   const loadUsers = async () => {
     try {
+      // Fetch profiles
       const { data: profiles, error: profilesError } = await supabaseAdmin
         .from("profiles")
         .select("*") as { data: Profile[] | null, error: Error | null };
@@ -47,13 +48,22 @@ export function UserManagement() {
         throw new Error("No profiles found");
       }
 
-      // For now, we'll just use the profile data since we can't access the auth API
-      const mergedUsers = profiles.map(profile => ({
-        id: profile.id,
-        email: profile.id, // Using ID as email since we can't access auth users
-        role: profile.role,
-        created_at: profile.created_at,
-      }));
+      // Fetch users from auth.admin API
+      const { data: authData, error: authError } = await supabaseAdmin
+        .auth.admin.listUsers();
+
+      if (authError) throw authError;
+
+      // Merge profiles with auth users data
+      const mergedUsers = profiles.map(profile => {
+        const authUser = authData.users.find(u => u.id === profile.id);
+        return {
+          id: profile.id,
+          email: authUser?.email || 'Email non disponible',
+          role: profile.role,
+          created_at: profile.created_at,
+        };
+      });
 
       setUsers(mergedUsers);
     } catch (error) {
