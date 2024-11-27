@@ -70,7 +70,7 @@ export default function Account() {
           .single();
 
         if (profileError) throw profileError;
-        if (profileData) setRole(profileData.role);
+        if (profileData) setRole(profileData.role as UserRole);
 
         // Fetch formation enrollments
         const { data: formationData, error: formationError } = await supabase
