@@ -603,7 +603,7 @@ export type Database = {
       }
     }
     Enums: {
-      user_role: "user" | "admin"
+      user_role: "student" | "teacher" | "manager" | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
