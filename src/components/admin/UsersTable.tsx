@@ -26,7 +26,8 @@ export function UsersTable({
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Email</TableHead>
+          <TableHead>Nom</TableHead>
+          <TableHead>Prénom</TableHead>
           <TableHead>Rôle</TableHead>
           <TableHead>Date de création</TableHead>
           <TableHead>Actions</TableHead>
@@ -35,7 +36,8 @@ export function UsersTable({
       <TableBody>
         {users.map((user) => (
           <TableRow key={user.id}>
-            <TableCell>{user.email}</TableCell>
+            <TableCell>{user.lastName}</TableCell>
+            <TableCell>{user.firstName}</TableCell>
             <TableCell className="capitalize">{user.role}</TableCell>
             <TableCell>{new Date(user.created_at).toLocaleDateString()}</TableCell>
             <TableCell>

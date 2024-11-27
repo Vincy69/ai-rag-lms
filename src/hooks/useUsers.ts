@@ -8,7 +8,8 @@ type Profile = Database['public']['Tables']['profiles']['Row'];
 
 export interface User {
   id: string;
-  email: string;
+  firstName: string;
+  lastName: string;
   role: UserRole;
   created_at: string;
 }
@@ -32,7 +33,8 @@ export function useUsers() {
 
       const mergedUsers = profiles.map(profile => ({
         id: profile.id,
-        email: 'Email masqué', // We'll show a masked email since we can't access auth data
+        firstName: profile.first_name || 'N/A',
+        lastName: profile.last_name || 'N/A',
         role: profile.role,
         created_at: profile.created_at,
       }));
