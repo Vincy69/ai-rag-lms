@@ -14,10 +14,6 @@ const corsHeaders = {
   'Access-Control-Max-Age': '86400',
 };
 
-const PINECONE_API_KEY = 'pcsk_nv6Gw_BqfSG3WczY3ft9kAofzDAn66khKLLDEp494gXvHD5QLdY4Ak9yK5FCFJMgHT2a4';
-const PINECONE_INDEX = 'elephorm';
-const PINECONE_ENVIRONMENT = 'gcp-starter';
-
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -109,8 +105,8 @@ serve(async (req) => {
     try {
       console.log('Initializing Pinecone...');
       const pinecone = new Pinecone({
-        apiKey: PINECONE_API_KEY,
-        environment: PINECONE_ENVIRONMENT,
+        apiKey: Deno.env.get('PINECONE_API_KEY') ?? '',
+        environment: Deno.env.get('PINECONE_ENV') ?? 'gcp-starter',
       });
 
       const embeddings = new OpenAIEmbeddings({
@@ -118,7 +114,7 @@ serve(async (req) => {
       });
 
       console.log('Getting Pinecone index...');
-      const index = pinecone.Index(PINECONE_INDEX);
+      const index = pinecone.Index('elephorm');
       
       console.log('Creating vector store...');
       const vectorStore = await PineconeStore.fromExistingIndex(embeddings, {
