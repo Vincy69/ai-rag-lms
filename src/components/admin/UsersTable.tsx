@@ -12,15 +12,13 @@ import type { User } from "@/hooks/useUsers";
 interface UsersTableProps {
   users: User[];
   onEdit: (user: User) => void;
-  onShowEnrollments: (user: User) => void;
   onShowHistory: (user: User) => void;
   onManageEnrollments: (user: User) => void;
 }
 
 export function UsersTable({ 
   users, 
-  onEdit, 
-  onShowEnrollments, 
+  onEdit,
   onShowHistory,
   onManageEnrollments
 }: UsersTableProps) {
@@ -50,13 +48,6 @@ export function UsersTable({
                   onClick={() => onEdit(user)}
                 >
                   Modifier
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onShowEnrollments(user)}
-                >
-                  Inscriptions
                 </Button>
                 <Button
                   variant="outline"
