@@ -45,12 +45,13 @@ export async function getVectorStore() {
     try {
       const index = await getPineconeIndex();
       
+      // Use type assertion to match LangChain's expected type
       vectorStore = await PineconeStore.fromExistingIndex(
         new OpenAIEmbeddings({
           openAIApiKey: import.meta.env.VITE_OPENAI_API_KEY,
         }), 
         {
-          pineconeIndex: index,
+          pineconeIndex: index as any, // Type assertion needed for compatibility
           namespace: PINECONE_INDEX,
         }
       );
