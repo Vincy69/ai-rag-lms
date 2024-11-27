@@ -21,14 +21,13 @@ export async function getPineconeClient() {
 
 export async function getPineconeIndex() {
   const client = await getPineconeClient();
-  const index = client.index(PINECONE_INDEX);
-  return index;
+  return client.Index(PINECONE_INDEX);
 }
 
 export async function getVectorStore() {
   if (!vectorStore) {
     const client = await getPineconeClient();
-    const index = client.index(PINECONE_INDEX);
+    const index = client.Index(PINECONE_INDEX);
 
     vectorStore = await PineconeStore.fromExistingIndex(
       new OpenAIEmbeddings({
