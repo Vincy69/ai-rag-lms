@@ -81,7 +81,12 @@ export default function History() {
       return data.map(item => ({
         id: item.id,
         session_id: item.session_id,
-        message: item.message as ChatMessage,
+        message: {
+          input: (item.message as any).input || "",
+          output: (item.message as any).output || "",
+          score: (item.message as any).score || 0,
+          feedback: (item.message as any).feedback || null
+        } as ChatMessage,
         timestamp: new Date(item.created_at),
         user_id: item.user_id
       })) as ChatHistory[];
@@ -100,10 +105,12 @@ export default function History() {
 
       if (!chatItem) throw new Error("Chat item not found");
 
-      const message = chatItem.message as ChatMessage;
-      const updatedMessage: ChatMessage = {
-        ...message,
-        feedback
+      const currentMessage = chatItem.message as any;
+      const updatedMessage = {
+        input: currentMessage.input || "",
+        output: currentMessage.output || "",
+        score: currentMessage.score || 0,
+        feedback: feedback
       };
 
       const response = await fetch('/functions/v1/generate-embedding', {
