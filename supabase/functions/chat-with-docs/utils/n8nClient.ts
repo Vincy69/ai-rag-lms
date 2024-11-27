@@ -21,8 +21,9 @@ export async function callN8nWebhook(requestBody: { sessionId: string; input: st
     });
 
     if (!response.ok) {
-      console.error(`n8n webhook error: ${response.status}`, await response.text());
-      throw new Error(`n8n webhook error: ${response.status}`);
+      const errorText = await response.text();
+      console.error(`n8n webhook error: ${response.status}`, errorText);
+      throw new Error(`n8n webhook failed with status ${response.status}: ${errorText}`);
     }
 
     const rawResponse = await response.text();

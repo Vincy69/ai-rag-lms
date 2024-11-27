@@ -25,13 +25,28 @@ serve(async (req) => {
     
     console.log('Sending request to n8n:', requestBody);
     
-    const data = await callN8nWebhook(requestBody);
-    console.log('Processed n8n response:', data);
+    try {
+      const data = await callN8nWebhook(requestBody);
+      console.log('Processed n8n response:', data);
 
-    return new Response(
-      JSON.stringify(data),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+      return new Response(
+        JSON.stringify(data),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    } catch (error) {
+      console.error('n8n webhook error:', error);
+      return new Response(
+        JSON.stringify({ 
+          error: error.message,
+          details: `Failed to process request through n8n: ${error.message}`,
+          timestamp: new Date().toISOString()
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 500 
+        }
+      );
+    }
   } catch (error) {
     console.error('Error:', error);
     
