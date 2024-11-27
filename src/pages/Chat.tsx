@@ -32,7 +32,10 @@ export default function Chat() {
       if (!user) throw new Error("User not authenticated");
 
       const { data, error } = await supabase.functions.invoke('chat-with-docs', {
-        body: { message: content }
+        body: { 
+          message: content,
+          userId: user.id
+        }
       });
 
       if (error) throw error;
@@ -45,17 +48,6 @@ export default function Chat() {
       };
       setMessages((prev) => [...prev, aiMessage]);
 
-      // Save chat history with new structure
-      await supabase.from('chat_history').insert({
-        session_id: crypto.randomUUID(),
-        message: {
-          input: content,
-          output: data.response,
-          score: data.confidence || 0.8,
-          feedback: null
-        },
-        user_id: user.id
-      });
     } catch (error) {
       console.error('Error:', error);
       toast({

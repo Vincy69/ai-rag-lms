@@ -29,7 +29,6 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 3) {
         data = JSON.parse(rawResponse);
         console.log('Parsed n8n response:', data);
 
-        // Check if n8n returned an error message
         if (data.error || data.message === "Error in workflow") {
           throw new Error(`n8n workflow error: ${JSON.stringify(data)}`);
         }
@@ -38,7 +37,6 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 3) {
         throw new Error(`Invalid JSON response from n8n: ${rawResponse.slice(0, 100)}...`);
       }
       
-      // Normalize the response format
       if (typeof data === 'string') {
         return { response: data, confidence: 0.8 };
       }
@@ -85,9 +83,51 @@ serve(async (req) => {
   }
 
   try {
-    const { message } = await req.json()
+    const { message, userId } = await req.json()
     
     console.log('Received message:', message)
+    console.log('User ID:', userId)
+
+    // Récupérer les informations de l'utilisateur
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (profileError) throw profileError;
+
+    // Récupérer les formations de l'utilisateur
+    const { data: formations, error: formationsError } = await supabase
+      .from('formation_enrollments')
+      .select(`
+        formations (
+          id,
+          name,
+          description
+        ),
+        progress,
+        status
+      `)
+      .eq('user_id', userId);
+
+    if (formationsError) throw formationsError;
+
+    // Récupérer les blocs de l'utilisateur
+    const { data: blocks, error: blocksError } = await supabase
+      .from('block_enrollments')
+      .select(`
+        skill_blocks (
+          id,
+          name,
+          description
+        ),
+        progress,
+        status
+      `)
+      .eq('user_id', userId);
+
+    if (blocksError) throw blocksError;
 
     // Generate embedding for the message to find similar feedback
     const embeddingResponse = await fetch('https://api.openai.com/v1/embeddings', {
@@ -126,7 +166,21 @@ serve(async (req) => {
       sessionId: crypto.randomUUID(),
       chatInput: message + feedbackContext,
       metadata: {
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        user: {
+          id: userId,
+          role: profile.role
+        },
+        formations: formations.map(f => ({
+          name: f.formations.name,
+          progress: f.progress,
+          status: f.status
+        })),
+        blocks: blocks.map(b => ({
+          name: b.skill_blocks.name,
+          progress: b.progress,
+          status: b.status
+        }))
       }
     }
     
@@ -144,17 +198,18 @@ serve(async (req) => {
 
     console.log('Processed n8n response:', data);
 
-    // Get the authenticated user
-    const { data: { user } } = await supabase.auth.getUser();
-
     // Save the chat interaction with the confidence score to the database
     const { error: insertError } = await supabase
       .from('chat_history')
       .insert({
-        message: message,
-        response: data.response,
-        score: data.confidence,
-        user_id: user?.id
+        session_id: requestBody.sessionId,
+        message: {
+          input: message,
+          output: data.response,
+          score: data.confidence,
+          feedback: null
+        },
+        user_id: userId
       });
 
     if (insertError) {
