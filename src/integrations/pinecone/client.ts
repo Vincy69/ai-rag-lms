@@ -21,7 +21,8 @@ export async function getPineconeClient() {
 
 export async function getPineconeIndex() {
   const client = await getPineconeClient();
-  return client.index(PINECONE_INDEX);
+  const index = client.index(PINECONE_INDEX);
+  return index;
 }
 
 export async function getVectorStore() {
