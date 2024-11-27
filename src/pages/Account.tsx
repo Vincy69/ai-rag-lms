@@ -20,12 +20,7 @@ export default function Account() {
     const getProfile = async () => {
       try {
         setIsLoading(true);
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        
-        if (sessionError) {
-          console.error('Session error:', sessionError);
-          throw sessionError;
-        }
+        const { data: { session } } = await supabase.auth.getSession();
         
         if (!session?.user) {
           navigate("/login");
@@ -51,8 +46,8 @@ export default function Account() {
       } catch (error) {
         console.error('Error fetching profile:', error);
         toast({
-          title: "Error",
-          description: "Failed to load profile information",
+          title: "Erreur",
+          description: "Impossible de charger les informations du profil",
           variant: "destructive",
         });
       } finally {
