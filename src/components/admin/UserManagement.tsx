@@ -39,7 +39,7 @@ export function UserManagement() {
     try {
       const { data: profiles, error: profilesError } = await supabaseAdmin
         .from("profiles")
-        .select("*");
+        .select("*") as { data: Profile[] | null, error: Error | null };
 
       if (profilesError) throw profilesError;
 
