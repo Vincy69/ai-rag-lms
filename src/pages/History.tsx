@@ -79,9 +79,11 @@ export default function History() {
       }
 
       return data.map(item => ({
-        ...item,
+        id: item.id,
+        session_id: item.session_id,
+        message: item.message as ChatMessage,
         timestamp: new Date(item.created_at),
-        message: item.message as ChatMessage
+        user_id: item.user_id
       })) as ChatHistory[];
     },
     enabled: !!userProfile,
@@ -98,8 +100,9 @@ export default function History() {
 
       if (!chatItem) throw new Error("Chat item not found");
 
-      const updatedMessage = {
-        ...chatItem.message,
+      const message = chatItem.message as ChatMessage;
+      const updatedMessage: ChatMessage = {
+        ...message,
         feedback
       };
 
