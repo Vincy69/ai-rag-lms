@@ -21,6 +21,7 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Processing document request...');
     const { file, category } = await req.json()
 
     if (!file || !file.data) {
@@ -47,7 +48,7 @@ serve(async (req) => {
     const fileExt = file.name.split('.').pop()
     const filePath = `${crypto.randomUUID()}.${fileExt}`
 
-    console.log('Uploading file:', file.name, 'to path:', filePath)
+    console.log('Uploading file:', file.name, 'to path:', filePath);
 
     // Upload file to Storage
     const { error: uploadError } = await supabase.storage
@@ -79,27 +80,40 @@ serve(async (req) => {
       chunkOverlap: 200,
     });
 
+    console.log('Creating document chunks...');
     const docs = await splitter.createDocuments([textContent], [{
       source: file.name,
       type: file.type,
       category: category
     }]);
 
-    // Initialize Pinecone with proper configuration
-    const pinecone = new Pinecone({
-      apiKey: PINECONE_API_KEY,
-      environment: PINECONE_ENVIRONMENT,
-    });
+    try {
+      console.log('Initializing Pinecone...');
+      // Initialize Pinecone with proper configuration
+      const pinecone = new Pinecone({
+        apiKey: PINECONE_API_KEY,
+        environment: PINECONE_ENVIRONMENT,
+      });
 
-    const embeddings = new OpenAIEmbeddings({
-      openAIApiKey: Deno.env.get('OPENAI_API_KEY'),
-    });
+      const embeddings = new OpenAIEmbeddings({
+        openAIApiKey: Deno.env.get('OPENAI_API_KEY'),
+      });
 
-    const index = pinecone.Index(PINECONE_INDEX);
-    const vectorStore = await PineconeStore.fromExistingIndex(embeddings, { pineconeIndex: index });
+      console.log('Getting Pinecone index...');
+      const index = pinecone.Index(PINECONE_INDEX);
+      
+      console.log('Creating vector store...');
+      const vectorStore = await PineconeStore.fromExistingIndex(embeddings, {
+        pineconeIndex: index,
+        namespace: "default",
+      });
 
-    // Add documents to vector store
-    await vectorStore.addDocuments(docs);
+      console.log('Adding documents to vector store...');
+      await vectorStore.addDocuments(docs);
+    } catch (error) {
+      console.error('Pinecone error:', error);
+      throw new Error(`Pinecone processing failed: ${error.message}`);
+    }
 
     // Save document metadata to database
     const { error: dbError } = await supabase
