@@ -4,7 +4,7 @@ import { OpenAIEmbeddings } from '@langchain/openai';
 
 const PINECONE_API_KEY = process.env.PINECONE_API_KEY || 'pcsk_nv6Gw_BqfSG3WczY3ft9kAofzDAn66khKLLDEp494gXvHD5QLdY4Ak9yK5FCFJMgHT2a4';
 const PINECONE_INDEX = 'cours';
-const PINECONE_ENVIRONMENT = 'gcp-starter';
+const PINECONE_HOST = 'https://cours-nzobyk1.svc.aped-4627-b74a.pinecone.io';
 
 let pineconeClient: Pinecone | null = null;
 let vectorStore: PineconeStore | null = null;
@@ -13,7 +13,7 @@ export async function getPineconeClient() {
   if (!pineconeClient) {
     pineconeClient = new Pinecone({
       apiKey: PINECONE_API_KEY,
-      environment: PINECONE_ENVIRONMENT
+      host: PINECONE_HOST
     });
   }
   return pineconeClient;

@@ -103,6 +103,7 @@ serve(async (req) => {
       console.log('Initializing Pinecone...');
       const pineconeApiKey = Deno.env.get('PINECONE_API_KEY');
       const pineconeIndex = 'cours';
+      const pineconeHost = 'https://cours-nzobyk1.svc.aped-4627-b74a.pinecone.io';
       
       if (!pineconeApiKey) {
         throw new Error('PINECONE_API_KEY environment variable is not set');
@@ -110,18 +111,16 @@ serve(async (req) => {
       
       const pinecone = new Pinecone({
         apiKey: pineconeApiKey,
-        environment: 'gcp-starter'
-      });
-
-      const embeddings = new OpenAIEmbeddings({
-        openAIApiKey: Deno.env.get('OPENAI_API_KEY'),
+        host: pineconeHost
       });
 
       console.log('Getting Pinecone index...');
       const index = pinecone.Index(pineconeIndex);
       
       console.log('Creating vector store...');
-      const vectorStore = await PineconeStore.fromExistingIndex(embeddings, {
+      const vectorStore = await PineconeStore.fromExistingIndex(new OpenAIEmbeddings({
+        openAIApiKey: Deno.env.get('OPENAI_API_KEY'),
+      }), {
         pineconeIndex: index,
       });
 
