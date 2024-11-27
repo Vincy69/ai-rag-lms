@@ -43,23 +43,19 @@ export function UserManagement() {
 
       if (profilesError) throw profilesError;
 
-      const { data: authUsers, error: usersError } = await supabaseAdmin.auth.admin.listUsers();
-      
-      if (usersError) throw usersError;
-
-      if (profiles && authUsers.users) {
-        const mergedUsers = profiles.map(profile => {
-          const user = authUsers.users.find(u => u.id === profile.id);
-          return {
-            id: profile.id,
-            email: user?.email || profile.id,
-            role: profile.role as UserRole,
-            created_at: profile.created_at,
-          };
-        });
-
-        setUsers(mergedUsers);
+      if (!profiles) {
+        throw new Error("No profiles found");
       }
+
+      // For now, we'll just use the profile data since we can't access the auth API
+      const mergedUsers = profiles.map(profile => ({
+        id: profile.id,
+        email: profile.id, // Using ID as email since we can't access auth users
+        role: profile.role,
+        created_at: profile.created_at,
+      }));
+
+      setUsers(mergedUsers);
     } catch (error) {
       console.error("Error loading users:", error);
       toast({
