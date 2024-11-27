@@ -10,7 +10,9 @@ import * as pdfjsLib from 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/+esm
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+  'Access-Control-Max-Age': '86400',
+};
 
 const PINECONE_API_KEY = 'pcsk_nv6Gw_BqfSG3WczY3ft9kAofzDAn66khKLLDEp494gXvHD5QLdY4Ak9yK5FCFJMgHT2a4';
 const PINECONE_INDEX = 'elephorm';
@@ -20,37 +22,41 @@ const PINECONE_ENVIRONMENT = 'gcp-starter';
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js`;
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return new Response(null, { 
+      headers: corsHeaders,
+      status: 204
+    });
   }
 
   try {
     console.log('Processing document request...');
-    const { file, category } = await req.json()
+    const { file, category } = await req.json();
 
     if (!file || !file.data) {
-      throw new Error('No file data provided')
+      throw new Error('No file data provided');
     }
 
     // Convert base64 data URL to blob
-    const base64Data = file.data.split(',')[1]
-    const binaryData = atob(base64Data)
-    const bytes = new Uint8Array(binaryData.length)
+    const base64Data = file.data.split(',')[1];
+    const binaryData = atob(base64Data);
+    const bytes = new Uint8Array(binaryData.length);
     for (let i = 0; i < binaryData.length; i++) {
-      bytes[i] = binaryData.charCodeAt(i)
+      bytes[i] = binaryData.charCodeAt(i);
     }
     
-    const blob = new Blob([bytes], { type: file.type })
+    const blob = new Blob([bytes], { type: file.type });
 
     // Initialize Supabase client
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
+    );
 
     // Generate unique file path
-    const fileExt = file.name.split('.').pop()
-    const filePath = `${crypto.randomUUID()}.${fileExt}`
+    const fileExt = file.name.split('.').pop();
+    const filePath = `${crypto.randomUUID()}.${fileExt}`;
 
     console.log('Uploading file:', file.name, 'to path:', filePath);
 
@@ -60,15 +66,15 @@ serve(async (req) => {
       .upload(filePath, blob, {
         contentType: file.type,
         upsert: false
-      })
+      });
 
     if (uploadError) {
-      console.error('Upload error:', uploadError)
-      throw uploadError
+      console.error('Upload error:', uploadError);
+      throw uploadError;
     }
 
     // Extract text content based on file type
-    let textContent = ''
+    let textContent = '';
     if (file.type === 'application/pdf') {
       console.log('Extracting text from PDF...');
       const arrayBuffer = await blob.arrayBuffer();
@@ -86,9 +92,9 @@ serve(async (req) => {
       
       textContent = (await Promise.all(textPromises)).join('\n\n');
     } else if (file.type === 'text/plain') {
-      textContent = await blob.text()
+      textContent = await blob.text();
     } else {
-      textContent = `${file.name} - Document content extraction not implemented for this type`
+      textContent = `${file.name} - Document content extraction not implemented for this type`;
     }
 
     // Split text into chunks using LangChain
@@ -140,11 +146,11 @@ serve(async (req) => {
         file_path: filePath,
         content_type: file.type,
         size: file.size,
-      })
+      });
 
     if (dbError) {
-      console.error('Database error:', dbError)
-      throw dbError
+      console.error('Database error:', dbError);
+      throw dbError;
     }
 
     return new Response(
@@ -152,13 +158,27 @@ serve(async (req) => {
         message: 'Document processed successfully', 
         filePath,
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+      { 
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json' 
+        } 
+      }
+    );
   } catch (error) {
-    console.error('Process document error:', error)
+    console.error('Process document error:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-    )
+      JSON.stringify({ 
+        error: error.message || "An unexpected error occurred",
+        details: error.stack
+      }),
+      { 
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json' 
+        },
+        status: 500 
+      }
+    );
   }
-})
+});
