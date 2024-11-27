@@ -41,7 +41,7 @@ export default function Account() {
 
         if (profileData) {
           console.log('Profile data:', profileData);
-          setRole(profileData.role as UserRole);
+          setRole(profileData.role);
         }
 
       } catch (error) {
