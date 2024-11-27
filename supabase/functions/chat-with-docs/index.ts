@@ -28,15 +28,16 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 3) {
       try {
         data = JSON.parse(rawResponse);
         console.log('Parsed n8n response:', data);
+
+        // Check if n8n returned an error message
+        if (data.error || data.message === "Error in workflow") {
+          throw new Error(`n8n workflow error: ${JSON.stringify(data)}`);
+        }
       } catch (e) {
         console.error('Failed to parse JSON response:', e);
         throw new Error(`Invalid JSON response from n8n: ${rawResponse.slice(0, 100)}...`);
       }
       
-      if (!response.ok) {
-        throw new Error(`n8n error: ${JSON.stringify(data)}`);
-      }
-
       // Normalize the response format
       if (typeof data === 'string') {
         return { response: data, confidence: 0.8 };
@@ -150,8 +151,8 @@ serve(async (req) => {
     const { error: insertError } = await supabase
       .from('chat_history')
       .insert({
-        question: message,
-        answer: data.response,
+        message: message,
+        response: data.response,
         score: data.confidence,
         user_id: user?.id
       });
