@@ -15,10 +15,12 @@ import { UserEnrollments } from "./UserEnrollments";
 import { UserHistory } from "./UserHistory";
 import { Loader2 } from "lucide-react";
 
+type UserRole = "student" | "teacher" | "manager" | "admin";
+
 interface User {
   id: string;
   email: string;
-  role: string;
+  role: UserRole;
   created_at: string;
 }
 
@@ -47,7 +49,7 @@ export function UserManagement() {
         return {
           id: profile.id,
           email: authUser?.email || "N/A",
-          role: profile.role,
+          role: profile.role as UserRole,
           created_at: profile.created_at,
         };
       });

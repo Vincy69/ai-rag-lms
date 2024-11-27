@@ -18,11 +18,13 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { Label } from "@/components/ui/label";
 
+type UserRole = "student" | "teacher" | "manager" | "admin";
+
 interface UserDialogProps {
   user: {
     id: string;
     email: string;
-    role: string;
+    role: UserRole;
   } | null;
   type: "edit" | "create" | null;
   open: boolean;
@@ -39,7 +41,7 @@ export function UserDialog({
 }: UserDialogProps) {
   const [email, setEmail] = useState(user?.email || "");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState(user?.role || "student");
+  const [role, setRole] = useState<UserRole>(user?.role || "student");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -141,7 +143,7 @@ export function UserDialog({
 
           <div className="space-y-2">
             <Label htmlFor="role">Rôle</Label>
-            <Select value={role} onValueChange={setRole}>
+            <Select value={role} onValueChange={(value: UserRole) => setRole(value)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
