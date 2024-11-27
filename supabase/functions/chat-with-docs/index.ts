@@ -26,32 +26,43 @@ serve(async (req) => {
     // Generate embedding for the query
     const embedding = await generateEmbedding(message);
 
-    // Initialize Pinecone client
+    // Initialize Pinecone client with proper error handling
     console.log('Initializing Pinecone client...');
     const pinecone = new PineconeClient();
+    const pineconeApiKey = Deno.env.get('PINECONE_API_KEY');
+    const pineconeEnv = Deno.env.get('PINECONE_ENV') || 'gcp-starter';
+    const pineconeIndexName = Deno.env.get('PINECONE_INDEX_NAME') || 'elephorm';
+
+    if (!pineconeApiKey) {
+      throw new Error('PINECONE_API_KEY is not set in environment variables');
+    }
+
     await pinecone.init({
-      apiKey: Deno.env.get('PINECONE_API_KEY') || '',
-      environment: Deno.env.get('PINECONE_ENV') || 'gcp-starter',
+      apiKey: pineconeApiKey,
+      environment: pineconeEnv,
     });
 
-    const index = pinecone.Index(Deno.env.get('PINECONE_INDEX_NAME') || 'elephorm');
-    console.log('Successfully initialized Pinecone index');
+    console.log('Successfully initialized Pinecone client');
+    console.log('Getting Pinecone index:', pineconeIndexName);
+    
+    const index = pinecone.Index(pineconeIndexName);
 
-    // Query Pinecone for similar documents
+    // Query Pinecone with proper error handling
     console.log('Querying Pinecone...');
     const queryResponse = await index.query({
       queryRequest: {
         vector: embedding,
         topK: 5,
-        includeMetadata: true
+        includeMetadata: true,
+        namespace: pineconeIndexName
       }
     });
     console.log('Successfully queried Pinecone');
 
     // Extract relevant context from matched documents
     const context = queryResponse.matches
-      .map(match => match.metadata?.text || '')
-      .join('\n\n');
+      ?.map(match => match.metadata?.text || '')
+      .join('\n\n') || '';
 
     // Find similar feedback
     const { data: similarFeedback } = await findSimilarFeedback(embedding);

@@ -5,18 +5,18 @@ export async function generateEmbedding(text: string): Promise<number[]> {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
-      'Content-Type': 'application/json',
+      'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      model: 'text-embedding-3-small',
       input: text,
-    }),
+      model: "text-embedding-3-small"
+    })
   });
 
   if (!response.ok) {
-    const error = await response.text();
+    const error = await response.json();
     console.error('OpenAI API error:', error);
-    throw new Error('Error generating embedding');
+    throw new Error(`OpenAI API error: ${error.error?.message || 'Unknown error'}`);
   }
 
   const { data: [{ embedding }] } = await response.json();
