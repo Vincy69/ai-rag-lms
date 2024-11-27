@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
-import { PineconeClient } from 'https://esm.sh/@pinecone-database/pinecone@1.1.2'
+import { Pinecone } from 'https://esm.sh/@pinecone-database/pinecone@1.1.2'
 import { corsHeaders } from './utils/cors.ts'
 import { callN8nWebhook } from './utils/n8nClient.ts'
 import { generateEmbedding } from './utils/openai.ts'
@@ -26,37 +26,25 @@ serve(async (req) => {
     // Generate embedding for the query
     const embedding = await generateEmbedding(message);
 
-    // Initialize Pinecone client with proper error handling
+    // Initialize Pinecone client
     console.log('Initializing Pinecone client...');
-    const pinecone = new PineconeClient();
-    const pineconeApiKey = Deno.env.get('PINECONE_API_KEY');
-    const pineconeEnv = Deno.env.get('PINECONE_ENV') || 'gcp-starter';
-    const pineconeIndexName = Deno.env.get('PINECONE_INDEX_NAME') || 'elephorm';
-
-    if (!pineconeApiKey) {
-      throw new Error('PINECONE_API_KEY is not set in environment variables');
-    }
-
-    await pinecone.init({
-      apiKey: pineconeApiKey,
-      environment: pineconeEnv,
+    const pinecone = new Pinecone({
+      apiKey: Deno.env.get('PINECONE_API_KEY') || '',
+      environment: Deno.env.get('PINECONE_ENV') || 'gcp-starter'
     });
 
-    console.log('Successfully initialized Pinecone client');
-    console.log('Getting Pinecone index:', pineconeIndexName);
-    
-    const index = pinecone.Index(pineconeIndexName);
+    const indexName = Deno.env.get('PINECONE_INDEX_NAME') || 'elephorm';
+    console.log('Getting Pinecone index:', indexName);
+    const index = pinecone.Index(indexName);
 
-    // Query Pinecone with proper error handling
+    // Query Pinecone
     console.log('Querying Pinecone...');
     const queryResponse = await index.query({
-      queryRequest: {
-        vector: embedding,
-        topK: 5,
-        includeMetadata: true,
-        namespace: pineconeIndexName
-      }
+      vector: embedding,
+      topK: 5,
+      includeMetadata: true
     });
+
     console.log('Successfully queried Pinecone');
 
     // Extract relevant context from matched documents
