@@ -2,7 +2,6 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
 import { corsHeaders } from './utils/cors.ts'
 import { callN8nWebhook } from './utils/n8nClient.ts'
-import { getUserData } from './utils/supabase.ts'
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -18,30 +17,11 @@ serve(async (req) => {
       throw new Error('Message and userId are required');
     }
 
-    // Get user data
-    const { profile, formations, blocks } = await getUserData(userId);
-    
-    // Prepare request body for n8n
+    // Prepare simplified request body for n8n
     const requestBody = {
       sessionId: crypto.randomUUID(),
       input: message,
-      user: {
-        id: userId,
-        role: profile.role,
-        firstName: profile.first_name,
-        lastName: profile.last_name
-      },
-      formations: formations.map(f => ({
-        name: f.formations.name,
-        progress: f.progress,
-        status: f.status
-      })),
-      blocks: blocks.map(b => ({
-        name: b.skill_blocks.name,
-        progress: b.progress,
-        status: b.status
-      })),
-      timestamp: new Date().toISOString()
+      userId: userId
     };
     
     console.log('Sending request to n8n:', requestBody);
