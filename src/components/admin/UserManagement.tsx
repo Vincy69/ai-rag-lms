@@ -43,21 +43,23 @@ export function UserManagement() {
 
       if (profilesError) throw profilesError;
 
-      const { data: { users }, error: usersError } = await supabaseAdmin.auth.admin.listUsers();
+      const { data: authUsers, error: usersError } = await supabaseAdmin.auth.admin.listUsers();
       
       if (usersError) throw usersError;
 
-      const mergedUsers = profiles.map(profile => {
-        const user = users.find(u => u.id === profile.id);
-        return {
-          id: profile.id,
-          email: user?.email || profile.id,
-          role: profile.role as UserRole,
-          created_at: profile.created_at,
-        };
-      });
+      if (profiles && authUsers.users) {
+        const mergedUsers = profiles.map(profile => {
+          const user = authUsers.users.find(u => u.id === profile.id);
+          return {
+            id: profile.id,
+            email: user?.email || profile.id,
+            role: profile.role as UserRole,
+            created_at: profile.created_at,
+          };
+        });
 
-      setUsers(mergedUsers);
+        setUsers(mergedUsers);
+      }
     } catch (error) {
       console.error("Error loading users:", error);
       toast({
