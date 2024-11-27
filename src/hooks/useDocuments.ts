@@ -22,10 +22,10 @@ export function useDocuments() {
 
   const deleteDocument = useMutation({
     mutationFn: async (id: string) => {
-      // Get the document to get its file_path
+      // Get the document to get its file_path and pinecone_id
       const { data: document, error: fetchError } = await supabase
         .from("documents")
-        .select("file_path, embedding")
+        .select("file_path, pinecone_id")
         .eq("id", id)
         .single();
 
@@ -38,7 +38,7 @@ export function useDocuments() {
 
       if (storageError) throw storageError;
 
-      // Delete the document record (this will also delete the associated embedding due to CASCADE)
+      // Delete the document record
       const { error: deleteError } = await supabase
         .from("documents")
         .delete()

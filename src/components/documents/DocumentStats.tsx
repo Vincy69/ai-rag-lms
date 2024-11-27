@@ -10,13 +10,13 @@ export function DocumentStats() {
     queryFn: async () => {
       const { data: documents, error } = await supabase
         .from("documents")
-        .select("size, embedding");
+        .select("size, pinecone_id");
 
       if (error) throw error;
 
       const totalSize = documents.reduce((acc, doc) => acc + doc.size, 0);
-      // Count only documents that have a non-null embedding
-      const totalVectors = documents.filter(doc => doc.embedding !== null).length;
+      // Count only documents that have a non-null pinecone_id
+      const totalVectors = documents.filter(doc => doc.pinecone_id !== null).length;
       const totalDocuments = documents.length;
 
       return {
