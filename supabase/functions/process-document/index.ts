@@ -1,16 +1,12 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
-import { PineconeClient } from 'https://esm.sh/@pinecone-database/pinecone@1.1.2'
-import { corsHeaders } from './utils/cors.ts'
-import { callN8nWebhook } from './utils/n8nClient.ts'
-import { generateEmbedding } from './utils/openai.ts'
-import { getUserData, findSimilarFeedback, saveChatInteraction } from './utils/supabase.ts'
 import { Pinecone } from 'https://esm.sh/@pinecone-database/pinecone@1.1.2'
 import { OpenAIEmbeddings } from 'https://esm.sh/@langchain/openai@0.0.7'
 import { Document } from 'https://esm.sh/langchain/document'
 import { RecursiveCharacterTextSplitter } from 'https://esm.sh/langchain/text_splitter'
 import { PineconeStore } from 'https://esm.sh/@langchain/pinecone@0.0.1'
 import * as pdfjsLib from 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/+esm'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -128,7 +124,6 @@ serve(async (req) => {
       console.log('Creating vector store...');
       const vectorStore = await PineconeStore.fromExistingIndex(embeddings, {
         pineconeIndex: index,
-        namespace: "default",
       });
 
       console.log('Adding documents to vector store...');
