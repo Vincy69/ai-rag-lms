@@ -9,9 +9,8 @@ serve(async (req) => {
   }
 
   try {
-    const { message, userId } = await req.json();
-    console.log('Received message:', message);
-    console.log('User ID:', userId);
+    const { sessionId, action, chatInput: message, userId } = await req.json();
+    console.log('Received request:', { sessionId, action, message, userId });
 
     if (!message || !userId) {
       throw new Error('Message and userId are required');
@@ -19,7 +18,7 @@ serve(async (req) => {
 
     // Prepare simplified request body for n8n
     const requestBody = {
-      sessionId: crypto.randomUUID(),
+      sessionId,
       input: message,
       userId: userId
     };
