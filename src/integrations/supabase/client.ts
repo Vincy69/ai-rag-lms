@@ -6,7 +6,17 @@ const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 const supabaseServiceRoleKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNub21tbW54a2todGZ3aXhmcHNvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcwNzQ4ODQ4MCwiZXhwIjoyMDIzMDY0NDgwfQ.Gy5LR9finn_gBwvV8-vBGVSVVFxXQVXQDvXkL_6YDWM';
 
 // Client standard pour les utilisateurs normaux
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+  }
+});
 
 // Client avec le service role pour les opérations d'administration
-export const supabaseAdmin = createClient<Database>(supabaseUrl, supabaseServiceRoleKey);
+export const supabaseAdmin = createClient<Database>(supabaseUrl, supabaseServiceRoleKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false,
+  }
+});

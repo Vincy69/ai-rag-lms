@@ -128,17 +128,17 @@ export function UserEnrollments({
     try {
       const { data: formationsData, error: formationsError } = await supabase
         .from("formations")
-        .select("id, name");
+        .select("*");
 
       if (formationsError) throw formationsError;
-      setFormations(formationsData);
+      setFormations(formationsData || []);
 
       const { data: blocksData, error: blocksError } = await supabase
         .from("skill_blocks")
-        .select("id, name, formation_id");
+        .select("*");
 
       if (blocksError) throw blocksError;
-      setBlocks(blocksData);
+      setBlocks(blocksData || []);
     } catch (error) {
       console.error("Error loading formations and blocks:", error);
       toast({

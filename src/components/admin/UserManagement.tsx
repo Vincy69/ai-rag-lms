@@ -43,12 +43,10 @@ export function UserManagement() {
 
       if (profilesError) throw profilesError;
 
-      // Get all users from profiles and fetch their emails from auth metadata
       const { data: { users }, error: usersError } = await supabaseAdmin.auth.admin.listUsers();
       
       if (usersError) throw usersError;
 
-      // Merge profiles with user data
       const mergedUsers = profiles.map(profile => {
         const user = users.find(u => u.id === profile.id);
         return {
