@@ -5,9 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
-import type { Database } from "@/integrations/supabase/types";
-
-type UserRole = Database['public']['Enums']['user_role'];
+import type { UserRole } from "@/integrations/supabase/types";
 
 export default function Account() {
   const [email, setEmail] = useState<string | null>(null);
@@ -41,8 +39,10 @@ export default function Account() {
         }
 
         if (profileData) {
+          console.log('Profile data:', profileData); // Debug log
           setRole(profileData.role);
         }
+
       } catch (error) {
         console.error('Error fetching profile:', error);
         toast({
@@ -88,13 +88,13 @@ export default function Account() {
           <CardContent className="space-y-6">
             <div>
               <label className="text-sm font-medium text-muted-foreground">Email</label>
-              <p className="mt-1">{email || 'Chargement...'}</p>
+              <p className="mt-1">{isLoading ? 'Chargement...' : email}</p>
             </div>
             
             <div>
               <label className="text-sm font-medium text-muted-foreground">Rôle</label>
               <p className="mt-1 capitalize">
-                {isLoading ? 'Chargement...' : role}
+                {isLoading ? 'Chargement...' : role || 'Non défini'}
               </p>
             </div>
             
