@@ -14,8 +14,10 @@ import { UserDialog } from "./UserDialog";
 import { UserEnrollments } from "./UserEnrollments";
 import { UserHistory } from "./UserHistory";
 import { Loader2 } from "lucide-react";
+import type { Database } from "@/integrations/supabase/types";
 
-type UserRole = "student" | "teacher" | "manager" | "admin";
+type UserRole = Database['public']['Enums']['user_role'];
+type Profile = Database['public']['Tables']['profiles']['Row'];
 
 interface User {
   id: string;

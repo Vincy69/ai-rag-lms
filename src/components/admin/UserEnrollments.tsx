@@ -17,6 +17,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Loader2, Plus } from "lucide-react";
+import type { Database } from "@/integrations/supabase/types";
+
+type Formation = Database['public']['Tables']['formations']['Row'];
+type Block = Database['public']['Tables']['skill_blocks']['Row'];
+type FormationEnrollment = Database['public']['Tables']['formation_enrollments']['Row'];
+type BlockEnrollment = Database['public']['Tables']['block_enrollments']['Row'];
 
 interface UserEnrollmentsProps {
   user: {
@@ -27,18 +33,7 @@ interface UserEnrollmentsProps {
   onOpenChange: (open: boolean) => void;
 }
 
-interface Formation {
-  id: string;
-  name: string;
-}
-
-interface Block {
-  id: string;
-  name: string;
-  formation_id: string;
-}
-
-interface Enrollment {
+interface EnrollmentData {
   formation_id: string;
   formation_name: string;
   progress: number;
@@ -56,7 +51,7 @@ export function UserEnrollments({
   open,
   onOpenChange,
 }: UserEnrollmentsProps) {
-  const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
+  const [enrollments, setEnrollments] = useState<EnrollmentData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [formations, setFormations] = useState<Formation[]>([]);
   const [blocks, setBlocks] = useState<Block[]>([]);
@@ -68,7 +63,6 @@ export function UserEnrollments({
     if (!user) return;
 
     try {
-      // Fetch formation enrollments
       const { data: formationEnrollments, error: formationError } = await supabase
         .from("formation_enrollments")
         .select(`
@@ -83,7 +77,6 @@ export function UserEnrollments({
 
       if (formationError) throw formationError;
 
-      // Fetch block enrollments
       const { data: blockEnrollments, error: blockError } = await supabase
         .from("block_enrollments")
         .select(`
@@ -100,13 +93,12 @@ export function UserEnrollments({
 
       if (blockError) throw blockError;
 
-      // Organize data
-      const organized = formationEnrollments.map((fe) => ({
+      const organized = (formationEnrollments || []).map((fe) => ({
         formation_id: fe.formation_id,
         formation_name: fe.formations?.name || "Formation inconnue",
         progress: fe.progress || 0,
         status: fe.status,
-        blocks: blockEnrollments
+        blocks: (blockEnrollments || [])
           .filter(
             (be) =>
               be.skill_blocks?.formation_id === fe.formation_id

@@ -6,8 +6,13 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
-import type { UserRole } from "@/integrations/supabase/types/enums";
+import type { Database } from "@/integrations/supabase/types";
 import { FormationProgressCard } from "@/components/account/FormationProgressCard";
+
+type UserRole = Database['public']['Enums']['user_role'];
+type Formation = Database['public']['Tables']['formations']['Row'];
+type Block = Database['public']['Tables']['skill_blocks']['Row'];
+type Skill = Database['public']['Tables']['skills']['Row'];
 
 interface FormationProgress {
   id: string;
