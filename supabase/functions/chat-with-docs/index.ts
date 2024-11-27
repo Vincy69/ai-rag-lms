@@ -1,10 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
-import { Pinecone } from 'https://esm.sh/@pinecone-database/pinecone@1.1.2'
 import { corsHeaders } from './utils/cors.ts'
 import { callN8nWebhook } from './utils/n8nClient.ts'
-import { generateEmbedding } from './utils/openai.ts'
-import { getUserData, findSimilarFeedback, saveChatInteraction } from './utils/supabase.ts'
+import { getUserData } from './utils/supabase.ts'
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -22,61 +20,11 @@ serve(async (req) => {
 
     // Get user data
     const { profile, formations, blocks } = await getUserData(userId);
-
-    // Generate embedding for the query
-    const embedding = await generateEmbedding(message);
-
-    // Initialize Pinecone client
-    const pineconeApiKey = Deno.env.get('PINECONE_API_KEY');
-    const pineconeEnv = Deno.env.get('PINECONE_ENV') || 'gcp-starter';
     
-    if (!pineconeApiKey) {
-      console.error('PINECONE_API_KEY is not set');
-      throw new Error('Pinecone API key is not configured');
-    }
-
-    console.log('Initializing Pinecone client...');
-    console.log('Using Pinecone environment:', pineconeEnv);
-    
-    const pinecone = new Pinecone({
-      apiKey: pineconeApiKey,
-      environment: pineconeEnv
-    });
-
-    // Get Pinecone index
-    const indexName = Deno.env.get('PINECONE_INDEX_NAME') || 'elephorm';
-    console.log('Getting Pinecone index:', indexName);
-    const index = pinecone.Index(indexName);
-
-    // Query Pinecone
-    console.log('Querying Pinecone...');
-    const queryResponse = await index.query({
-      vector: embedding,
-      topK: 5,
-      includeMetadata: true
-    });
-
-    console.log('Successfully queried Pinecone');
-    console.log('Number of matches:', queryResponse.matches?.length);
-
-    // Extract relevant context from matched documents
-    const context = queryResponse.matches
-      ?.map(match => match.metadata?.text || '')
-      .join('\n\n') || '';
-
-    // Find similar feedback
-    const { data: similarFeedback } = await findSimilarFeedback(embedding);
-    
-    // Prepare context
-    const feedbackContext = similarFeedback?.length > 0
-      ? `\nPrevious relevant feedback: ${similarFeedback.map(f => f.feedback).join('. ')}`
-      : '';
-    
-    // Prepare request body for n8n with document context
+    // Prepare request body for n8n
     const requestBody = {
       sessionId: crypto.randomUUID(),
       input: message,
-      context: context + feedbackContext,
       user: {
         id: userId,
         role: profile.role,
@@ -100,14 +48,6 @@ serve(async (req) => {
     
     const data = await callN8nWebhook(requestBody);
     console.log('Processed n8n response:', data);
-
-    // Save chat interaction
-    await saveChatInteraction(requestBody.sessionId, {
-      input: message,
-      output: data.response,
-      score: data.confidence,
-      feedback: null
-    }, userId);
 
     return new Response(
       JSON.stringify(data),
