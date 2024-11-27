@@ -10,7 +10,6 @@ export async function getPineconeClient() {
   if (!pineconeClient) {
     pineconeClient = new Pinecone({
       apiKey: PINECONE_API_KEY,
-      environment: PINECONE_ENVIRONMENT,
     });
   }
   return pineconeClient;
