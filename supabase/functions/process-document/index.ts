@@ -103,7 +103,6 @@ serve(async (req) => {
     try {
       console.log('Initializing Pinecone...');
       const pineconeApiKey = Deno.env.get('PINECONE_API_KEY');
-      const pineconeEnv = Deno.env.get('PINECONE_ENV') ?? 'gcp-starter';
       
       if (!pineconeApiKey) {
         throw new Error('PINECONE_API_KEY environment variable is not set');
@@ -111,7 +110,7 @@ serve(async (req) => {
 
       const pinecone = new Pinecone({
         apiKey: pineconeApiKey,
-        environment: pineconeEnv,
+        environment: 'gcp-starter'
       });
 
       const embeddings = new OpenAIEmbeddings({
