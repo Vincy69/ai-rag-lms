@@ -1,4 +1,6 @@
 export async function generateEmbedding(text: string): Promise<number[]> {
+  console.log('Generating embedding with text-embedding-3-small model...');
+  
   const response = await fetch('https://api.openai.com/v1/embeddings', {
     method: 'POST',
     headers: {
@@ -18,5 +20,6 @@ export async function generateEmbedding(text: string): Promise<number[]> {
   }
 
   const { data: [{ embedding }] } = await response.json();
+  console.log('Successfully generated embedding');
   return embedding;
 }
