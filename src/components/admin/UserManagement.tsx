@@ -41,27 +41,13 @@ export function UserManagement() {
 
       if (profilesError) throw profilesError;
 
-      // Get all users from profiles and fetch their emails from auth metadata
-      const mergedUsers = await Promise.all(
-        profiles.map(async (profile) => {
-          const { data: { user }, error: userError } = await supabase.auth.admin.getUserById(profile.id);
-          if (userError) {
-            console.error("Error fetching user:", userError);
-            return {
-              id: profile.id,
-              email: "N/A",
-              role: profile.role as UserRole,
-              created_at: profile.created_at,
-            };
-          }
-          return {
-            id: profile.id,
-            email: user?.email || "N/A",
-            role: profile.role as UserRole,
-            created_at: profile.created_at,
-          };
-        })
-      );
+      // Since we can't access admin APIs, we'll just use the profiles data
+      const mergedUsers = profiles.map(profile => ({
+        id: profile.id,
+        email: profile.id, // We'll use the ID as a fallback since we can't get the email
+        role: profile.role as UserRole,
+        created_at: profile.created_at,
+      }));
 
       setUsers(mergedUsers);
     } catch (error) {
