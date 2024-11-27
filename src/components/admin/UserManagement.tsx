@@ -19,6 +19,12 @@ import type { Database } from "@/integrations/supabase/types";
 type UserRole = Database['public']['Enums']['user_role'];
 type Profile = Database['public']['Tables']['profiles']['Row'];
 
+interface AuthUser {
+  id: string;
+  email?: string;
+  created_at: string;
+}
+
 interface User {
   id: string;
   email: string;
@@ -48,15 +54,29 @@ export function UserManagement() {
         throw new Error("No profiles found");
       }
 
-      // Fetch users from auth.admin API
+      // Fetch users from auth.admin API with pagination parameters
       const { data: authData, error: authError } = await supabaseAdmin
-        .auth.admin.listUsers();
+        .auth.admin.listUsers({
+          page: 1,
+          perPage: 100
+        });
 
-      if (authError) throw authError;
+      if (authError) {
+        console.error("Error fetching auth users:", authError);
+        // Continue with profiles only if auth users fetch fails
+        const mergedUsers = profiles.map(profile => ({
+          id: profile.id,
+          email: 'Email non disponible',
+          role: profile.role,
+          created_at: profile.created_at,
+        }));
+        setUsers(mergedUsers);
+        return;
+      }
 
       // Merge profiles with auth users data
       const mergedUsers = profiles.map(profile => {
-        const authUser = authData.users.find(u => u.id === profile.id);
+        const authUser = authData?.users?.find(u => u.id === profile.id);
         return {
           id: profile.id,
           email: authUser?.email || 'Email non disponible',
