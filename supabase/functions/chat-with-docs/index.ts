@@ -144,6 +144,7 @@ serve(async (req) => {
     
     console.log('Sending request to n8n:', requestBody)
 
+    // Fixed the URL by removing the colon after the domain
     const n8nUrl = 'https://elephorm.app.n8n.cloud/webhook/a7cc35a6-3fdf-4e2e-859a-5c16a15f0b99/chat'
     
     const data = await fetchWithRetry(n8nUrl, {
