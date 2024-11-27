@@ -26,30 +26,25 @@ serve(async (req) => {
     // Generate embedding for the query
     const embedding = await generateEmbedding(message);
 
-    // Initialize Pinecone client with proper error handling
+    // Initialize Pinecone client with proper error handling and direct host URL
     const pineconeApiKey = Deno.env.get('PINECONE_API_KEY');
-    const pineconeEnv = Deno.env.get('PINECONE_ENV') || 'gcp-starter';
-    const indexName = Deno.env.get('PINECONE_INDEX_NAME') || 'elephorm';
-
     if (!pineconeApiKey) {
       console.error('PINECONE_API_KEY is not set');
       throw new Error('Pinecone API key is not configured');
     }
 
     console.log('Initializing Pinecone client...');
-    console.log('Environment:', pineconeEnv);
-    console.log('Index name:', indexName);
-
     const pinecone = new Pinecone({
       apiKey: pineconeApiKey,
-      environment: pineconeEnv,
+      host: 'https://cours-nzobyk1.svc.aped-4627-b74a.pinecone.io'
     });
 
-    // Get Pinecone index with error handling
-    console.log('Getting Pinecone index...');
+    // Get Pinecone index
+    const indexName = Deno.env.get('PINECONE_INDEX_NAME') || 'elephorm';
+    console.log('Getting Pinecone index:', indexName);
     const index = pinecone.Index(indexName);
 
-    // Query Pinecone with error handling
+    // Query Pinecone
     console.log('Querying Pinecone...');
     const queryResponse = await index.query({
       vector: embedding,
