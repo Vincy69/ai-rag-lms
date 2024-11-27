@@ -21,8 +21,16 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 3) {
       const response = await fetch(url, options);
       console.log(`n8n response status: ${response.status}`);
       
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const rawResponse = await response.text();
       console.log('Raw n8n response:', rawResponse);
+      
+      if (!rawResponse) {
+        throw new Error('Empty response from n8n');
+      }
       
       let data;
       try {
@@ -32,36 +40,37 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 3) {
         if (data.error || data.message === "Error in workflow") {
           throw new Error(`n8n workflow error: ${JSON.stringify(data)}`);
         }
+
+        // Handle different response formats
+        if (typeof data === 'string') {
+          return { response: data, confidence: 0.8 };
+        }
+
+        if (Array.isArray(data) && data.length > 0) {
+          const firstItem = data[0];
+          if (typeof firstItem === 'string') {
+            return { response: firstItem, confidence: 0.8 };
+          }
+          if (firstItem.output) {
+            return { 
+              response: firstItem.output,
+              confidence: firstItem.confidence || 0.8
+            };
+          }
+        }
+
+        if (data.output) {
+          return { 
+            response: data.output,
+            confidence: data.confidence || 0.8
+          };
+        }
+
+        throw new Error(`Unexpected response format from n8n: ${JSON.stringify(data)}`);
       } catch (e) {
         console.error('Failed to parse JSON response:', e);
         throw new Error(`Invalid JSON response from n8n: ${rawResponse.slice(0, 100)}...`);
       }
-      
-      if (typeof data === 'string') {
-        return { response: data, confidence: 0.8 };
-      }
-
-      if (Array.isArray(data) && data.length > 0) {
-        const firstItem = data[0];
-        if (typeof firstItem === 'string') {
-          return { response: firstItem, confidence: 0.8 };
-        }
-        if (firstItem.output) {
-          return { 
-            response: firstItem.output,
-            confidence: firstItem.confidence || 0.8
-          };
-        }
-      }
-
-      if (data.output) {
-        return { 
-          response: data.output,
-          confidence: data.confidence || 0.8
-        };
-      }
-
-      throw new Error(`Unexpected response format from n8n: ${JSON.stringify(data)}`);
     } catch (error) {
       console.error(`Attempt ${i + 1} failed:`, error);
       lastError = error;
@@ -88,7 +97,7 @@ serve(async (req) => {
     console.log('Received message:', message)
     console.log('User ID:', userId)
 
-    // Récupérer les informations de l'utilisateur
+    // Get user profile
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('*')
@@ -97,7 +106,7 @@ serve(async (req) => {
 
     if (profileError) throw profileError;
 
-    // Récupérer les formations de l'utilisateur
+    // Get user formations
     const { data: formations, error: formationsError } = await supabase
       .from('formation_enrollments')
       .select(`
@@ -113,7 +122,7 @@ serve(async (req) => {
 
     if (formationsError) throw formationsError;
 
-    // Récupérer les blocs de l'utilisateur
+    // Get user blocks
     const { data: blocks, error: blocksError } = await supabase
       .from('block_enrollments')
       .select(`
@@ -129,7 +138,7 @@ serve(async (req) => {
 
     if (blocksError) throw blocksError;
 
-    // Generate embedding for the message to find similar feedback
+    // Find similar feedback using embedding
     const embeddingResponse = await fetch('https://api.openai.com/v1/embeddings', {
       method: 'POST',
       headers: {
@@ -150,14 +159,13 @@ serve(async (req) => {
 
     const { data: [{ embedding }] } = await embeddingResponse.json();
 
-    // Find similar feedback using the match_feedback function
+    // Find similar feedback
     const { data: similarFeedback } = await supabase.rpc('match_feedback', {
       query_embedding: embedding,
       match_count: 5,
       match_threshold: 0.8
     });
 
-    // Add relevant feedback to the context if any was found
     const feedbackContext = similarFeedback?.length > 0
       ? `\nPrevious relevant feedback: ${similarFeedback.map(f => f.feedback).join('. ')}`
       : '';
@@ -198,7 +206,7 @@ serve(async (req) => {
 
     console.log('Processed n8n response:', data);
 
-    // Save the chat interaction with the confidence score to the database
+    // Save chat interaction
     const { error: insertError } = await supabase
       .from('chat_history')
       .insert({
