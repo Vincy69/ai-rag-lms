@@ -10,16 +10,13 @@ import * as pdfjsLib from 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/+esm
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Access-Control-Max-Age': '86400',
 };
 
 const PINECONE_API_KEY = 'pcsk_nv6Gw_BqfSG3WczY3ft9kAofzDAn66khKLLDEp494gXvHD5QLdY4Ak9yK5FCFJMgHT2a4';
 const PINECONE_INDEX = 'elephorm';
 const PINECONE_ENVIRONMENT = 'gcp-starter';
-
-// Initialize PDF.js worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js`;
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -78,16 +75,15 @@ serve(async (req) => {
     if (file.type === 'application/pdf') {
       console.log('Extracting text from PDF...');
       const arrayBuffer = await blob.arrayBuffer();
-      const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
-      const pdf = await loadingTask.promise;
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
       
       const numPages = pdf.numPages;
       const textPromises = [];
       
       for (let i = 1; i <= numPages; i++) {
         const page = await pdf.getPage(i);
-        const textContent = await page.getTextContent();
-        textPromises.push(textContent.items.map(item => item.str).join(' '));
+        const content = await page.getTextContent();
+        textPromises.push(content.items.map(item => item.str).join(' '));
       }
       
       textContent = (await Promise.all(textPromises)).join('\n\n');
@@ -170,7 +166,8 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         error: error.message || "An unexpected error occurred",
-        details: error.stack
+        details: error.stack,
+        type: error.name
       }),
       { 
         headers: { 
