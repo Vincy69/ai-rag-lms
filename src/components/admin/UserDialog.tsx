@@ -1,12 +1,23 @@
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -16,16 +27,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
-import { Label } from "@/components/ui/label";
+import { supabaseAdmin } from "@/integrations/supabase/client";
+import type { User } from "@/hooks/useUsers";
 
-type UserRole = "student" | "teacher" | "manager" | "admin";
+const formSchema = z.object({
+  firstName: z.string().min(1, "Le prénom est requis"),
+  lastName: z.string().min(1, "Le nom est requis"),
+  role: z.enum(["student", "teacher", "manager", "admin"]),
+});
 
 interface UserDialogProps {
-  user: {
-    id: string;
-    email: string;
-    role: UserRole;
-  } | null;
+  user: User | null;
   type: "edit" | "create" | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -39,64 +51,56 @@ export function UserDialog({
   onOpenChange,
   onSuccess,
 }: UserDialogProps) {
-  const [email, setEmail] = useState(user?.email || "");
-  const [password, setPassword] = useState("");
-  const [role, setRole] = useState<UserRole>(user?.role || "student");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      firstName: user?.firstName || "",
+      lastName: user?.lastName || "",
+      role: user?.role || "student",
+    },
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
+      setIsLoading(true);
+
       if (type === "create") {
-        const { data, error: signUpError } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: {
-              role,
-            },
-          },
+        const { error } = await supabaseAdmin.from("profiles").insert({
+          first_name: values.firstName,
+          last_name: values.lastName,
+          role: values.role,
         });
 
-        if (signUpError) throw signUpError;
+        if (error) throw error;
 
-        if (!data.user) throw new Error("No user returned from signup");
-
-        const { error: profileError } = await supabase
-          .from("profiles")
-          .update({ role })
-          .eq("id", data.user.id);
-
-        if (profileError) throw profileError;
-
+        toast({
+          title: "Succès",
+          description: "L'utilisateur a été créé avec succès",
+        });
       } else if (type === "edit" && user) {
-        const { error: profileError } = await supabase
+        const { error } = await supabaseAdmin
           .from("profiles")
-          .update({ role })
+          .update({
+            first_name: values.firstName,
+            last_name: values.lastName,
+            role: values.role,
+          })
           .eq("id", user.id);
 
-        if (profileError) throw profileError;
+        if (error) throw error;
 
-        if (password) {
-          // Note: Password update will need to be handled differently
-          // as it requires admin privileges
-          toast({
-            title: "Information",
-            description: "La modification du mot de passe n'est pas disponible pour le moment",
-          });
-        }
+        toast({
+          title: "Succès",
+          description: "L'utilisateur a été modifié avec succès",
+        });
       }
 
-      toast({
-        title: "Succès",
-        description: type === "create" ? "Utilisateur créé" : "Utilisateur modifié",
-      });
       onSuccess();
+      onOpenChange(false);
     } catch (error) {
-      console.error("Error managing user:", error);
+      console.error("Error submitting form:", error);
       toast({
         title: "Erreur",
         description: "Une erreur est survenue",
@@ -105,7 +109,7 @@ export function UserDialog({
     } finally {
       setIsLoading(false);
     }
-  };
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -116,66 +120,69 @@ export function UserDialog({
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={type === "edit"}
-              required={type === "create"}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="password">
-              {type === "create" ? "Mot de passe" : "Nouveau mot de passe (optionnel)"}
-            </Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required={type === "create"}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="role">Rôle</Label>
-            <Select value={role} onValueChange={(value: UserRole) => setRole(value)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="student">Étudiant</SelectItem>
-                <SelectItem value="teacher">Professeur</SelectItem>
-                <SelectItem value="manager">Manager</SelectItem>
-                <SelectItem value="admin">Administrateur</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex justify-end gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
-              Annuler
-            </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? (
-                <div className="animate-spin">⌛</div>
-              ) : type === "create" ? (
-                "Créer"
-              ) : (
-                "Modifier"
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="firstName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Prénom</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
+            />
+
+            <FormField
+              control={form.control}
+              name="lastName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nom</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="role"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Rôle</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Sélectionner un rôle" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="student">Étudiant</SelectItem>
+                      <SelectItem value="teacher">Professeur</SelectItem>
+                      <SelectItem value="manager">Manager</SelectItem>
+                      <SelectItem value="admin">Administrateur</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <Button type="submit" disabled={isLoading}>
+              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {type === "create" ? "Créer" : "Modifier"}
             </Button>
-          </div>
-        </form>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );

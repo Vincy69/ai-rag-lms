@@ -1,78 +1,72 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useToast } from "@/components/ui/use-toast";
-import { Loader2, ThumbsUp, ThumbsDown } from "lucide-react";
-import { ChatHistory } from "@/types/chat";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { supabaseAdmin } from "@/integrations/supabase/client";
+import type { User } from "@/hooks/useUsers";
 
 interface UserHistoryProps {
-  user: {
-    id: string;
-    email: string;
-  } | null;
+  user: User | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
+interface ChatMessage {
+  id: string;
+  message: {
+    role: string;
+    content: string;
+  };
+  created_at: string;
+}
+
 export function UserHistory({ user, open, onOpenChange }: UserHistoryProps) {
-  const [history, setHistory] = useState<ChatHistory[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { toast } = useToast();
 
   useEffect(() => {
-    const loadHistory = async () => {
-      if (!user || !open) return;
+    if (user && open) {
+      loadHistory();
+    }
+  }, [user, open]);
 
-      try {
-        const { data, error } = await supabase
-          .from("chat_history")
-          .select("*")
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false });
+  const loadHistory = async () => {
+    try {
+      const { data, error } = await supabaseAdmin
+        .from("chat_history")
+        .select("*")
+        .eq("user_id", user?.id)
+        .order("created_at", { ascending: false });
 
-        if (error) throw error;
+      if (error) throw error;
 
-        const formattedHistory = data.map((item) => ({
-          id: item.id,
-          session_id: item.session_id,
-          message: {
-            input: (item.message as any).input || "",
-            output: (item.message as any).output || "",
-            score: (item.message as any).score || 0,
-            feedback: (item.message as any).feedback,
-          },
-          timestamp: new Date(item.created_at),
-          user_id: item.user_id,
-        }));
-
-        setHistory(formattedHistory);
-      } catch (error) {
-        console.error("Error loading chat history:", error);
-        toast({
-          title: "Erreur",
-          description: "Impossible de charger l'historique",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadHistory();
-  }, [user, open, toast]);
-
-  if (!user) return null;
+      setMessages(data || []);
+    } catch (error) {
+      console.error("Error loading chat history:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl">
         <DialogHeader>
-          <DialogTitle>Historique des conversations de {user.email}</DialogTitle>
+          <DialogTitle>
+            Historique de {user?.firstName} {user?.lastName}
+          </DialogTitle>
         </DialogHeader>
 
         {isLoading ? (
@@ -80,48 +74,30 @@ export function UserHistory({ user, open, onOpenChange }: UserHistoryProps) {
             <Loader2 className="h-8 w-8 animate-spin" />
           </div>
         ) : (
-          <div className="space-y-4">
-            {history.map((item) => (
-              <div
-                key={item.id}
-                className="border rounded-lg p-4 space-y-4"
-              >
-                <div className="flex items-start justify-between">
-                  <div className="space-y-1">
-                    <p className="font-medium">{item.message.input}</p>
-                    <p className="text-muted-foreground">{item.message.output}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {item.message.score >= 0.8 ? (
-                      <ThumbsUp className="h-4 w-4 text-green-500" />
-                    ) : (
-                      <ThumbsDown className="h-4 w-4 text-red-500" />
-                    )}
-                    <span className="text-sm text-muted-foreground">
-                      {Math.round(item.message.score * 100)}%
-                    </span>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">
-                    {item.timestamp.toLocaleString()}
-                  </p>
-                  {item.message.feedback && (
-                    <p className="text-sm bg-muted p-2 rounded">
-                      Feedback: {item.message.feedback}
-                    </p>
-                  )}
-                </div>
-              </div>
-            ))}
-
-            {history.length === 0 && (
-              <p className="text-center text-muted-foreground">
-                Aucun historique de conversation
-              </p>
-            )}
-          </div>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Message</TableHead>
+                <TableHead>Rôle</TableHead>
+                <TableHead>Date</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {messages.map((msg) => (
+                <TableRow key={msg.id}>
+                  <TableCell className="max-w-md truncate">
+                    {msg.message.content}
+                  </TableCell>
+                  <TableCell className="capitalize">
+                    {msg.message.role}
+                  </TableCell>
+                  <TableCell>
+                    {new Date(msg.created_at).toLocaleDateString()}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         )}
       </DialogContent>
     </Dialog>
