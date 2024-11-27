@@ -39,11 +39,11 @@ export default function Login() {
   }, [navigate, toast]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="max-w-md w-full space-y-8 p-8 bg-card rounded-lg shadow-lg">
+    <div className="min-h-screen flex items-center justify-center bg-[#1A1F2C]">
+      <div className="max-w-md w-full space-y-8 p-8 rounded-lg shadow-xl bg-black/40 backdrop-blur-sm border border-white/10">
         <div className="text-center">
-          <h2 className="text-3xl font-bold text-foreground">Connexion</h2>
-          <p className="mt-2 text-muted-foreground">
+          <h2 className="text-3xl font-bold text-white mb-2">Connexion</h2>
+          <p className="text-white/60">
             Connectez-vous pour accéder à votre espace
           </p>
         </div>
@@ -54,10 +54,26 @@ export default function Login() {
             variables: {
               default: {
                 colors: {
-                  brand: 'rgb(var(--primary))',
-                  brandAccent: 'rgb(var(--primary))',
-                }
-              }
+                  brand: '#9b87f5',
+                  brandAccent: '#7E69AB',
+                  brandButtonText: 'white',
+                  defaultButtonBackground: '#1A1F2C',
+                  defaultButtonBackgroundHover: '#2A2F3C',
+                  inputBackground: '#1A1F2C',
+                  inputBorder: '#2A2F3C',
+                  inputBorderHover: '#9b87f5',
+                  inputBorderFocus: '#9b87f5',
+                  inputText: 'white',
+                  inputLabelText: 'white',
+                  inputPlaceholder: '#666',
+                },
+              },
+            },
+            className: {
+              container: 'text-white',
+              label: 'text-white',
+              button: 'bg-primary hover:bg-primary/80 text-white',
+              input: 'bg-black/40 border-white/10 text-white placeholder-white/40',
             },
           }}
           providers={[]}
