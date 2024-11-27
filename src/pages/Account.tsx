@@ -12,15 +12,20 @@ type UserRole = Database['public']['Enums']['user_role'];
 export default function Account() {
   const [email, setEmail] = useState<string | null>(null);
   const [role, setRole] = useState<UserRole | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const navigate = useNavigate();
 
   useEffect(() => {
     const getProfile = async () => {
       try {
+        setIsLoading(true);
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
-        if (sessionError) throw sessionError;
+        if (sessionError) {
+          console.error('Session error:', sessionError);
+          throw sessionError;
+        }
         
         if (!session?.user) {
           navigate("/login");
@@ -29,8 +34,6 @@ export default function Account() {
 
         setEmail(session.user.email);
 
-        console.log("Fetching profile for user:", session.user.id);
-        
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('role')
@@ -42,14 +45,9 @@ export default function Account() {
           throw profileError;
         }
 
-        console.log("Profile data received:", profileData);
-
         if (profileData) {
           setRole(profileData.role);
-        } else {
-          console.error('No profile data found');
         }
-
       } catch (error) {
         console.error('Error fetching profile:', error);
         toast({
@@ -57,6 +55,8 @@ export default function Account() {
           description: "Failed to load profile information",
           variant: "destructive",
         });
+      } finally {
+        setIsLoading(false);
       }
     };
     
@@ -93,12 +93,14 @@ export default function Account() {
           <CardContent className="space-y-6">
             <div>
               <label className="text-sm font-medium text-muted-foreground">Email</label>
-              <p className="mt-1">{email}</p>
+              <p className="mt-1">{email || 'Chargement...'}</p>
             </div>
             
             <div>
               <label className="text-sm font-medium text-muted-foreground">Rôle</label>
-              <p className="mt-1 capitalize">{role || 'Chargement...'}</p>
+              <p className="mt-1 capitalize">
+                {isLoading ? 'Chargement...' : role || 'Non défini'}
+              </p>
             </div>
             
             <Button variant="destructive" onClick={handleLogout}>
