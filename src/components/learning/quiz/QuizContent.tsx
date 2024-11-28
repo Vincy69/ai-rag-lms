@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
-import { useQuizState } from "../hooks/useQuizState";
+import { useQuizState } from "./hooks/useQuizState";
 import { QuizQuestion } from "./QuizQuestion";
 import { QuizResult } from "./QuizResult";
-import { QuizQuestion as QuizQuestionType } from "../types/quiz";
+import { QuizQuestion as QuizQuestionType } from "./types/quiz";
 
 interface QuizContentProps {
   quizId: string;
