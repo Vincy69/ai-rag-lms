@@ -1,4 +1,3 @@
-import { Card } from "@/components/ui/card";
 import { ChapterNavigator } from "./ChapterNavigator";
 
 interface NavigationAreaProps {
@@ -8,6 +7,7 @@ interface NavigationAreaProps {
   onSelectLesson: (lessonId: string) => void;
   onSelectQuiz: (quizId: string) => void;
   completedLessonIds: Set<string>;
+  condensed?: boolean;
 }
 
 export function NavigationArea({
@@ -16,18 +16,18 @@ export function NavigationArea({
   selectedLessonId,
   onSelectLesson,
   onSelectQuiz,
-  completedLessonIds
+  completedLessonIds,
+  condensed = false
 }: NavigationAreaProps) {
   return (
-    <Card className="col-span-4 p-4">
-      <ChapterNavigator
-        chapters={chapters}
-        blockQuizzes={blockQuizzes}
-        selectedLessonId={selectedLessonId || undefined}
-        onSelectLesson={onSelectLesson}
-        onSelectQuiz={onSelectQuiz}
-        completedLessonIds={completedLessonIds}
-      />
-    </Card>
+    <ChapterNavigator
+      chapters={chapters}
+      blockQuizzes={blockQuizzes}
+      selectedLessonId={selectedLessonId || undefined}
+      onSelectLesson={onSelectLesson}
+      onSelectQuiz={onSelectQuiz}
+      completedLessonIds={completedLessonIds}
+      condensed={condensed}
+    />
   );
 }

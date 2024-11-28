@@ -31,6 +31,7 @@ interface ChapterNavigatorProps {
   onSelectLesson: (lessonId: string) => void;
   onSelectQuiz: (quizId: string) => void;
   completedLessonIds: Set<string>;
+  condensed?: boolean;
 }
 
 export function ChapterNavigator({ 
@@ -39,7 +40,8 @@ export function ChapterNavigator({
   selectedLessonId, 
   onSelectLesson,
   onSelectQuiz,
-  completedLessonIds
+  completedLessonIds,
+  condensed = false
 }: ChapterNavigatorProps) {
   const [expandedChapterId, setExpandedChapterId] = useState<string | null>(null);
 
@@ -48,17 +50,22 @@ export function ChapterNavigator({
       {chapters.map((chapter) => (
         <div key={chapter.id} className="space-y-2">
           <button
-            onClick={() => setExpandedChapterId(
+            onClick={() => !condensed && setExpandedChapterId(
               expandedChapterId === chapter.id ? null : chapter.id
             )}
-            className="w-full text-left p-4 rounded-lg bg-card hover:bg-accent transition-colors"
+            className={cn(
+              "w-full text-left p-4 rounded-lg bg-card hover:bg-accent transition-colors",
+              condensed && "cursor-default hover:bg-card"
+            )}
           >
             <div className="flex items-center justify-between">
               <span className="font-medium">{chapter.title}</span>
-              {expandedChapterId === chapter.id ? (
-                <ChevronUp className="h-4 w-4" />
-              ) : (
-                <ChevronDown className="h-4 w-4" />
+              {!condensed && (
+                expandedChapterId === chapter.id ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )
               )}
             </div>
             
@@ -68,7 +75,7 @@ export function ChapterNavigator({
             />
           </button>
 
-          {expandedChapterId === chapter.id && (
+          {!condensed && expandedChapterId === chapter.id && (
             <div className="ml-4 space-y-1">
               {chapter.lessons.map((lesson) => (
                 <button
@@ -110,8 +117,11 @@ export function ChapterNavigator({
       {blockQuizzes && blockQuizzes.length > 0 && blockQuizzes.map(quiz => (
         <button
           key={quiz.id}
-          onClick={() => onSelectQuiz(quiz.id)}
-          className="w-full text-left p-4 rounded-lg bg-card hover:bg-accent transition-colors"
+          onClick={() => !condensed && onSelectQuiz(quiz.id)}
+          className={cn(
+            "w-full text-left p-4 rounded-lg bg-card hover:bg-accent transition-colors",
+            condensed && "cursor-default hover:bg-card"
+          )}
         >
           <div className="flex items-center gap-3">
             <Award className="h-5 w-5 text-primary" />

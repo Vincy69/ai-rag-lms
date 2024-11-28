@@ -9,9 +9,10 @@ import { Card } from "@/components/ui/card";
 
 interface BlockContentProps {
   blockId: string;
+  condensed?: boolean;
 }
 
-export function BlockContent({ blockId }: BlockContentProps) {
+export function BlockContent({ blockId, condensed = false }: BlockContentProps) {
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
   const [selectedQuizId, setSelectedQuizId] = useState<string | null>(null);
 
@@ -143,6 +144,29 @@ export function BlockContent({ blockId }: BlockContentProps) {
         .map(lesson => lesson.id)
     ) || []
   );
+
+  if (condensed) {
+    return (
+      <div className="space-y-4">
+        <BlockHeader 
+          name={block?.name}
+          formationName={block?.formations?.name}
+          progress={block?.progress}
+        />
+        <Card className="p-4">
+          <NavigationArea
+            chapters={chapters?.chapters || []}
+            blockQuizzes={chapters?.blockQuizzes || []}
+            selectedLessonId={null}
+            onSelectLesson={() => {}}
+            onSelectQuiz={() => {}}
+            completedLessonIds={completedLessonIds}
+            condensed
+          />
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

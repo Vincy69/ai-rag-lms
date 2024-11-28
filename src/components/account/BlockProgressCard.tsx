@@ -1,9 +1,8 @@
+import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Card, CardHeader, CardContent } from "@/components/ui/card";
-import { useNavigate } from "react-router-dom";
-import { calculateBlockProgress, isBlockStarted } from "@/lib/progress";
+import { calculateBlockProgress } from "@/lib/progress";
 
-interface BlockProgressProps {
+interface BlockProgressCardProps {
   block: {
     id: string;
     name: string | null;
@@ -20,53 +19,33 @@ interface BlockProgressProps {
       id: string;
       completedLessons: number;
       lessons: Array<any>;
-      quizzes?: Array<{
-        id: string;
-        title: string;
-      }>;
     }>;
   };
   onClick?: () => void;
 }
 
-export function BlockProgressCard({ block, onClick }: BlockProgressProps) {
-  const navigate = useNavigate();
+export function BlockProgressCard({ block, onClick }: BlockProgressCardProps) {
   const blockProgress = calculateBlockProgress(block);
-  const isStarted = isBlockStarted(block);
-  
-  const totalLessons = block.chapters?.reduce((acc, chapter) => acc + chapter.lessons.length, 0) || 0;
-  const completedLessons = block.chapters?.reduce((acc, chapter) => acc + chapter.completedLessons, 0) || 0;
-  const totalQuizzes = block.chapters?.reduce((acc, chapter) => acc + (chapter.quizzes?.length || 0), 0) || 0;
-
-  const handleClick = () => {
-    if (onClick) {
-      onClick();
-    } else {
-      navigate(`/elearning?blockId=${block.id}`);
-    }
-  };
 
   return (
-    <Card className="hover:bg-accent/50 transition-colors cursor-pointer" onClick={handleClick}>
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <h3 className="font-medium">{block.name}</h3>
-          <span className="text-sm text-muted-foreground">
-            {completedLessons} / {totalLessons} leçons
-            {totalQuizzes > 0 && ` • ${totalQuizzes} quiz`}
-          </span>
-        </div>
-      </CardHeader>
-      <CardContent>
+    <Card 
+      className="hover:shadow-md transition-all duration-300 cursor-pointer"
+      onClick={onClick}
+    >
+      <CardContent className="pt-6">
         <div className="space-y-2">
-          {block.description && (
-            <p className="text-sm text-muted-foreground">{block.description}</p>
-          )}
-          <Progress value={blockProgress} className="h-2" />
-          <div className="flex justify-between text-sm text-muted-foreground">
-            <span>{Math.round(blockProgress)}%</span>
-            <span>{isStarted ? 'Commencé' : 'Non commencé'}</span>
+          <div className="flex justify-between items-center">
+            <h3 className="font-medium">{block.name}</h3>
+            <span className="text-sm text-muted-foreground">
+              {blockProgress > 0 ? `${Math.round(blockProgress)}%` : 'Non commencé'}
+            </span>
           </div>
+          <Progress value={blockProgress} className="h-2" />
+          {block.description && (
+            <p className="text-sm text-muted-foreground line-clamp-2">
+              {block.description}
+            </p>
+          )}
         </div>
       </CardContent>
     </Card>
