@@ -1,6 +1,6 @@
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent } from "@/components/ui/card";
-import { Trophy, Target, RotateCcw, Award } from "lucide-react";
+import { Trophy, Target, ArrowUp, ArrowDown } from "lucide-react";
 
 interface SkillProgressProps {
   skill: {
@@ -17,8 +17,8 @@ export function SkillProgressCard({ skill }: SkillProgressProps) {
   const getStatusIcon = () => {
     if (!hasProgress) return <Target className="w-4 h-4" />;
     if (skill.score >= 80) return <Trophy className="w-4 h-4 text-yellow-500" />;
-    if (skill.score >= 60) return <Award className="w-4 h-4 text-blue-500" />;
-    return <RotateCcw className="w-4 h-4 text-purple-500" />;
+    if (skill.score >= 40) return <ArrowUp className="w-4 h-4 text-blue-500" />;
+    return <ArrowDown className="w-4 h-4 text-purple-500" />;
   };
 
   const getStatusText = () => {
@@ -30,7 +30,7 @@ export function SkillProgressCard({ skill }: SkillProgressProps) {
   };
 
   return (
-    <Card className="transition-all duration-200 hover:shadow-sm">
+    <Card className="transition-all duration-200 hover:shadow-sm animate-fade-in">
       <CardContent className="pt-6 space-y-4">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-2">
@@ -53,8 +53,8 @@ export function SkillProgressCard({ skill }: SkillProgressProps) {
           className="h-2 transition-all duration-300"
         />
         
-        <div className="flex justify-between items-center text-sm text-muted-foreground">
-          <span>
+        <div className="flex justify-between items-center text-sm">
+          <span className="text-muted-foreground">
             {skill.attempts ? (
               `${skill.attempts} tentative${skill.attempts !== 1 ? 's' : ''}`
             ) : (
@@ -62,7 +62,12 @@ export function SkillProgressCard({ skill }: SkillProgressProps) {
             )}
           </span>
           {hasProgress && (
-            <span className="font-medium">
+            <span className="font-medium" style={{
+              color: skill.score >= 80 ? 'rgb(234 179 8)' :
+                     skill.score >= 60 ? 'rgb(34 197 94)' :
+                     skill.score >= 40 ? 'rgb(59 130 246)' :
+                     'rgb(168 85 247)'
+            }}>
               {getStatusText()}
             </span>
           )}

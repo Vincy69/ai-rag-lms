@@ -3,6 +3,7 @@ import { Progress } from "@/components/ui/progress";
 import { BlockProgressCard } from "./BlockProgressCard";
 import { useState } from "react";
 import { BlockDetailsDialog } from "./BlockDetailsDialog";
+import { GraduationCap, Trophy } from "lucide-react";
 
 interface FormationProgressProps {
   formation: {
@@ -45,25 +46,42 @@ export function FormationProgressCard({ formation }: FormationProgressProps) {
     : 0;
 
   return (
-    <Card>
+    <Card className="group hover:shadow-md transition-all duration-300">
       <CardHeader>
         <div className="flex justify-between items-center">
-          <CardTitle>{formation.name}</CardTitle>
-          <span className="text-sm text-muted-foreground">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+              {formationProgress >= 80 ? (
+                <Trophy className="w-5 h-5 text-primary" />
+              ) : (
+                <GraduationCap className="w-5 h-5 text-primary" />
+              )}
+            </div>
+            <CardTitle>{formation.name}</CardTitle>
+          </div>
+          <span className="text-sm font-medium text-muted-foreground">
             {blocksWithProgress.length > 0 ? `${Math.round(formationProgress)}%` : 'Non commencé'}
           </span>
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-2">
-          <Progress value={formationProgress} className="h-2" />
+          <Progress 
+            value={formationProgress} 
+            className="h-2 transition-all duration-300"
+          />
           {formation.description && (
             <p className="text-sm text-muted-foreground">{formation.description}</p>
           )}
         </div>
         {formation.blocks.length > 0 && (
           <div className="space-y-4">
-            <h3 className="font-medium">Blocs de compétences</h3>
+            <div className="flex justify-between items-center">
+              <h3 className="font-medium">Blocs de compétences</h3>
+              <span className="text-sm text-muted-foreground">
+                {blocksWithProgress.length} / {formation.blocks.length} blocs commencés
+              </span>
+            </div>
             <div className="grid gap-4 md:grid-cols-2">
               {formation.blocks.map((block, index) => (
                 <BlockProgressCard
