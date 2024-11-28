@@ -27,22 +27,19 @@ export function BlockSidebar({
   onSelectQuiz,
 }: BlockSidebarProps) {
   return (
-    <div className="h-full">
-      <h2 className="text-xl font-semibold text-left mb-4">{block?.name}</h2>
-      <Card className="h-[calc(100%-2rem)] bg-card/50 p-4">
-        <FullView
-          block={block}
-          chapters={chapters}
-          blockQuizzes={blockQuizzes}
-          selectedLessonId={selectedLessonId}
-          selectedQuizId={selectedQuizId}
-          selectedLesson={selectedLesson}
-          blockId={blockId}
-          completedLessonIds={completedLessonIds}
-          onSelectLesson={onSelectLesson}
-          onSelectQuiz={onSelectQuiz}
-        />
-      </Card>
-    </div>
+    <Card className="h-full bg-card/50 p-4">
+      <FullView
+        block={block}
+        chapters={chapters}
+        blockQuizzes={blockQuizzes}
+        selectedLessonId={selectedLessonId}
+        selectedQuizId={selectedQuizId}
+        selectedLesson={selectedLesson}
+        blockId={blockId}
+        completedLessonIds={completedLessonIds}
+        onSelectLesson={onSelectLesson}
+        onSelectQuiz={onSelectQuiz}
+      />
+    </Card>
   );
 }

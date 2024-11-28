@@ -173,37 +173,40 @@ export function BlockContent({ blockId, condensed = false }: BlockContentProps) 
   }
 
   return (
-    <div className="flex gap-6 h-[calc(100vh-12rem)]">
-      <div className="w-1/3">
-        <BlockSidebar
-          block={block}
-          chapters={chaptersData?.chapters || []}
-          blockQuizzes={chaptersData?.blockQuizzes || []}
-          selectedLessonId={selectedLessonId}
-          selectedQuizId={selectedQuizId}
-          selectedLesson={selectedLesson}
-          blockId={blockId}
-          completedLessonIds={chaptersData?.completedLessons || new Set()}
-          onSelectLesson={(lessonId) => {
-            setSelectedLessonId(lessonId);
-            setSelectedQuizId(null);
-          }}
-          onSelectQuiz={(quizId) => {
-            setSelectedQuizId(quizId);
-            setSelectedLessonId(null);
-          }}
-        />
-      </div>
-      <div className="w-2/3">
-        <ContentArea 
-          selectedQuizId={selectedQuizId}
-          selectedLesson={selectedLesson}
-          blockId={blockId}
-          onNavigate={setSelectedLessonId}
-          previousLessonId={previousLessonId}
-          nextLessonId={nextLessonId}
-          isLessonCompleted={isLessonCompleted}
-        />
+    <div className="space-y-6">
+      <h2 className="text-2xl font-semibold">{block?.name}</h2>
+      <div className="flex gap-6 h-[calc(100vh-16rem)]">
+        <div className="w-1/3">
+          <BlockSidebar
+            block={block}
+            chapters={chaptersData?.chapters || []}
+            blockQuizzes={chaptersData?.blockQuizzes || []}
+            selectedLessonId={selectedLessonId}
+            selectedQuizId={selectedQuizId}
+            selectedLesson={selectedLesson}
+            blockId={blockId}
+            completedLessonIds={chaptersData?.completedLessons || new Set()}
+            onSelectLesson={(lessonId) => {
+              setSelectedLessonId(lessonId);
+              setSelectedQuizId(null);
+            }}
+            onSelectQuiz={(quizId) => {
+              setSelectedQuizId(quizId);
+              setSelectedLessonId(null);
+            }}
+          />
+        </div>
+        <div className="w-2/3">
+          <ContentArea 
+            selectedQuizId={selectedQuizId}
+            selectedLesson={selectedLesson}
+            blockId={blockId}
+            onNavigate={setSelectedLessonId}
+            previousLessonId={previousLessonId}
+            nextLessonId={nextLessonId}
+            isLessonCompleted={isLessonCompleted}
+          />
+        </div>
       </div>
     </div>
   );
