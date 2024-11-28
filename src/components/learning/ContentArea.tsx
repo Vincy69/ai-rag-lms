@@ -54,7 +54,13 @@ export function ContentArea({
               lessonId={selectedLesson.id}
               chapterId={selectedLesson.chapter_id}
               blockId={blockId}
-              onComplete={() => window.location.reload()}
+              onComplete={() => {
+                if (onNavigate && nextLessonId) {
+                  onNavigate(nextLessonId);
+                } else {
+                  window.location.reload();
+                }
+              }}
               data-complete-button
             />
           </div>

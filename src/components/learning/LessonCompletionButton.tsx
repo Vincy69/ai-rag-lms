@@ -9,13 +9,15 @@ interface LessonCompletionButtonProps {
   chapterId: string;
   blockId: string;
   onComplete: () => void;
+  "data-complete-button"?: boolean;
 }
 
 export function LessonCompletionButton({ 
   lessonId, 
   chapterId, 
   blockId,
-  onComplete 
+  onComplete,
+  "data-complete-button": dataCompleteButton
 }: LessonCompletionButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -94,6 +96,7 @@ export function LessonCompletionButton({
       onClick={handleComplete} 
       disabled={isLoading}
       className="w-full"
+      data-complete-button={dataCompleteButton}
     >
       <Check className="w-4 h-4 mr-2" />
       Marquer comme terminé
