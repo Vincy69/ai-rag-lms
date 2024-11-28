@@ -49,6 +49,13 @@ export type Database = {
             foreignKeyName: "block_enrollments_block_id_fkey"
             columns: ["block_id"]
             isOneToOne: false
+            referencedRelation: "user_competence_analysis"
+            referencedColumns: ["block_id"]
+          },
+          {
+            foreignKeyName: "block_enrollments_block_id_fkey"
+            columns: ["block_id"]
+            isOneToOne: false
             referencedRelation: "user_training_progress"
             referencedColumns: ["block_id"]
           },
@@ -58,6 +65,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "block_enrollments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_competence_analysis"
+            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "block_enrollments_user_id_fkey"
@@ -136,6 +150,13 @@ export type Database = {
             foreignKeyName: "chapters_block_id_fkey"
             columns: ["block_id"]
             isOneToOne: false
+            referencedRelation: "user_competence_analysis"
+            referencedColumns: ["block_id"]
+          },
+          {
+            foreignKeyName: "chapters_block_id_fkey"
+            columns: ["block_id"]
+            isOneToOne: false
             referencedRelation: "user_training_progress"
             referencedColumns: ["block_id"]
           },
@@ -170,6 +191,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_history_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_competence_analysis"
+            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "chat_history_user_id_fkey"
@@ -285,6 +313,13 @@ export type Database = {
             foreignKeyName: "formation_enrollments_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "user_competence_analysis"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "formation_enrollments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "user_progress_overview"
             referencedColumns: ["user_id"]
           },
@@ -375,6 +410,13 @@ export type Database = {
             foreignKeyName: "lesson_progress_block_id_fkey"
             columns: ["block_id"]
             isOneToOne: false
+            referencedRelation: "user_competence_analysis"
+            referencedColumns: ["block_id"]
+          },
+          {
+            foreignKeyName: "lesson_progress_block_id_fkey"
+            columns: ["block_id"]
+            isOneToOne: false
             referencedRelation: "user_training_progress"
             referencedColumns: ["block_id"]
           },
@@ -384,6 +426,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "chapters"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_progress_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "user_competence_analysis"
+            referencedColumns: ["chapter_id"]
           },
           {
             foreignKeyName: "lesson_progress_lesson_id_fkey"
@@ -398,6 +447,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_progress_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_competence_analysis"
+            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "lesson_progress_user_id_fkey"
@@ -453,6 +509,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "chapters"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lessons_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "user_competence_analysis"
+            referencedColumns: ["chapter_id"]
           },
         ]
       }
@@ -562,6 +625,13 @@ export type Database = {
             foreignKeyName: "quiz_attempts_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "user_competence_analysis"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "quiz_attempts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "user_progress_overview"
             referencedColumns: ["user_id"]
           },
@@ -621,6 +691,13 @@ export type Database = {
             foreignKeyName: "quiz_questions_skill_id_fkey"
             columns: ["skill_id"]
             isOneToOne: false
+            referencedRelation: "user_competence_analysis"
+            referencedColumns: ["skill_id"]
+          },
+          {
+            foreignKeyName: "quiz_questions_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
             referencedRelation: "user_training_progress"
             referencedColumns: ["skill_id"]
           },
@@ -672,6 +749,13 @@ export type Database = {
             foreignKeyName: "quizzes_block_id_fkey"
             columns: ["block_id"]
             isOneToOne: false
+            referencedRelation: "user_competence_analysis"
+            referencedColumns: ["block_id"]
+          },
+          {
+            foreignKeyName: "quizzes_block_id_fkey"
+            columns: ["block_id"]
+            isOneToOne: false
             referencedRelation: "user_training_progress"
             referencedColumns: ["block_id"]
           },
@@ -681,6 +765,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "chapters"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quizzes_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "user_competence_analysis"
+            referencedColumns: ["chapter_id"]
           },
         ]
       }
@@ -775,6 +866,13 @@ export type Database = {
             foreignKeyName: "skill_progress_skill_id_fkey"
             columns: ["skill_id"]
             isOneToOne: false
+            referencedRelation: "user_competence_analysis"
+            referencedColumns: ["skill_id"]
+          },
+          {
+            foreignKeyName: "skill_progress_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
             referencedRelation: "user_training_progress"
             referencedColumns: ["skill_id"]
           },
@@ -784,6 +882,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "skill_progress_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_competence_analysis"
+            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "skill_progress_user_id_fkey"
@@ -841,6 +946,13 @@ export type Database = {
             foreignKeyName: "skills_block_id_fkey"
             columns: ["block_id"]
             isOneToOne: false
+            referencedRelation: "user_competence_analysis"
+            referencedColumns: ["block_id"]
+          },
+          {
+            foreignKeyName: "skills_block_id_fkey"
+            columns: ["block_id"]
+            isOneToOne: false
             referencedRelation: "user_training_progress"
             referencedColumns: ["block_id"]
           },
@@ -887,6 +999,13 @@ export type Database = {
             foreignKeyName: "wrong_answers_skill_id_fkey"
             columns: ["skill_id"]
             isOneToOne: false
+            referencedRelation: "user_competence_analysis"
+            referencedColumns: ["skill_id"]
+          },
+          {
+            foreignKeyName: "wrong_answers_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
             referencedRelation: "user_training_progress"
             referencedColumns: ["skill_id"]
           },
@@ -896,6 +1015,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wrong_answers_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_competence_analysis"
+            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "wrong_answers_user_id_fkey"
@@ -915,6 +1041,43 @@ export type Database = {
       }
     }
     Views: {
+      user_competence_analysis: {
+        Row: {
+          average_skill_score: number | null
+          block_id: string | null
+          block_name: string | null
+          chapter_description: string | null
+          chapter_id: string | null
+          first_name: string | null
+          formation_id: string | null
+          formation_name: string | null
+          formation_progress: number | null
+          formation_status: string | null
+          last_name: string | null
+          skill_description: string | null
+          skill_id: string | null
+          skill_name: string | null
+          skill_total_score: number | null
+          total_quizzes: number | null
+          user_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "formation_enrollments_formation_id_fkey"
+            columns: ["formation_id"]
+            isOneToOne: false
+            referencedRelation: "formations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "formation_enrollments_formation_id_fkey"
+            columns: ["formation_id"]
+            isOneToOne: false
+            referencedRelation: "user_training_progress"
+            referencedColumns: ["formation_id"]
+          },
+        ]
+      }
       user_progress_overview: {
         Row: {
           average_quiz_score: number | null

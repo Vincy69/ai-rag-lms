@@ -33,6 +33,8 @@ interface BlockDetailsDialogProps {
       quizzes?: Array<{
         id: string;
         title: string;
+        quiz_type: string;
+        chapter_id: string | null;
       }>;
     }>;
   } | null;
@@ -48,7 +50,18 @@ export function BlockDetailsDialog({
   if (!block) return null;
 
   const blockProgress = calculateBlockProgress(block);
-  const totalQuizzes = block.chapters?.reduce((acc, chapter) => acc + (chapter.quizzes?.length || 0), 0) || 0;
+  
+  // Séparation des quiz de bloc et de chapitre
+  const blockQuizzes = block.chapters?.[0]?.quizzes?.filter(q => 
+    q.quiz_type === 'block_quiz'
+  ) || [];
+
+  const totalChapterQuizzes = block.chapters?.reduce((acc, chapter) => {
+    const chapterQuizzes = chapter.quizzes?.filter(q => 
+      q.quiz_type === 'chapter_quiz' && q.chapter_id === chapter.id
+    ).length || 0;
+    return acc + chapterQuizzes;
+  }, 0);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -95,36 +108,51 @@ export function BlockDetailsDialog({
                               block.chapters.reduce((acc, chapter) => acc + chapter.lessons.length, 0)
                             } leçons complétées
                           </span>
-                          {totalQuizzes > 0 && (
-                            <span className="text-sm text-muted-foreground flex items-center gap-2">
-                              <GraduationCap className="w-4 h-4" />
-                              {totalQuizzes} quiz{totalQuizzes > 1 ? 's' : ''}
-                            </span>
-                          )}
+                          <div className="flex items-center gap-4">
+                            {totalChapterQuizzes > 0 && (
+                              <span className="text-sm text-muted-foreground flex items-center gap-2">
+                                <GraduationCap className="w-4 h-4" />
+                                {totalChapterQuizzes} quiz{totalChapterQuizzes > 1 ? 's' : ''} de chapitre
+                              </span>
+                            )}
+                            {blockQuizzes.length > 0 && (
+                              <span className="text-sm text-primary flex items-center gap-2">
+                                <GraduationCap className="w-4 h-4" />
+                                {blockQuizzes.length} quiz{blockQuizzes.length > 1 ? 's' : ''} de bloc
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
                       <div className="space-y-4">
-                        {block.chapters.map((chapter, index) => (
-                          <div key={index} className="space-y-2">
-                            <h4 className="text-sm font-medium">{chapter.title}</h4>
-                            <Progress 
-                              value={calculateChapterProgress(
-                                chapter.completedLessons,
-                                chapter.lessons.length
-                              )} 
-                              className="h-2"
-                            />
-                            <div className="flex justify-between text-sm text-muted-foreground">
-                              <span>{chapter.completedLessons} / {chapter.lessons.length} leçons</span>
-                              {chapter.quizzes && chapter.quizzes.length > 0 && (
-                                <span className="flex items-center gap-2">
-                                  <GraduationCap className="w-4 h-4" />
-                                  {chapter.quizzes.length} quiz{chapter.quizzes.length > 1 ? 's' : ''}
-                                </span>
-                              )}
+                        {block.chapters.map((chapter) => {
+                          // Filtrer les quiz pour ce chapitre spécifique
+                          const chapterQuizzes = chapter.quizzes?.filter(q => 
+                            q.quiz_type === 'chapter_quiz' && q.chapter_id === chapter.id
+                          ) || [];
+                          
+                          return (
+                            <div key={chapter.id} className="space-y-2">
+                              <h4 className="text-sm font-medium">{chapter.title}</h4>
+                              <Progress 
+                                value={calculateChapterProgress(
+                                  chapter.completedLessons,
+                                  chapter.lessons.length
+                                )} 
+                                className="h-2"
+                              />
+                              <div className="flex justify-between text-sm text-muted-foreground">
+                                <span>{chapter.completedLessons} / {chapter.lessons.length} leçons</span>
+                                {chapterQuizzes.length > 0 && (
+                                  <span className="flex items-center gap-2">
+                                    <GraduationCap className="w-4 h-4" />
+                                    {chapterQuizzes.length} quiz{chapterQuizzes.length > 1 ? 's' : ''}
+                                  </span>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </>
                   ) : (
