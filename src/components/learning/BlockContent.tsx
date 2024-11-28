@@ -89,19 +89,19 @@ export function BlockContent({ blockId, condensed = false }: BlockContentProps) 
       const completedLessons = new Set(completedLessonsData?.map(p => p.lesson_id) || []);
       const quizzes = quizzesData || [];
 
-      // Organize chapters with their respective quizzes
+      // Organize chapters with their respective quizzes (only chapter quizzes)
       const chaptersWithQuizzes = chaptersData?.map(chapter => ({
         ...chapter,
         lessons: chapter.lessons.sort((a, b) => a.order_index - b.order_index),
-        quizzes: quizzes.filter(q => q.chapter_id === chapter.id),
+        quizzes: quizzes.filter(q => q.chapter_id === chapter.id && q.quiz_type === 'chapter_quiz'),
         completedLessons: chapter.lessons.reduce(
           (acc, lesson) => acc + (completedLessons.has(lesson.id) ? 1 : 0),
           0
         )
       })) || [];
 
-      // Get block-level quizzes (quizzes without a chapter_id)
-      const blockQuizzes = quizzes.filter(q => !q.chapter_id);
+      // Get block-level quizzes (quizzes with quiz_type = 'block_quiz')
+      const blockQuizzes = quizzes.filter(q => q.quiz_type === 'block_quiz');
 
       return {
         chapters: chaptersWithQuizzes,
