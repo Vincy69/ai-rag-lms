@@ -127,21 +127,23 @@ export function FormationTimeline({ blocks, selectedBlockId, onSelectBlock }: Fo
   return (
     <TooltipProvider>
       <div className="space-y-4">
-        <div className="h-16 bg-secondary rounded-lg overflow-hidden flex">
+        <div className="h-3 bg-secondary/30 rounded-full overflow-hidden backdrop-blur-sm">
           {detailedProgress.map((item, index) => (
             <Tooltip key={item.id}>
               <TooltipTrigger asChild>
                 <div 
                   style={{ 
                     width: `${item.width}%`,
-                    background: getProgressBackground(item.type, item.progress)
                   }}
                   className={cn(
-                    "h-full transition-all duration-200 hover:brightness-110",
-                    item.progress > 0 && "cursor-pointer"
+                    "h-full transition-all duration-500 ease-in-out",
+                    item.progress > 0 ? "bg-gradient-to-r from-primary/80 to-primary hover:brightness-110" : "bg-secondary/20 hover:bg-secondary/30",
+                    "relative group cursor-pointer"
                   )}
                 >
-                  <div className="w-full h-full" />
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    <div className="w-full h-full bg-white/10" />
+                  </div>
                 </div>
               </TooltipTrigger>
               <TooltipContent>
