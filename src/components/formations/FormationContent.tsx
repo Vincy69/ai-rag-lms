@@ -49,6 +49,7 @@ const normalizeBlockName = (name: string): string => {
     .replace(/[:\-–—]/g, '') // Supprime les caractères spéciaux
     .replace(/ue\s*(\d+)\s*[:\-–—]?\s*/i, 'ue$1') // Normalise le format UE
     .replace(/\s+/g, ' ')    // Normalise les espaces
+    .replace(/^ue/, 'ue ')   // Ajoute un espace après "ue" si nécessaire
     .trim();                 // Supprime les espaces au début et à la fin
 };
 
@@ -66,10 +67,16 @@ const getUniqueBlocks = (blocks: Block[]): Block[] => {
     .filter(hasContent) // Filtre d'abord les blocs sans contenu
     .forEach(block => {
       const normalizedName = normalizeBlockName(block.name);
+      console.log('Normalized name:', normalizedName, 'Original name:', block.name); // Debug
+      
       const existingBlock = blockMap.get(normalizedName);
       
       if (!existingBlock || (block.order_index < existingBlock.order_index)) {
-        blockMap.set(normalizedName, block);
+        blockMap.set(normalizedName, {
+          ...block,
+          skills: [...(existingBlock?.skills || []), ...block.skills].sort((a, b) => a.order_index - b.order_index),
+          quizzes: [...(existingBlock?.quizzes || []), ...block.quizzes]
+        });
       }
     });
   
