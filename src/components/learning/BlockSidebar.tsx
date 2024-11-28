@@ -27,9 +27,9 @@ export function BlockSidebar({
   onSelectQuiz,
 }: BlockSidebarProps) {
   return (
-    <div className="sticky top-4 space-y-4">
-      <h2 className="text-xl font-semibold text-left">{block?.name}</h2>
-      <Card className="border bg-card/50 p-4">
+    <div className="h-full">
+      <h2 className="text-xl font-semibold text-left mb-4">{block?.name}</h2>
+      <Card className="h-[calc(100%-2rem)] bg-card/50 p-4">
         <FullView
           block={block}
           chapters={chapters}

@@ -25,8 +25,8 @@ export function ContentArea({
 }: ContentAreaProps) {
   if (selectedQuizId) {
     return (
-      <Card className="h-[calc(100vh-8rem)] flex flex-col">
-        <div className="flex-1 p-6 overflow-hidden">
+      <Card className="h-full flex flex-col bg-card/50">
+        <div className="flex-1 p-6 overflow-auto">
           <QuizContent quizId={selectedQuizId} />
         </div>
       </Card>
@@ -35,12 +35,12 @@ export function ContentArea({
 
   if (selectedLesson) {
     return (
-      <Card className="h-[calc(100vh-8rem)] flex flex-col">
-        <div className="flex-1 p-6 overflow-hidden">
+      <Card className="h-full flex flex-col bg-card/50">
+        <div className="flex-1 p-6 overflow-auto">
           <LessonContent lesson={selectedLesson} />
         </div>
         
-        <div className="border-t bg-card/50 p-4 mt-auto">
+        <div className="border-t bg-card/50 p-4">
           <LessonNavigation
             onPrevious={previousLessonId ? () => onNavigate?.(previousLessonId) : undefined}
             onNext={nextLessonId ? () => onNavigate?.(nextLessonId) : undefined}
@@ -74,7 +74,7 @@ export function ContentArea({
   }
 
   return (
-    <Card className="h-[calc(100vh-8rem)] flex items-center justify-center p-6">
+    <Card className="h-full flex items-center justify-center p-6 bg-card/50">
       <p className="text-muted-foreground text-sm text-center">
         Sélectionnez une leçon ou un quiz pour voir son contenu
       </p>

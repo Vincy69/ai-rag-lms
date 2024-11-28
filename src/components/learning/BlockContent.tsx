@@ -173,7 +173,7 @@ export function BlockContent({ blockId, condensed = false }: BlockContentProps) 
   }
 
   return (
-    <div className="flex gap-6">
+    <div className="flex gap-6 h-[calc(100vh-12rem)]">
       <div className="w-1/3">
         <BlockSidebar
           block={block}
