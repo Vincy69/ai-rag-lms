@@ -2,7 +2,7 @@ import { corsHeaders } from './cors.ts';
 
 interface N8nResponse {
   response: string;
-  confidence: number;
+  confidence?: number;
 }
 
 export async function callN8nWebhook(requestBody: { sessionId: string; input: string; userId: string }): Promise<N8nResponse> {
@@ -22,8 +22,14 @@ export async function callN8nWebhook(requestBody: { sessionId: string; input: st
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`n8n webhook error: ${response.status}`, errorText);
-      throw new Error(`n8n webhook failed with status ${response.status}: ${errorText}`);
+      console.error(`n8n webhook error (${response.status}):`, errorText);
+      
+      try {
+        const errorJson = JSON.parse(errorText);
+        throw new Error(`n8n workflow error: ${errorJson.message || errorText}`);
+      } catch (e) {
+        throw new Error(`n8n webhook failed (${response.status}): ${errorText}`);
+      }
     }
 
     const rawResponse = await response.text();
@@ -33,39 +39,47 @@ export async function callN8nWebhook(requestBody: { sessionId: string; input: st
       throw new Error('Empty response from n8n');
     }
 
-    const data = JSON.parse(rawResponse);
-    console.log('Parsed n8n response:', data);
+    try {
+      const data = JSON.parse(rawResponse);
+      console.log('Parsed n8n response:', data);
 
-    if (data.error || data.message === "Error in workflow") {
-      throw new Error(`n8n workflow error: ${JSON.stringify(data)}`);
-    }
-
-    // Handle different response formats
-    if (typeof data === 'string') {
-      return { response: data, confidence: 0.8 };
-    }
-
-    if (Array.isArray(data) && data.length > 0) {
-      const firstItem = data[0];
-      if (typeof firstItem === 'string') {
-        return { response: firstItem, confidence: 0.8 };
+      // Handle different response formats
+      if (typeof data === 'string') {
+        return { response: data, confidence: 0.8 };
       }
-      if (firstItem.output) {
+
+      if (Array.isArray(data) && data.length > 0) {
+        const firstItem = data[0];
+        if (typeof firstItem === 'string') {
+          return { response: firstItem, confidence: 0.8 };
+        }
+        if (firstItem.output) {
+          return { 
+            response: firstItem.output,
+            confidence: firstItem.confidence || 0.8
+          };
+        }
+      }
+
+      if (data.output) {
         return { 
-          response: firstItem.output,
-          confidence: firstItem.confidence || 0.8
+          response: data.output,
+          confidence: data.confidence || 0.8
         };
       }
-    }
 
-    if (data.output) {
-      return { 
-        response: data.output,
-        confidence: data.confidence || 0.8
-      };
-    }
+      if (data.response) {
+        return {
+          response: data.response,
+          confidence: data.confidence || 0.8
+        };
+      }
 
-    throw new Error(`Unexpected response format from n8n: ${JSON.stringify(data)}`);
+      throw new Error(`Unexpected response format from n8n: ${JSON.stringify(data)}`);
+    } catch (error) {
+      console.error('Error parsing n8n response:', error);
+      throw new Error(`Failed to parse n8n response: ${error.message}`);
+    }
   } catch (error) {
     console.error('n8n webhook error:', error);
     throw error;

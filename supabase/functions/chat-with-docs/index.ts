@@ -29,6 +29,10 @@ serve(async (req) => {
       const data = await callN8nWebhook(requestBody);
       console.log('Processed n8n response:', data);
 
+      if (!data || !data.response) {
+        throw new Error('Invalid response format from n8n');
+      }
+
       return new Response(
         JSON.stringify(data),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -37,8 +41,8 @@ serve(async (req) => {
       console.error('n8n webhook error:', error);
       return new Response(
         JSON.stringify({ 
-          error: error.message,
-          details: `Failed to process request through n8n: ${error.message}`,
+          error: 'Failed to process chat request',
+          details: error.message,
           timestamp: new Date().toISOString()
         }),
         { 
