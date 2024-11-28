@@ -1,11 +1,9 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2 } from "lucide-react";
-import { BlockHeader } from "./BlockHeader";
-import { NavigationArea } from "./NavigationArea";
-import { ContentArea } from "./ContentArea";
-import { Card } from "@/components/ui/card";
+import { LoadingState } from "./LoadingState";
+import { CondensedView } from "./CondensedView";
+import { FullView } from "./FullView";
 
 interface BlockContentProps {
   blockId: string;
@@ -101,7 +99,8 @@ export function BlockContent({ blockId, condensed = false }: BlockContentProps) 
             0
           )
         })) || [],
-        blockQuizzes
+        blockQuizzes,
+        completedLessons
       };
     },
   });
@@ -121,89 +120,49 @@ export function BlockContent({ blockId, condensed = false }: BlockContentProps) 
   });
 
   useEffect(() => {
-    if (chapters?.chapters.length && !selectedLessonId && !selectedQuizId) {
+    if (chapters?.chapters.length && !selectedLessonId && !selectedQuizId && !condensed) {
       const firstChapter = chapters.chapters[0];
       if (firstChapter?.lessons?.length) {
         setSelectedLessonId(firstChapter.lessons[0].id);
       }
     }
-  }, [chapters, selectedLessonId, selectedQuizId]);
+  }, [chapters, selectedLessonId, selectedQuizId, condensed]);
 
   if (isLoadingChapters) {
-    return (
-      <div className="flex items-center justify-center h-[calc(100vh-16rem)]">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
+    return <LoadingState />;
   }
 
-  const completedLessonIds = new Set(
-    chapters?.chapters.flatMap(chapter => 
-      chapter.lessons
-        .filter((_, index) => index < chapter.completedLessons)
-        .map(lesson => lesson.id)
-    ) || []
-  );
+  const completedLessonIds = chapters?.completedLessons || new Set();
 
   if (condensed) {
     return (
-      <div className="space-y-4">
-        <BlockHeader 
-          name={block?.name}
-          formationName={block?.formations?.name}
-          progress={block?.progress}
-        />
-        <Card className="p-4">
-          <NavigationArea
-            chapters={chapters?.chapters || []}
-            blockQuizzes={chapters?.blockQuizzes || []}
-            selectedLessonId={null}
-            onSelectLesson={() => {}}
-            onSelectQuiz={() => {}}
-            completedLessonIds={completedLessonIds}
-            condensed
-          />
-        </Card>
-      </div>
+      <CondensedView
+        block={block}
+        chapters={chapters?.chapters || []}
+        blockQuizzes={chapters?.blockQuizzes || []}
+        completedLessonIds={completedLessonIds}
+      />
     );
   }
 
   return (
-    <div className="space-y-6">
-      <BlockHeader 
-        name={block?.name}
-        formationName={block?.formations?.name}
-        progress={block?.progress}
-      />
-
-      <div className="grid grid-cols-12 gap-6">
-        <Card className="col-span-4 p-4">
-          {chapters && (
-            <NavigationArea
-              chapters={chapters.chapters}
-              blockQuizzes={chapters.blockQuizzes}
-              selectedLessonId={selectedLessonId}
-              onSelectLesson={(lessonId) => {
-                setSelectedLessonId(lessonId);
-                setSelectedQuizId(null);
-              }}
-              onSelectQuiz={(quizId) => {
-                setSelectedQuizId(quizId);
-                setSelectedLessonId(null);
-              }}
-              completedLessonIds={completedLessonIds}
-            />
-          )}
-        </Card>
-
-        <Card className="col-span-8 p-6">
-          <ContentArea
-            selectedQuizId={selectedQuizId}
-            selectedLesson={selectedLesson}
-            blockId={blockId}
-          />
-        </Card>
-      </div>
-    </div>
+    <FullView
+      block={block}
+      chapters={chapters?.chapters || []}
+      blockQuizzes={chapters?.blockQuizzes || []}
+      selectedLessonId={selectedLessonId}
+      selectedQuizId={selectedQuizId}
+      selectedLesson={selectedLesson}
+      blockId={blockId}
+      completedLessonIds={completedLessonIds}
+      onSelectLesson={(lessonId) => {
+        setSelectedLessonId(lessonId);
+        setSelectedQuizId(null);
+      }}
+      onSelectQuiz={(quizId) => {
+        setSelectedQuizId(quizId);
+        setSelectedLessonId(null);
+      }}
+    />
   );
 }
