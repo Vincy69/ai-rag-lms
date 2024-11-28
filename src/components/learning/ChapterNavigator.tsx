@@ -1,0 +1,109 @@
+import { useState } from "react";
+import { Check, ChevronDown, ChevronUp, BookOpen, GraduationCap } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { ChapterProgress } from "./ChapterProgress";
+
+interface Lesson {
+  id: string;
+  title: string;
+  duration: number | null;
+}
+
+interface Quiz {
+  id: string;
+  title: string;
+}
+
+interface Chapter {
+  id: string;
+  title: string;
+  lessons: Lesson[];
+  quizzes?: Quiz[];
+  completedLessons: number;
+}
+
+interface ChapterNavigatorProps {
+  chapters: Chapter[];
+  selectedLessonId?: string;
+  onSelectLesson: (lessonId: string) => void;
+  completedLessonIds: Set<string>;
+}
+
+export function ChapterNavigator({ 
+  chapters, 
+  selectedLessonId, 
+  onSelectLesson,
+  completedLessonIds
+}: ChapterNavigatorProps) {
+  const [expandedChapterId, setExpandedChapterId] = useState<string | null>(null);
+
+  return (
+    <div className="space-y-2">
+      {chapters.map((chapter) => (
+        <div key={chapter.id} className="space-y-2">
+          <button
+            onClick={() => setExpandedChapterId(
+              expandedChapterId === chapter.id ? null : chapter.id
+            )}
+            className="w-full text-left p-4 rounded-lg bg-card hover:bg-accent transition-colors"
+          >
+            <div className="flex items-center justify-between">
+              <span className="font-medium">{chapter.title}</span>
+              {expandedChapterId === chapter.id ? (
+                <ChevronUp className="h-4 w-4" />
+              ) : (
+                <ChevronDown className="h-4 w-4" />
+              )}
+            </div>
+            
+            <ChapterProgress 
+              completedLessons={chapter.completedLessons} 
+              totalLessons={chapter.lessons.length} 
+            />
+          </button>
+
+          {expandedChapterId === chapter.id && (
+            <div className="ml-4 space-y-1">
+              {chapter.lessons.map((lesson) => (
+                <button
+                  key={lesson.id}
+                  onClick={() => onSelectLesson(lesson.id)}
+                  className={cn(
+                    "w-full flex items-center gap-2 p-2 text-sm rounded-lg transition-colors",
+                    selectedLessonId === lesson.id 
+                      ? "bg-accent/50 text-primary" 
+                      : "hover:bg-accent/50"
+                  )}
+                >
+                  <div className="flex items-center gap-2 flex-1">
+                    <BookOpen className="h-4 w-4" />
+                    <span>{lesson.title}</span>
+                  </div>
+                  {completedLessonIds.has(lesson.id) && (
+                    <Check className="h-4 w-4 text-green-500" />
+                  )}
+                  {lesson.duration && (
+                    <span className="text-xs text-muted-foreground">
+                      {lesson.duration} min
+                    </span>
+                  )}
+                </button>
+              ))}
+              
+              {chapter.quizzes?.map((quiz) => (
+                <button
+                  key={quiz.id}
+                  onClick={() => {/* TODO: Implement quiz navigation */}}
+                  className="w-full flex items-center gap-2 p-2 text-sm rounded-lg transition-colors hover:bg-accent/50"
+                >
+                  <GraduationCap className="h-4 w-4" />
+                  <span>{quiz.title}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}

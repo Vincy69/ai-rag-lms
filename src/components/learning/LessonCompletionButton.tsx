@@ -24,23 +24,22 @@ export function LessonCompletionButton({
     try {
       setIsLoading(true);
       
-      // Get current user
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
       // Get total lessons in chapter
       const { data: totalLessons } = await supabase
-        .from('lessons')
-        .select('id')
-        .eq('chapter_id', chapterId);
+        .from("lessons")
+        .select("id")
+        .eq("chapter_id", chapterId);
 
       // Get completed lessons in chapter
       const { data: completedLessons } = await supabase
-        .from('lesson_progress')
-        .select('id')
-        .eq('chapter_id', chapterId)
-        .eq('user_id', user.id)
-        .eq('is_completed', true);
+        .from("lesson_progress")
+        .select("id")
+        .eq("chapter_id", chapterId)
+        .eq("user_id", user.id)
+        .eq("is_completed", true);
 
       // Calculate new progress
       const totalCount = totalLessons?.length || 0;
@@ -49,7 +48,7 @@ export function LessonCompletionButton({
 
       // Mark lesson as completed
       await supabase
-        .from('lesson_progress')
+        .from("lesson_progress")
         .upsert({
           user_id: user.id,
           lesson_id: lessonId,
@@ -60,10 +59,10 @@ export function LessonCompletionButton({
 
       // Update block progress
       await supabase
-        .from('block_enrollments')
+        .from("block_enrollments")
         .update({ progress })
-        .eq('user_id', user.id)
-        .eq('block_id', blockId);
+        .eq("user_id", user.id)
+        .eq("block_id", blockId);
 
       toast({
         title: "Leçon terminée !",
@@ -87,7 +86,7 @@ export function LessonCompletionButton({
     <Button 
       onClick={handleComplete} 
       disabled={isLoading}
-      className="w-full mt-8"
+      className="w-full"
     >
       <Check className="w-4 h-4 mr-2" />
       Marquer comme terminé

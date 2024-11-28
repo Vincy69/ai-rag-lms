@@ -1,23 +1,22 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ChapterList } from "./ChapterList";
-import { LessonContent } from "./LessonContent";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Loader2, ChevronLeft } from "lucide-react";
+import { LessonContent } from "./LessonContent";
 import { LessonCompletionButton } from "./LessonCompletionButton";
+import { ChapterNavigator } from "./ChapterNavigator";
 
 interface BlockContentProps {
   blockId: string;
 }
 
 export function BlockContent({ blockId }: BlockContentProps) {
-  const [selectedChapterId, setSelectedChapterId] = useState<string | null>(null);
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
 
   // Fetch block details and progress
-  const { data: block, refetch: refetchBlock } = useQuery({
+  const { data: block } = useQuery({
     queryKey: ["block", blockId],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -58,38 +57,52 @@ export function BlockContent({ blockId }: BlockContentProps) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const { data: chaptersData } = await supabase
-        .from("chapters")
-        .select(`
-          id,
-          title,
-          description,
-          order_index,
-          lessons (
+      const [chaptersData, completedLessonsData, quizzesData] = await Promise.all([
+        supabase
+          .from("chapters")
+          .select(`
             id,
             title,
-            duration,
-            order_index
-          )
-        `)
-        .eq("block_id", blockId)
-        .order("order_index");
+            description,
+            order_index,
+            lessons (
+              id,
+              title,
+              duration,
+              order_index
+            )
+          `)
+          .eq("block_id", blockId)
+          .order("order_index"),
+        
+        supabase
+          .from("lesson_progress")
+          .select("lesson_id")
+          .eq("user_id", user.id)
+          .eq("block_id", blockId)
+          .eq("is_completed", true),
+          
+        supabase
+          .from("quizzes")
+          .select("id, title, chapter_id")
+          .eq("block_id", blockId)
+      ]);
 
-      // Fetch progress for all lessons
-      const { data: progressData } = await supabase
-        .from("lesson_progress")
-        .select("lesson_id")
-        .eq("user_id", user.id)
-        .eq("block_id", blockId)
-        .eq("is_completed", true);
+      const completedLessons = new Set(completedLessonsData.data?.map(p => p.lesson_id) || []);
+      const quizzesByChapter = (quizzesData.data || []).reduce((acc, quiz) => {
+        if (!acc[quiz.chapter_id]) acc[quiz.chapter_id] = [];
+        acc[quiz.chapter_id].push(quiz);
+        return acc;
+      }, {} as Record<string, typeof quizzesData.data>);
 
-      const completedLessons = new Set(progressData?.map(p => p.lesson_id) || []);
-
-      return chaptersData?.map(chapter => ({
+      return chaptersData.data?.map(chapter => ({
         ...chapter,
         lessons: chapter.lessons.sort((a, b) => a.order_index - b.order_index),
-        progress: chapter.lessons.reduce((acc, lesson) => 
-          acc + (completedLessons.has(lesson.id) ? 1 : 0), 0) / chapter.lessons.length * 100
+        quizzes: quizzesByChapter[chapter.id] || [],
+        completedLessons: chapter.lessons.reduce(
+          (acc, lesson) => acc + (completedLessons.has(lesson.id) ? 1 : 0), 
+          0
+        )
       }));
     },
   });
@@ -98,24 +111,24 @@ export function BlockContent({ blockId }: BlockContentProps) {
     queryKey: ["lesson", selectedLessonId],
     queryFn: async () => {
       if (!selectedLessonId) return null;
-
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from("lessons")
         .select("*")
         .eq("id", selectedLessonId)
         .single();
-
-      if (error) throw error;
       return data;
     },
     enabled: !!selectedLessonId,
   });
 
   useEffect(() => {
-    if (chapters?.length && !selectedChapterId) {
-      setSelectedChapterId(chapters[0].id);
+    if (chapters?.length && !selectedLessonId) {
+      const firstChapter = chapters[0];
+      if (firstChapter?.lessons?.length) {
+        setSelectedLessonId(firstChapter.lessons[0].id);
+      }
     }
-  }, [chapters, selectedChapterId]);
+  }, [chapters, selectedLessonId]);
 
   if (isLoadingChapters) {
     return (
@@ -124,6 +137,14 @@ export function BlockContent({ blockId }: BlockContentProps) {
       </div>
     );
   }
+
+  const completedLessonIds = new Set(
+    chapters?.flatMap(chapter => 
+      chapter.lessons
+        .filter((_, index) => index < chapter.completedLessons)
+        .map(lesson => lesson.id)
+    ) || []
+  );
 
   return (
     <div className="space-y-6">
@@ -147,46 +168,14 @@ export function BlockContent({ blockId }: BlockContentProps) {
       <div className="grid grid-cols-12 gap-6">
         {/* Chapters and lessons navigation */}
         <Card className="col-span-4 p-4">
-          <div className="space-y-4">
-            {chapters?.map((chapter) => (
-              <div key={chapter.id} className="space-y-2">
-                {/* Chapter header */}
-                <button
-                  onClick={() => setSelectedChapterId(chapter.id)}
-                  className={`w-full text-left p-2 rounded-lg transition-colors hover:bg-accent group ${
-                    selectedChapterId === chapter.id ? "bg-accent" : ""
-                  }`}
-                >
-                  <div className="font-medium group-hover:text-primary">
-                    {chapter.title}
-                  </div>
-                  <Progress value={chapter.progress} className="h-1 mt-2" />
-                </button>
-
-                {/* Lessons list */}
-                {selectedChapterId === chapter.id && (
-                  <div className="ml-4 space-y-1">
-                    {chapter.lessons.map((lesson) => (
-                      <button
-                        key={lesson.id}
-                        onClick={() => setSelectedLessonId(lesson.id)}
-                        className={`w-full text-left p-2 text-sm rounded-lg transition-colors hover:bg-accent/50 ${
-                          selectedLessonId === lesson.id ? "bg-accent/50 text-primary" : ""
-                        }`}
-                      >
-                        <div className="flex justify-between items-center">
-                          <span>{lesson.title}</span>
-                          <span className="text-xs text-muted-foreground">
-                            {lesson.duration} min
-                          </span>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+          {chapters && (
+            <ChapterNavigator
+              chapters={chapters}
+              selectedLessonId={selectedLessonId || undefined}
+              onSelectLesson={setSelectedLessonId}
+              completedLessonIds={completedLessonIds}
+            />
+          )}
         </Card>
 
         {/* Lesson content */}
@@ -200,10 +189,11 @@ export function BlockContent({ blockId }: BlockContentProps) {
               <LessonContent lesson={selectedLesson} />
               <LessonCompletionButton
                 lessonId={selectedLesson.id}
-                chapterId={selectedChapterId || ""}
+                chapterId={selectedLesson.chapter_id}
                 blockId={blockId}
                 onComplete={() => {
-                  refetchBlock();
+                  // Refetch chapters to update progress
+                  window.location.reload();
                 }}
               />
             </div>
