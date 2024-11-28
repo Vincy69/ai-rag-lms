@@ -519,6 +519,7 @@ export type Database = {
           order_index: number
           question: string
           quiz_id: string
+          skill_id: string | null
         }
         Insert: {
           created_at?: string
@@ -527,6 +528,7 @@ export type Database = {
           order_index: number
           question: string
           quiz_id: string
+          skill_id?: string | null
         }
         Update: {
           created_at?: string
@@ -535,6 +537,7 @@ export type Database = {
           order_index?: number
           question?: string
           quiz_id?: string
+          skill_id?: string | null
         }
         Relationships: [
           {
@@ -542,6 +545,13 @@ export type Database = {
             columns: ["quiz_id"]
             isOneToOne: false
             referencedRelation: "quizzes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quiz_questions_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skills"
             referencedColumns: ["id"]
           },
         ]
