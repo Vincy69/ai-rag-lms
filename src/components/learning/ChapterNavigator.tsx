@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, ChevronDown, ChevronUp, BookOpen } from "lucide-react";
+import { Check, ChevronDown, ChevronUp, BookOpen, Award } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ChapterProgress } from "./ChapterProgress";
 import { QuizNavigator } from "./quiz/QuizNavigator";
@@ -96,9 +96,9 @@ export function ChapterNavigator({
                 </button>
               ))}
               
-              {chapter.quizzes && chapter.quizzes.filter(quiz => quiz.quiz_type === 'chapter_quiz').length > 0 && (
+              {chapter.quizzes && chapter.quizzes.length > 0 && (
                 <QuizNavigator
-                  quizzes={chapter.quizzes.filter(quiz => quiz.quiz_type === 'chapter_quiz')}
+                  quizzes={chapter.quizzes}
                   onSelectQuiz={onSelectQuiz}
                 />
               )}
@@ -107,15 +107,18 @@ export function ChapterNavigator({
         </div>
       ))}
 
-      {blockQuizzes && blockQuizzes.length > 0 && (
-        <div className="mt-6">
-          <h3 className="font-medium text-sm text-muted-foreground mb-2">Quiz final du bloc</h3>
-          <QuizNavigator
-            quizzes={blockQuizzes}
-            onSelectQuiz={onSelectQuiz}
-          />
-        </div>
-      )}
+      {blockQuizzes && blockQuizzes.length > 0 && blockQuizzes.map(quiz => (
+        <button
+          key={quiz.id}
+          onClick={() => onSelectQuiz(quiz.id)}
+          className="w-full text-left p-4 rounded-lg bg-card hover:bg-accent transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <Award className="h-5 w-5 text-primary" />
+            <span className="font-medium">{quiz.title}</span>
+          </div>
+        </button>
+      ))}
     </div>
   );
 }
