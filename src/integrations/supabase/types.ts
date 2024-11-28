@@ -917,12 +917,15 @@ export type Database = {
     Views: {
       user_progress_overview: {
         Row: {
+          average_quiz_score: number | null
           first_name: string | null
           formation_name: string | null
           formation_progress: number | null
           formation_status: string | null
           last_name: string | null
+          total_quiz_attempts: number | null
           user_id: string | null
+          wrong_answers_count: number | null
         }
         Relationships: []
       }
