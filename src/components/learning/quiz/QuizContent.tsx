@@ -37,7 +37,8 @@ export function QuizContent({ quizId }: QuizContentProps) {
         ...q,
         answers: (q.quiz_answers || [])
           .sort((a, b) => a.order_index - b.order_index)
-          .slice(0, 4)
+          .slice(0, 4),
+        skill_id: q.skill_id || null // Ensure skill_id is always present, even if null
       })) as QuizQuestionType[] || [];
     },
   });
@@ -55,7 +56,9 @@ export function QuizContent({ quizId }: QuizContentProps) {
   if (!questions?.length) {
     return (
       <Card className="p-6">
-        <p className="text-muted-foreground">Aucune question trouvée pour ce quiz.</p>
+        <p className="text-muted-foreground">
+          Aucune question trouvée pour ce quiz.
+        </p>
       </Card>
     );
   }
