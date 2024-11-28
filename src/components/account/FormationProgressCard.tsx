@@ -4,7 +4,7 @@ import { BlockProgressCard } from "./BlockProgressCard";
 import { useState } from "react";
 import { BlockDetailsDialog } from "./BlockDetailsDialog";
 import { GraduationCap, Trophy } from "lucide-react";
-import { calculateBlockProgress } from "@/lib/progress";
+import { calculateBlockProgress, isBlockStarted } from "@/lib/progress";
 
 interface FormationProgressProps {
   formation: {
@@ -32,13 +32,10 @@ export function FormationProgressCard({ formation }: FormationProgressProps) {
   const [selectedBlock, setSelectedBlock] = useState<typeof formation.blocks[0] | null>(null);
 
   // Calculate formation progress based on blocks progress
-  const blocksWithProgress = formation.blocks.filter(block => {
-    const blockProgress = calculateBlockProgress(block);
-    return blockProgress > 0;
-  });
-
-  const formationProgress = blocksWithProgress.length > 0
-    ? blocksWithProgress.reduce((acc, block) => acc + calculateBlockProgress(block), 0) / blocksWithProgress.length
+  const startedBlocks = formation.blocks.filter(block => isBlockStarted(block));
+  
+  const formationProgress = startedBlocks.length > 0
+    ? startedBlocks.reduce((acc, block) => acc + calculateBlockProgress(block), 0) / formation.blocks.length
     : 0;
 
   return (
@@ -56,7 +53,7 @@ export function FormationProgressCard({ formation }: FormationProgressProps) {
             <CardTitle>{formation.name}</CardTitle>
           </div>
           <span className="text-sm font-medium text-muted-foreground">
-            {blocksWithProgress.length > 0 ? `${Math.round(formationProgress)}%` : 'Non commencé'}
+            {startedBlocks.length > 0 ? `${Math.round(formationProgress)}%` : 'Non commencé'}
           </span>
         </div>
       </CardHeader>
@@ -75,7 +72,7 @@ export function FormationProgressCard({ formation }: FormationProgressProps) {
           <div className="flex justify-between items-center">
             <h3 className="font-medium">Blocs de compétences</h3>
             <span className="text-sm text-muted-foreground">
-              {blocksWithProgress.length} / {formation.blocks.length} blocs commencés
+              {startedBlocks.length} / {formation.blocks.length} blocs commencés
             </span>
           </div>
           <div className="grid gap-4 md:grid-cols-2">

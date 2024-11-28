@@ -1,7 +1,7 @@
 import { Progress } from "@/components/ui/progress";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import { calculateBlockProgress } from "@/lib/progress";
+import { calculateBlockProgress, isBlockStarted } from "@/lib/progress";
 
 interface BlockProgressProps {
   block: {
@@ -23,7 +23,8 @@ interface BlockProgressProps {
 export function BlockProgressCard({ block, onClick }: BlockProgressProps) {
   const navigate = useNavigate();
   const blockProgress = calculateBlockProgress(block);
-  const skillsStarted = block.skills.filter(skill => 
+  const isStarted = isBlockStarted(block);
+  const startedSkills = block.skills.filter(skill => 
     (skill.score !== null && skill.score > 0) || 
     (skill.attempts !== null && skill.attempts > 0)
   );
@@ -42,7 +43,7 @@ export function BlockProgressCard({ block, onClick }: BlockProgressProps) {
         <div className="flex items-center justify-between">
           <h3 className="font-medium">{block.name}</h3>
           <span className="text-sm text-muted-foreground">
-            {skillsStarted.length} / {block.skills.length} compétences
+            {startedSkills.length} / {block.skills.length} compétences
           </span>
         </div>
       </CardHeader>
@@ -54,7 +55,7 @@ export function BlockProgressCard({ block, onClick }: BlockProgressProps) {
           <Progress value={blockProgress} className="h-2" />
           <div className="flex justify-between text-sm text-muted-foreground">
             <span>{Math.round(blockProgress)}%</span>
-            <span>{block.status === 'completed' ? 'Terminé' : 'En cours'}</span>
+            <span>{isStarted ? 'Commencé' : 'Non commencé'}</span>
           </div>
         </div>
       </CardContent>
