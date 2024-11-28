@@ -59,16 +59,11 @@ export default function ELearning() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/reset-progress`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-        },
-        body: JSON.stringify({ user_id: user.id }),
+      const { data, error } = await supabase.functions.invoke('reset-progress', {
+        body: { user_id: user.id },
       });
 
-      if (!response.ok) throw new Error('Failed to reset progress');
+      if (error) throw error;
 
       toast({
         title: "Progression réinitialisée",
