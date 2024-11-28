@@ -16,17 +16,26 @@ interface BlockProgressProps {
       attempts: number | null;
     }>;
   };
+  onClick?: () => void;
 }
 
-export function BlockProgressCard({ block }: BlockProgressProps) {
+export function BlockProgressCard({ block, onClick }: BlockProgressProps) {
   const navigate = useNavigate();
   const skillsWithProgress = block.skills.filter(skill => skill.score !== null && skill.score > 0);
   const blockProgress = skillsWithProgress.length > 0
     ? skillsWithProgress.reduce((acc, skill) => acc + (skill.score || 0), 0) / skillsWithProgress.length
     : 0;
 
+  const handleClick = () => {
+    if (onClick) {
+      onClick();
+    } else {
+      navigate(`/elearning?blockId=${block.id}`);
+    }
+  };
+
   return (
-    <Card className="hover:bg-accent/50 transition-colors cursor-pointer" onClick={() => navigate(`/elearning?blockId=${block.id}`)}>
+    <Card className="hover:bg-accent/50 transition-colors cursor-pointer" onClick={handleClick}>
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <h3 className="font-medium">{block.name}</h3>
