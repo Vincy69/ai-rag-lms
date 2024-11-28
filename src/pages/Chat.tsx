@@ -51,6 +51,26 @@ export default function Chat() {
 
       if (error) {
         console.error('Supabase function error:', error);
+        
+        // Handle specific error cases
+        if (error.message?.includes('503') || error.message?.toLowerCase().includes('workflow is not active')) {
+          toast({
+            title: "Service indisponible",
+            description: "Le service de chat est temporairement indisponible. Veuillez réessayer dans quelques instants.",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        if (error.message?.includes('500')) {
+          toast({
+            title: "Erreur du service",
+            description: "Une erreur est survenue lors du traitement de votre message. Notre équipe a été notifiée.",
+            variant: "destructive",
+          });
+          return;
+        }
+        
         throw error;
       }
 

@@ -24,18 +24,16 @@ export async function callN8nWebhook(requestBody: { sessionId: string; input: st
       const errorText = await response.text();
       console.error(`n8n webhook error (${response.status}):`, errorText);
       
-      try {
-        const errorJson = JSON.parse(errorText);
-        if (response.status === 404) {
-          throw new Error('N8n workflow is not active. Please activate the workflow in n8n.');
-        }
-        throw new Error(`n8n workflow error: ${errorJson.message || errorText}`);
-      } catch (e) {
-        if (e.message.includes('workflow is not active')) {
-          throw e;
-        }
-        throw new Error(`n8n webhook failed (${response.status}): ${errorText}`);
+      // Handle specific error cases
+      if (response.status === 404 || response.status === 503) {
+        throw new Error('N8n workflow is not active. Please activate the workflow in n8n.');
       }
+      
+      if (response.status === 500) {
+        throw new Error('Error in n8n workflow execution. Please check the workflow configuration.');
+      }
+
+      throw new Error(`n8n webhook failed (${response.status}): ${errorText}`);
     }
 
     const rawResponse = await response.text();
@@ -51,13 +49,13 @@ export async function callN8nWebhook(requestBody: { sessionId: string; input: st
 
       // Handle different response formats
       if (typeof data === 'string') {
-        return { response: data, confidence: 0.8 };
+        return { response: data };
       }
 
       if (Array.isArray(data) && data.length > 0) {
         const firstItem = data[0];
         if (typeof firstItem === 'string') {
-          return { response: firstItem, confidence: 0.8 };
+          return { response: firstItem };
         }
         if (firstItem.output) {
           return { 

@@ -39,17 +39,45 @@ serve(async (req) => {
       );
     } catch (error) {
       console.error('n8n webhook error:', error);
+      
+      // Handle specific error cases
+      if (error.message.includes('workflow is not active')) {
+        return new Response(
+          JSON.stringify({ 
+            error: 'N8n workflow is not active',
+            details: 'N8n workflow is not active. Please activate the workflow in n8n.',
+            timestamp: new Date().toISOString()
+          }),
+          { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 503
+          }
+        );
+      }
+      
+      if (error.message.includes('Error in n8n workflow execution')) {
+        return new Response(
+          JSON.stringify({ 
+            error: 'N8n workflow error',
+            details: error.message,
+            timestamp: new Date().toISOString()
+          }),
+          { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 500
+          }
+        );
+      }
+
       return new Response(
         JSON.stringify({ 
-          error: error.message.includes('workflow is not active') 
-            ? 'N8n workflow is not active' 
-            : 'Failed to process chat request',
+          error: 'Failed to process chat request',
           details: error.message,
           timestamp: new Date().toISOString()
         }),
         { 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: error.message.includes('workflow is not active') ? 503 : 500 
+          status: 500 
         }
       );
     }
