@@ -4,7 +4,6 @@ import { BlockProgressCard } from "./BlockProgressCard";
 import { useState } from "react";
 import { BlockDetailsDialog } from "./BlockDetailsDialog";
 import { GraduationCap, Trophy } from "lucide-react";
-import { calculateFormationProgress, isBlockStarted } from "@/lib/progress";
 
 interface FormationProgressProps {
   formation: {
@@ -40,8 +39,13 @@ interface FormationProgressProps {
 export function FormationProgressCard({ formation }: FormationProgressProps) {
   const [selectedBlock, setSelectedBlock] = useState<typeof formation.blocks[0] | null>(null);
 
-  const startedBlocks = formation.blocks.filter(block => isBlockStarted(block));
-  const formationProgress = calculateFormationProgress(formation.blocks);
+  // Calculate the number of started blocks
+  const startedBlocks = formation.blocks.filter(block => 
+    block.progress !== null && block.progress > 0
+  );
+
+  // Use the formation progress directly from the database
+  const formationProgress = formation.progress || 0;
 
   return (
     <Card className="group hover:shadow-md transition-all duration-300">
@@ -58,7 +62,7 @@ export function FormationProgressCard({ formation }: FormationProgressProps) {
             <CardTitle>{formation.name}</CardTitle>
           </div>
           <span className="text-sm font-medium text-muted-foreground">
-            {startedBlocks.length > 0 ? `${Math.round(formationProgress)}%` : 'Non commencé'}
+            {startedBlocks.length > 0 ? `${formationProgress.toFixed(2)}%` : 'Non commencé'}
           </span>
         </div>
       </CardHeader>
