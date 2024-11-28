@@ -82,6 +82,44 @@ export type Database = {
         }
         Relationships: []
       }
+      chapters: {
+        Row: {
+          block_id: string
+          created_at: string
+          description: string | null
+          id: string
+          order_index: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          block_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          order_index: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          block_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          order_index?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chapters_block_id_fkey"
+            columns: ["block_id"]
+            isOneToOne: false
+            referencedRelation: "skill_blocks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_history: {
         Row: {
           created_at: string
@@ -252,6 +290,47 @@ export type Database = {
           },
         ]
       }
+      lessons: {
+        Row: {
+          chapter_id: string
+          content: string
+          created_at: string
+          duration: number | null
+          id: string
+          order_index: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          chapter_id: string
+          content: string
+          created_at?: string
+          duration?: number | null
+          id?: string
+          order_index: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          chapter_id?: string
+          content?: string
+          created_at?: string
+          duration?: number | null
+          id?: string
+          order_index?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lessons_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -275,6 +354,160 @@ export type Database = {
           role?: Database["public"]["Enums"]["user_role"]
         }
         Relationships: []
+      }
+      quiz_answers: {
+        Row: {
+          answer: string
+          created_at: string
+          id: string
+          is_correct: boolean
+          question_id: string
+        }
+        Insert: {
+          answer: string
+          created_at?: string
+          id?: string
+          is_correct?: boolean
+          question_id: string
+        }
+        Update: {
+          answer?: string
+          created_at?: string
+          id?: string
+          is_correct?: boolean
+          question_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "quiz_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quiz_attempts: {
+        Row: {
+          completed_at: string
+          created_at: string
+          id: string
+          quiz_id: string
+          score: number
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string
+          created_at?: string
+          id?: string
+          quiz_id: string
+          score: number
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          created_at?: string
+          id?: string
+          quiz_id?: string
+          score?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_attempts_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "quizzes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quiz_attempts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quiz_attempts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_progress_overview"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      quiz_questions: {
+        Row: {
+          created_at: string
+          explanation: string | null
+          id: string
+          order_index: number
+          question: string
+          quiz_id: string
+        }
+        Insert: {
+          created_at?: string
+          explanation?: string | null
+          id?: string
+          order_index: number
+          question: string
+          quiz_id: string
+        }
+        Update: {
+          created_at?: string
+          explanation?: string | null
+          id?: string
+          order_index?: number
+          question?: string
+          quiz_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_questions_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quizzes: {
+        Row: {
+          block_id: string
+          created_at: string
+          description: string | null
+          id: string
+          passing_score: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          block_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          passing_score?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          block_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          passing_score?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quizzes_block_id_fkey"
+            columns: ["block_id"]
+            isOneToOne: false
+            referencedRelation: "skill_blocks"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       skill_blocks: {
         Row: {
