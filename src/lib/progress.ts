@@ -44,55 +44,66 @@ export function calculateChapterProgress(
   return Math.min(100, (lessonProgress + quizProgress) * 100);
 }
 
-export function calculateBlockProgress(block: Block): number {
-  if (block.chapters && block.chapters.length > 0) {
-    let totalProgress = 0;
-    let totalWeight = 0;
+export function calculateBlockProgress(
+  chapters: Array<{
+    id: string;
+    completedLessons: number;
+    lessons: Array<any>;
+    quizzes?: Array<{
+      id: string;
+      title: string;
+      quiz_type: string;
+      chapter_id: string | null;
+    }>;
+  }>,
+  blockQuizzes: Array<any> = [],
+  quizScores: { [key: string]: number } = {}
+): number {
+  if (!chapters || chapters.length === 0) return 0;
 
-    block.chapters.forEach(chapter => {
-      const chapterQuizzes = chapter.quizzes?.filter(q => 
-        q.quiz_type === 'chapter_quiz' && q.chapter_id === chapter.id
-      ) || [];
-      
-      const totalLessons = chapter.lessons.length;
-      const totalQuizzes = chapterQuizzes.length;
-      
-      if (totalLessons > 0 || totalQuizzes > 0) {
-        const chapterProgress = calculateChapterProgress(
-          chapter.completedLessons,
-          totalLessons,
-          totalQuizzes,
-          0 // TODO: Add completed quizzes count
-        );
-        
-        // Chaque chapitre a un poids égal dans la progression totale
-        totalProgress += chapterProgress;
-        totalWeight++;
-      }
-    });
+  // Calculate chapter weights
+  const totalChapterWeight = 0.8; // Chapters count for 80% of total progress
+  const blockQuizWeight = 0.2; // Block quiz counts for 20% of total progress
 
-    return totalWeight > 0 ? Math.min(100, totalProgress / totalWeight) : 0;
+  // Calculate chapters progress
+  let totalChapterProgress = 0;
+
+  chapters.forEach(chapter => {
+    const chapterQuizzes = chapter.quizzes?.filter(q => 
+      q.quiz_type === 'chapter_quiz' && q.chapter_id === chapter.id
+    ) || [];
+    
+    const completedQuizzes = chapterQuizzes.filter(quiz => 
+      quizScores[quiz.id] >= 70
+    ).length;
+
+    const chapterProgress = calculateChapterProgress(
+      chapter.completedLessons,
+      chapter.lessons.length,
+      chapterQuizzes.length,
+      completedQuizzes
+    );
+    
+    totalChapterProgress += chapterProgress;
+  });
+
+  // Average chapter progress
+  const averageChapterProgress = totalChapterProgress / chapters.length;
+  
+  // Calculate block quiz progress
+  let blockQuizProgress = 0;
+  if (blockQuizzes.length > 0) {
+    const completedBlockQuizzes = blockQuizzes.filter(quiz => 
+      quizScores[quiz.id] >= 70
+    ).length;
+    blockQuizProgress = (completedBlockQuizzes / blockQuizzes.length) * 100;
   }
 
-  // Fallback to skill-based progress if no chapters
-  const skillsWithProgress = block.skills.filter(skill => 
-    (skill.score !== null && skill.score > 0) || 
-    (skill.attempts !== null && skill.attempts > 0)
-  );
+  // Calculate total progress
+  const totalProgress = (averageChapterProgress * totalChapterWeight) + 
+                       (blockQuizProgress * blockQuizWeight);
 
-  if (skillsWithProgress.length === 0) return 0;
-
-  const totalProgress = skillsWithProgress.reduce((acc, skill) => {
-    if (skill.score !== null && skill.score > 0) {
-      return acc + skill.score;
-    }
-    else if (skill.attempts !== null && skill.attempts > 0) {
-      return acc + 25; // Consider starting a skill as 25% progress
-    }
-    return acc;
-  }, 0);
-
-  return Math.min(100, totalProgress / block.skills.length);
+  return Math.min(100, Math.round(totalProgress));
 }
 
 export function isBlockStarted(block: Block): boolean {

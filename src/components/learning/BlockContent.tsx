@@ -6,6 +6,7 @@ import { CondensedView } from "./CondensedView";
 import { ContentArea } from "./ContentArea";
 import { BlockSidebar } from "./BlockSidebar";
 import { BlockProgressHeader } from "./BlockProgressHeader";
+import { calculateBlockProgress } from "@/lib/progress";
 
 interface BlockContentProps {
   blockId: string;
@@ -22,7 +23,7 @@ export function BlockContent({ blockId, condensed = false }: BlockContentProps) 
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const [blockData, enrollmentData] = await Promise.all([
+      const [blockData] = await Promise.all([
         supabase
           .from("skill_blocks")
           .select(`
@@ -35,18 +36,9 @@ export function BlockContent({ blockId, condensed = false }: BlockContentProps) 
           `)
           .eq("id", blockId)
           .single(),
-        supabase
-          .from("block_enrollments")
-          .select("progress")
-          .eq("block_id", blockId)
-          .eq("user_id", user.id)
-          .single()
       ]);
 
-      return {
-        ...blockData.data,
-        progress: enrollmentData.data?.progress || 0
-      };
+      return blockData.data;
     },
   });
 
@@ -85,8 +77,17 @@ export function BlockContent({ blockId, condensed = false }: BlockContentProps) 
         .eq("block_id", blockId)
         .eq("is_completed", true);
 
+      const { data: quizAttemptsData } = await supabase
+        .from("quiz_attempts")
+        .select("quiz_id, score")
+        .eq("user_id", user.id);
+
       const completedLessons = new Set(completedLessonsData?.map(p => p.lesson_id) || []);
       const quizzes = quizzesData || [];
+      const quizScores = (quizAttemptsData || []).reduce((acc: { [key: string]: number }, attempt) => {
+        acc[attempt.quiz_id] = attempt.score;
+        return acc;
+      }, {});
 
       const chaptersWithQuizzes = chaptersData?.map(chapter => ({
         ...chapter,
@@ -100,10 +101,21 @@ export function BlockContent({ blockId, condensed = false }: BlockContentProps) 
 
       const blockQuizzes = quizzes.filter(q => q.quiz_type === 'block_quiz');
 
+      // Calculate block progress
+      const progress = calculateBlockProgress(chaptersWithQuizzes, blockQuizzes, quizScores);
+
+      // Update block progress in database
+      await supabase
+        .from("block_enrollments")
+        .update({ progress })
+        .eq("block_id", blockId)
+        .eq("user_id", user.id);
+
       return {
         chapters: chaptersWithQuizzes,
         blockQuizzes,
-        completedLessons
+        completedLessons,
+        progress
       };
     },
   });
@@ -189,7 +201,7 @@ export function BlockContent({ blockId, condensed = false }: BlockContentProps) 
       <BlockProgressHeader
         name={block?.name}
         formationName={block?.formations?.name}
-        progress={block?.progress || 0}
+        progress={chaptersData?.progress || 0}
         totalLessons={totalLessons}
         totalQuizzes={totalQuizzes}
       />
