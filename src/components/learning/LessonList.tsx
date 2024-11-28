@@ -12,9 +12,11 @@ interface LessonListProps {
   lessons: Lesson[];
   onSelectLesson: (lessonId: string) => void;
   selectedLessonId?: string;
+  completedLessonIds: Set<string>;
+  condensed?: boolean;
 }
 
-export function LessonList({ lessons, onSelectLesson, selectedLessonId }: LessonListProps) {
+export function LessonList({ lessons, onSelectLesson, selectedLessonId, completedLessonIds, condensed = false }: LessonListProps) {
   return (
     <ScrollArea className="h-[calc(100vh-16rem)] pr-4">
       <div className="space-y-2">
