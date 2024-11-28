@@ -51,18 +51,26 @@ const normalizeBlockName = (name: string): string => {
     .trim();                 // Supprime les espaces au début et à la fin
 };
 
+// Vérifie si un bloc a du contenu
+const hasContent = (block: Block): boolean => {
+  return (block.skills && block.skills.length > 0) || 
+         (block.quizzes && block.quizzes.length > 0);
+};
+
 // Fonction pour regrouper les blocs similaires
 const getUniqueBlocks = (blocks: Block[]): Block[] => {
   const blockMap = new Map<string, Block>();
   
-  blocks.forEach(block => {
-    const normalizedName = normalizeBlockName(block.name);
-    const existingBlock = blockMap.get(normalizedName);
-    
-    if (!existingBlock || (block.order_index < existingBlock.order_index)) {
-      blockMap.set(normalizedName, block);
-    }
-  });
+  blocks
+    .filter(hasContent) // Filtre d'abord les blocs sans contenu
+    .forEach(block => {
+      const normalizedName = normalizeBlockName(block.name);
+      const existingBlock = blockMap.get(normalizedName);
+      
+      if (!existingBlock || (block.order_index < existingBlock.order_index)) {
+        blockMap.set(normalizedName, block);
+      }
+    });
   
   return Array.from(blockMap.values())
     .sort((a, b) => a.order_index - b.order_index);
