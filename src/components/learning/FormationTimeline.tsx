@@ -114,7 +114,7 @@ export function FormationTimeline({ blocks, selectedBlockId, onSelectBlock }: Fo
       });
 
       // Calculate segment width percentage
-      const segmentWidth = 100 / totalItems;
+      const segmentWidth = totalItems > 0 ? 100 / totalItems : 0;
       return progressItems.map(item => ({
         ...item,
         width: segmentWidth
@@ -122,12 +122,18 @@ export function FormationTimeline({ blocks, selectedBlockId, onSelectBlock }: Fo
     }
   });
 
-  if (!detailedProgress) return null;
+  if (!detailedProgress || detailedProgress.length === 0) {
+    return (
+      <div className="h-3 bg-secondary/30 rounded-full">
+        <div className="h-full w-full bg-secondary/20" />
+      </div>
+    );
+  }
 
   return (
     <TooltipProvider>
       <div className="space-y-4">
-        <div className="h-3 bg-secondary/30 rounded-full overflow-hidden backdrop-blur-sm">
+        <div className="h-3 bg-secondary/30 rounded-full overflow-hidden">
           {detailedProgress.map((item, index) => (
             <Tooltip key={item.id}>
               <TooltipTrigger asChild>
@@ -136,7 +142,7 @@ export function FormationTimeline({ blocks, selectedBlockId, onSelectBlock }: Fo
                     width: `${item.width}%`,
                   }}
                   className={cn(
-                    "h-full transition-all duration-500 ease-in-out",
+                    "h-full inline-block transition-all duration-500 ease-in-out",
                     item.progress > 0 ? "bg-gradient-to-r from-primary/80 to-primary hover:brightness-110" : "bg-secondary/20 hover:bg-secondary/30",
                     "relative group cursor-pointer"
                   )}
@@ -165,30 +171,4 @@ export function FormationTimeline({ blocks, selectedBlockId, onSelectBlock }: Fo
       </div>
     </TooltipProvider>
   );
-}
-
-function getProgressBackground(type: DetailedProgress['type'], progress: number): string {
-  // Base colors for different types
-  const colors = {
-    lesson: {
-      start: 'rgb(203, 213, 225)', // slate-300
-      end: 'rgb(71, 85, 105)'      // slate-600
-    },
-    chapter_quiz: {
-      start: 'rgb(147, 197, 253)', // blue-300
-      end: 'rgb(59, 130, 246)'     // blue-500
-    },
-    block_quiz: {
-      start: 'rgb(167, 139, 250)', // violet-400
-      end: 'rgb(109, 40, 217)'     // violet-700
-    }
-  };
-
-  const { start, end } = colors[type];
-  
-  if (progress === 0) {
-    return `linear-gradient(135deg, ${start}33 0%, ${end}33 100%)`; // 33 for 20% opacity
-  }
-
-  return `linear-gradient(135deg, ${start} 0%, ${end} 100%)`;
 }
