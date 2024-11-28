@@ -2,14 +2,17 @@ import { useSearchParams } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { BlockContent } from "@/components/learning/BlockContent";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, BookOpen, ChevronRight } from "lucide-react";
+import { Loader2, BookOpen, ChevronRight, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function ELearning() {
   const [searchParams, setSearchParams] = useSearchParams();
   const blockId = searchParams.get("blockId");
+  const { toast } = useToast();
 
   const { data: enrolledBlocks, isLoading: isLoadingBlocks } = useQuery({
     queryKey: ["enrolled-blocks"],
@@ -51,6 +54,39 @@ export default function ELearning() {
     },
   });
 
+  const resetProgress = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/reset-progress`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        },
+        body: JSON.stringify({ user_id: user.id }),
+      });
+
+      if (!response.ok) throw new Error('Failed to reset progress');
+
+      toast({
+        title: "Progression réinitialisée",
+        description: "Votre progression a été réinitialisée avec succès.",
+      });
+
+      // Refresh the page to show updated progress
+      window.location.reload();
+    } catch (error) {
+      console.error('Error resetting progress:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de réinitialiser la progression.",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (isLoadingBlocks) {
     return (
       <Layout>
@@ -80,7 +116,17 @@ export default function ELearning() {
     return (
       <Layout>
         <div className="container mx-auto py-8">
-          <h1 className="text-2xl font-bold mb-6">Mes UE</h1>
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-2xl font-bold">Mes UE</h1>
+            <Button 
+              variant="outline" 
+              onClick={resetProgress}
+              className="gap-2"
+            >
+              <RotateCcw className="w-4 h-4" />
+              Réinitialiser ma progression
+            </Button>
+          </div>
           <div className="grid gap-4">
             {enrolledBlocks.map((block) => (
               <button

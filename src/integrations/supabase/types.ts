@@ -438,6 +438,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          is_completed: boolean | null
           quiz_id: string
           score: number
           user_id: string
@@ -445,6 +446,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          is_completed?: boolean | null
           quiz_id: string
           score: number
           user_id: string
@@ -452,6 +454,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          is_completed?: boolean | null
           quiz_id?: string
           score?: number
           user_id?: string
