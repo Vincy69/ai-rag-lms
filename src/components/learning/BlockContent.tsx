@@ -3,9 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { LoadingState } from "./LoadingState";
 import { CondensedView } from "./CondensedView";
-import { FullView } from "./FullView";
-import { Card } from "@/components/ui/card";
 import { ContentArea } from "./ContentArea";
+import { BlockSidebar } from "./BlockSidebar";
 
 interface BlockContentProps {
   blockId: string;
@@ -174,33 +173,28 @@ export function BlockContent({ blockId, condensed = false }: BlockContentProps) 
   }
 
   return (
-    <div className="grid grid-cols-12 gap-6">
-      <div className="col-span-12 md:col-span-4">
-        <div className="sticky top-4 space-y-4">
-          <h2 className="text-xl font-semibold text-left">{block?.name}</h2>
-          <Card className="border bg-card/50 p-4">
-            <FullView
-              block={block}
-              chapters={chaptersData?.chapters || []}
-              blockQuizzes={chaptersData?.blockQuizzes || []}
-              selectedLessonId={selectedLessonId}
-              selectedQuizId={selectedQuizId}
-              selectedLesson={selectedLesson}
-              blockId={blockId}
-              completedLessonIds={chaptersData?.completedLessons || new Set()}
-              onSelectLesson={(lessonId) => {
-                setSelectedLessonId(lessonId);
-                setSelectedQuizId(null);
-              }}
-              onSelectQuiz={(quizId) => {
-                setSelectedQuizId(quizId);
-                setSelectedLessonId(null);
-              }}
-            />
-          </Card>
-        </div>
+    <div className="flex gap-6">
+      <div className="w-1/3">
+        <BlockSidebar
+          block={block}
+          chapters={chaptersData?.chapters || []}
+          blockQuizzes={chaptersData?.blockQuizzes || []}
+          selectedLessonId={selectedLessonId}
+          selectedQuizId={selectedQuizId}
+          selectedLesson={selectedLesson}
+          blockId={blockId}
+          completedLessonIds={chaptersData?.completedLessons || new Set()}
+          onSelectLesson={(lessonId) => {
+            setSelectedLessonId(lessonId);
+            setSelectedQuizId(null);
+          }}
+          onSelectQuiz={(quizId) => {
+            setSelectedQuizId(quizId);
+            setSelectedLessonId(null);
+          }}
+        />
       </div>
-      <div className="col-span-12 md:col-span-8">
+      <div className="w-2/3">
         <ContentArea 
           selectedQuizId={selectedQuizId}
           selectedLesson={selectedLesson}
