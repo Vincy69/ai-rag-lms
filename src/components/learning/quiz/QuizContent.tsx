@@ -6,7 +6,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CheckCircle2, XCircle } from "lucide-react";
+import { CheckCircle2, XCircle, Trophy } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 interface QuizContentProps {
   quizId: string;
@@ -30,6 +31,8 @@ export function QuizContent({ quizId }: QuizContentProps) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string>>({});
   const [showExplanation, setShowExplanation] = useState(false);
+  const [quizCompleted, setQuizCompleted] = useState(false);
+  const { toast } = useToast();
 
   const { data: questions } = useQuery({
     queryKey: ["quiz-questions", quizId],
@@ -67,10 +70,36 @@ export function QuizContent({ quizId }: QuizContentProps) {
   const selectedAnswerId = selectedAnswers[currentQuestion.id];
   const selectedAnswer = currentQuestion.answers.find(a => a.id === selectedAnswerId);
 
+  const calculateScore = () => {
+    const correctAnswers = questions.filter(q => {
+      const selectedAnswerId = selectedAnswers[q.id];
+      const selectedAnswer = q.answers.find(a => a.id === selectedAnswerId);
+      return selectedAnswer?.is_correct;
+    }).length;
+    return Math.round((correctAnswers / questions.length) * 100);
+  };
+
   const handleNextQuestion = () => {
     setShowExplanation(false);
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
+    } else {
+      const score = calculateScore();
+      setQuizCompleted(true);
+      
+      // Save quiz attempt
+      supabase.from("quiz_attempts").insert({
+        quiz_id: quizId,
+        score: score,
+      }).then(({ error }) => {
+        if (error) {
+          toast({
+            variant: "destructive",
+            title: "Erreur",
+            description: "Impossible d'enregistrer votre score"
+          });
+        }
+      });
     }
   };
 
@@ -84,6 +113,28 @@ export function QuizContent({ quizId }: QuizContentProps) {
   const handleSubmitAnswer = () => {
     setShowExplanation(true);
   };
+
+  if (quizCompleted) {
+    const score = calculateScore();
+    return (
+      <div className="space-y-6">
+        <Card className="p-6">
+          <div className="flex flex-col items-center gap-4 text-center">
+            <Trophy className="w-16 h-16 text-primary" />
+            <h2 className="text-2xl font-semibold">Quiz terminé !</h2>
+            <p className="text-4xl font-bold text-primary">{score}%</p>
+            <p className="text-muted-foreground">
+              Vous avez répondu correctement à {questions.filter(q => {
+                const selectedAnswerId = selectedAnswers[q.id];
+                const selectedAnswer = q.answers.find(a => a.id === selectedAnswerId);
+                return selectedAnswer?.is_correct;
+              }).length} questions sur {questions.length}
+            </p>
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -154,9 +205,9 @@ export function QuizContent({ quizId }: QuizContentProps) {
             </Button>
           )}
           
-          {showExplanation && currentQuestionIndex < questions.length - 1 && (
+          {showExplanation && (
             <Button onClick={handleNextQuestion}>
-              Question suivante
+              {currentQuestionIndex < questions.length - 1 ? "Question suivante" : "Terminer le quiz"}
             </Button>
           )}
         </div>
