@@ -13,7 +13,7 @@ interface LessonContentProps {
 
 export function LessonContent({ lesson }: LessonContentProps) {
   return (
-    <div className="flex flex-col h-[calc(100vh-16rem)]">
+    <div className="flex flex-col h-full">
       <div className="mb-6">
         <h2 className="text-2xl font-semibold">{lesson.title}</h2>
         {lesson.duration && (
@@ -26,7 +26,7 @@ export function LessonContent({ lesson }: LessonContentProps) {
       <ScrollArea className="flex-1 pr-4">
         <div className="prose prose-gray dark:prose-invert max-w-none">
           {lesson.content.split('\n').map((paragraph, index) => (
-            <p key={index}>{paragraph}</p>
+            <p key={index} className="text-left">{paragraph}</p>
           ))}
         </div>
       </ScrollArea>

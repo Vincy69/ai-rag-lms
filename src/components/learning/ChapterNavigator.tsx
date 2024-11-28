@@ -25,7 +25,7 @@ export function ChapterNavigator({
   condensed = false
 }: ChapterNavigatorProps) {
   return (
-    <div className="space-y-4">
+    <div className="h-[calc(100vh-8rem)] overflow-auto">
       <Accordion type="single" collapsible defaultValue={chapters[0]?.id}>
         {chapters.map((chapter) => {
           const totalItems = chapter.lessons.length + (chapter.quizzes?.length || 0);

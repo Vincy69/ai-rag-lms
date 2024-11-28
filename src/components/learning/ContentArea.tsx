@@ -25,30 +25,34 @@ export function ContentArea({
 }: ContentAreaProps) {
   if (selectedQuizId) {
     return (
-      <Card className="border bg-card/50 p-6">
-        <QuizContent quizId={selectedQuizId} />
+      <Card className="border bg-card/50 h-[calc(100vh-8rem)] flex flex-col">
+        <div className="flex-1 p-6 overflow-hidden">
+          <QuizContent quizId={selectedQuizId} />
+        </div>
       </Card>
     );
   }
 
   if (selectedLesson) {
     return (
-      <Card className="border bg-card/50 p-6 flex flex-col h-[calc(100vh-12rem)]">
-        <div className="flex-1 overflow-hidden">
+      <Card className="border bg-card/50 h-[calc(100vh-8rem)] flex flex-col">
+        <div className="flex-1 p-6 overflow-hidden">
           <LessonContent lesson={selectedLesson} />
         </div>
         
-        <LessonNavigation
-          onPrevious={previousLessonId ? () => onNavigate?.(previousLessonId) : undefined}
-          onNext={nextLessonId ? () => onNavigate?.(nextLessonId) : undefined}
-          onComplete={() => {
-            const button = document.querySelector('[data-complete-button]') as HTMLButtonElement;
-            if (button) button.click();
-          }}
-          hasPrevious={!!previousLessonId}
-          hasNext={!!nextLessonId}
-          isCompleted={isLessonCompleted}
-        />
+        <div className="border-t bg-card/50 p-4 mt-auto">
+          <LessonNavigation
+            onPrevious={previousLessonId ? () => onNavigate?.(previousLessonId) : undefined}
+            onNext={nextLessonId ? () => onNavigate?.(nextLessonId) : undefined}
+            onComplete={() => {
+              const button = document.querySelector('[data-complete-button]') as HTMLButtonElement;
+              if (button) button.click();
+            }}
+            hasPrevious={!!previousLessonId}
+            hasNext={!!nextLessonId}
+            isCompleted={isLessonCompleted}
+          />
+        </div>
         
         <div className="hidden">
           <LessonCompletionButton
@@ -70,7 +74,7 @@ export function ContentArea({
   }
 
   return (
-    <Card className="border bg-card/50 p-6">
+    <Card className="border bg-card/50 h-[calc(100vh-8rem)] flex items-center justify-center p-6">
       <p className="text-muted-foreground text-sm text-center">
         Sélectionnez une leçon ou un quiz pour voir son contenu
       </p>
