@@ -81,21 +81,26 @@ export function BlockContent({ blockId }: BlockContentProps) {
           
         supabase
           .from("quizzes")
-          .select("id, title")
+          .select("id, title, quiz_type, chapter_id")
           .eq("block_id", blockId)
       ]);
 
       const completedLessons = new Set(completedLessonsData.data?.map(p => p.lesson_id) || []);
+      const blockQuizzes = quizzesData.data?.filter(q => q.quiz_type === 'block_quiz') || [];
+      const chapterQuizzes = quizzesData.data?.filter(q => q.quiz_type === 'chapter_quiz') || [];
 
-      return chaptersData.data?.map(chapter => ({
-        ...chapter,
-        lessons: chapter.lessons.sort((a, b) => a.order_index - b.order_index),
-        quizzes: quizzesData.data || [],
-        completedLessons: chapter.lessons.reduce(
-          (acc, lesson) => acc + (completedLessons.has(lesson.id) ? 1 : 0), 
-          0
-        )
-      }));
+      return {
+        chapters: chaptersData.data?.map(chapter => ({
+          ...chapter,
+          lessons: chapter.lessons.sort((a, b) => a.order_index - b.order_index),
+          quizzes: chapterQuizzes.filter(q => q.chapter_id === chapter.id),
+          completedLessons: chapter.lessons.reduce(
+            (acc, lesson) => acc + (completedLessons.has(lesson.id) ? 1 : 0), 
+            0
+          )
+        })) || [],
+        blockQuizzes
+      };
     },
   });
 
@@ -114,8 +119,8 @@ export function BlockContent({ blockId }: BlockContentProps) {
   });
 
   useEffect(() => {
-    if (chapters?.length && !selectedLessonId && !selectedQuizId) {
-      const firstChapter = chapters[0];
+    if (chapters?.chapters.length && !selectedLessonId && !selectedQuizId) {
+      const firstChapter = chapters.chapters[0];
       if (firstChapter?.lessons?.length) {
         setSelectedLessonId(firstChapter.lessons[0].id);
       }
@@ -131,7 +136,7 @@ export function BlockContent({ blockId }: BlockContentProps) {
   }
 
   const completedLessonIds = new Set(
-    chapters?.flatMap(chapter => 
+    chapters?.chapters.flatMap(chapter => 
       chapter.lessons
         .filter((_, index) => index < chapter.completedLessons)
         .map(lesson => lesson.id)
@@ -149,7 +154,8 @@ export function BlockContent({ blockId }: BlockContentProps) {
       <div className="grid grid-cols-12 gap-6">
         {chapters && (
           <NavigationArea
-            chapters={chapters}
+            chapters={chapters.chapters}
+            blockQuizzes={chapters.blockQuizzes}
             selectedLessonId={selectedLessonId}
             onSelectLesson={(lessonId) => {
               setSelectedLessonId(lessonId);

@@ -3,6 +3,7 @@ import { ChapterNavigator } from "./ChapterNavigator";
 
 interface NavigationAreaProps {
   chapters: any[];
+  blockQuizzes?: any[];
   selectedLessonId: string | null;
   onSelectLesson: (lessonId: string) => void;
   onSelectQuiz: (quizId: string) => void;
@@ -11,6 +12,7 @@ interface NavigationAreaProps {
 
 export function NavigationArea({
   chapters,
+  blockQuizzes,
   selectedLessonId,
   onSelectLesson,
   onSelectQuiz,
@@ -20,6 +22,7 @@ export function NavigationArea({
     <Card className="col-span-4 p-4">
       <ChapterNavigator
         chapters={chapters}
+        blockQuizzes={blockQuizzes}
         selectedLessonId={selectedLessonId || undefined}
         onSelectLesson={onSelectLesson}
         onSelectQuiz={onSelectQuiz}

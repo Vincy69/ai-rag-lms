@@ -13,6 +13,7 @@ interface Lesson {
 interface Quiz {
   id: string;
   title: string;
+  quiz_type: string;
 }
 
 interface Chapter {
@@ -25,6 +26,7 @@ interface Chapter {
 
 interface ChapterNavigatorProps {
   chapters: Chapter[];
+  blockQuizzes?: Quiz[];
   selectedLessonId?: string;
   onSelectLesson: (lessonId: string) => void;
   onSelectQuiz: (quizId: string) => void;
@@ -33,6 +35,7 @@ interface ChapterNavigatorProps {
 
 export function ChapterNavigator({ 
   chapters, 
+  blockQuizzes,
   selectedLessonId, 
   onSelectLesson,
   onSelectQuiz,
@@ -93,9 +96,9 @@ export function ChapterNavigator({
                 </button>
               ))}
               
-              {chapter.quizzes && (
+              {chapter.quizzes && chapter.quizzes.filter(quiz => quiz.quiz_type === 'chapter_quiz').length > 0 && (
                 <QuizNavigator
-                  quizzes={chapter.quizzes}
+                  quizzes={chapter.quizzes.filter(quiz => quiz.quiz_type === 'chapter_quiz')}
                   onSelectQuiz={onSelectQuiz}
                 />
               )}
@@ -103,6 +106,16 @@ export function ChapterNavigator({
           )}
         </div>
       ))}
+
+      {blockQuizzes && blockQuizzes.length > 0 && (
+        <div className="mt-6">
+          <h3 className="font-medium text-sm text-muted-foreground mb-2">Quiz final du bloc</h3>
+          <QuizNavigator
+            quizzes={blockQuizzes}
+            onSelectQuiz={onSelectQuiz}
+          />
+        </div>
+      )}
     </div>
   );
 }
