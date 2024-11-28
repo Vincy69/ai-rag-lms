@@ -100,6 +100,16 @@ export function QuizContent({ quizId }: QuizContentProps) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
+      // Récupérer les informations du quiz pour s'assurer que nous enregistrons la tentative pour le bon quiz
+      const { data: quizData } = await supabase
+        .from("quizzes")
+        .select("*")
+        .eq("id", quizId)
+        .single();
+
+      if (!quizData) return;
+
+      // Enregistrer la tentative uniquement pour ce quiz spécifique
       const { error } = await supabase.from("quiz_attempts").insert({
         quiz_id: quizId,
         score: score,
