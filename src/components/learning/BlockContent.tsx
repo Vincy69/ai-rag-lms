@@ -5,6 +5,7 @@ import { LoadingState } from "./LoadingState";
 import { CondensedView } from "./CondensedView";
 import { FullView } from "./FullView";
 import { Card } from "@/components/ui/card";
+import { ContentArea } from "./ContentArea";
 
 interface BlockContentProps {
   blockId: string;
@@ -130,11 +131,34 @@ export function BlockContent({ blockId, condensed = false }: BlockContentProps) 
     }
   }, [chapters, selectedLessonId, selectedQuizId, condensed]);
 
+  // Get all lessons in order
+  const orderedLessons = chapters?.chapters.flatMap(chapter => 
+    chapter.lessons.map(lesson => ({
+      ...lesson,
+      chapter_id: chapter.id
+    }))
+  ).sort((a, b) => {
+    const chapterA = chapters.chapters.find(c => c.id === a.chapter_id);
+    const chapterB = chapters.chapters.find(c => c.id === b.chapter_id);
+    if (chapterA?.order_index !== chapterB?.order_index) {
+      return (chapterA?.order_index || 0) - (chapterB?.order_index || 0);
+    }
+    return a.order_index - b.order_index;
+  }) || [];
+
+  // Find current lesson index and adjacent lessons
+  const currentLessonIndex = orderedLessons.findIndex(l => l.id === selectedLessonId);
+  const previousLessonId = currentLessonIndex > 0 ? orderedLessons[currentLessonIndex - 1].id : null;
+  const nextLessonId = currentLessonIndex < orderedLessons.length - 1 ? orderedLessons[currentLessonIndex + 1].id : null;
+
+  // Check if lesson is completed
+  const isLessonCompleted = selectedLesson ? 
+    completedLessonIds?.has(selectedLesson.id) : 
+    false;
+
   if (isLoadingChapters) {
     return <LoadingState />;
   }
-
-  const completedLessonIds = chapters?.completedLessons || new Set();
 
   if (condensed) {
     return (
@@ -177,14 +201,15 @@ export function BlockContent({ blockId, condensed = false }: BlockContentProps) 
         </div>
       </div>
       <div className="col-span-12 md:col-span-8">
-        {selectedLesson && (
-          <Card className="border bg-card/50 p-6">
-            <h3 className="text-2xl font-semibold mb-4 text-left">{selectedLesson.title}</h3>
-            <div className="prose prose-invert max-w-none">
-              {selectedLesson.content}
-            </div>
-          </Card>
-        )}
+        <ContentArea 
+          selectedQuizId={selectedQuizId}
+          selectedLesson={selectedLesson}
+          blockId={blockId}
+          onNavigate={setSelectedLessonId}
+          previousLessonId={previousLessonId}
+          nextLessonId={nextLessonId}
+          isLessonCompleted={isLessonCompleted}
+        />
       </div>
     </div>
   );

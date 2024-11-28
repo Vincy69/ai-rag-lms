@@ -2,14 +2,27 @@ import { Card } from "@/components/ui/card";
 import { LessonContent } from "./LessonContent";
 import { LessonCompletionButton } from "./LessonCompletionButton";
 import { QuizContent } from "./quiz/QuizContent";
+import { LessonNavigation } from "./LessonNavigation";
 
 interface ContentAreaProps {
   selectedQuizId: string | null;
   selectedLesson: any | null;
   blockId: string;
+  onNavigate?: (lessonId: string) => void;
+  previousLessonId?: string | null;
+  nextLessonId?: string | null;
+  isLessonCompleted?: boolean;
 }
 
-export function ContentArea({ selectedQuizId, selectedLesson, blockId }: ContentAreaProps) {
+export function ContentArea({ 
+  selectedQuizId, 
+  selectedLesson, 
+  blockId,
+  onNavigate,
+  previousLessonId,
+  nextLessonId,
+  isLessonCompleted
+}: ContentAreaProps) {
   if (selectedQuizId) {
     return (
       <Card className="border bg-card/50 p-6">
@@ -23,14 +36,28 @@ export function ContentArea({ selectedQuizId, selectedLesson, blockId }: Content
       <Card className="border bg-card/50 p-6">
         <div className="space-y-6">
           <LessonContent lesson={selectedLesson} />
-          <LessonCompletionButton
-            lessonId={selectedLesson.id}
-            chapterId={selectedLesson.chapter_id}
-            blockId={blockId}
+          
+          <LessonNavigation
+            onPrevious={previousLessonId ? () => onNavigate?.(previousLessonId) : undefined}
+            onNext={nextLessonId ? () => onNavigate?.(nextLessonId) : undefined}
             onComplete={() => {
-              window.location.reload();
+              const button = document.querySelector('[data-complete-button]') as HTMLButtonElement;
+              if (button) button.click();
             }}
+            hasPrevious={!!previousLessonId}
+            hasNext={!!nextLessonId}
+            isCompleted={isLessonCompleted}
           />
+          
+          <div className="hidden">
+            <LessonCompletionButton
+              lessonId={selectedLesson.id}
+              chapterId={selectedLesson.chapter_id}
+              blockId={blockId}
+              onComplete={() => window.location.reload()}
+              data-complete-button
+            />
+          </div>
         </div>
       </Card>
     );
