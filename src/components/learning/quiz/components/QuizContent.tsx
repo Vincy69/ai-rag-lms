@@ -29,7 +29,7 @@ export function QuizContent({ quizId }: QuizContentProps) {
             order_index
           )
         `)
-        .eq("quiz_id", quizId)
+        .eq("quiz_id", quizId)  // Filtrer les questions par quiz_id
         .order("order_index");
 
       return questionsData?.map(q => ({
@@ -85,7 +85,6 @@ export function QuizContent({ quizId }: QuizContentProps) {
       currentQuestion.id,
       answerId,
       selectedAnswer.is_correct,
-      // TODO: Add skill_id to quiz_questions table and pass it here
       "skill_id"
     );
   };
