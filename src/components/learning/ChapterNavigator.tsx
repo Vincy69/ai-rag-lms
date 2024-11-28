@@ -13,6 +13,7 @@ interface Quiz {
   id: string;
   title: string;
   quiz_type: string;
+  chapter_id?: string | null;
 }
 
 interface Chapter {
@@ -36,7 +37,7 @@ interface ChapterNavigatorProps {
 
 export function ChapterNavigator({ 
   chapters, 
-  blockQuizzes,
+  blockQuizzes = [],
   selectedLessonId,
   selectedQuizId,
   onSelectLesson,
@@ -44,7 +45,9 @@ export function ChapterNavigator({
   completedLessonIds,
   condensed = false
 }: ChapterNavigatorProps) {
-  const [expandedChapterId, setExpandedChapterId] = useState<string | null>(null);
+  const [expandedChapterId, setExpandedChapterId] = useState<string | null>(
+    chapters.length > 0 ? chapters[0].id : null
+  );
 
   return (
     <div className="space-y-2">
@@ -104,14 +107,14 @@ export function ChapterNavigator({
                 </button>
               ))}
               
-              {chapter.quizzes && chapter.quizzes.length > 0 && chapter.quizzes.map(quiz => (
+              {chapter.quizzes && chapter.quizzes.map(quiz => (
                 <button
                   key={quiz.id}
                   onClick={() => onSelectQuiz(quiz.id)}
                   className={cn(
                     "w-full flex items-center gap-2 p-2 text-sm rounded-lg transition-colors",
                     selectedQuizId === quiz.id 
-                      ? "bg-accent/50 text-primary" 
+                      ? "bg-primary/10 text-primary" 
                       : "hover:bg-accent/50"
                   )}
                 >
@@ -134,15 +137,14 @@ export function ChapterNavigator({
               key={quiz.id}
               onClick={() => !condensed && onSelectQuiz(quiz.id)}
               className={cn(
-                "w-full text-left p-4 rounded-lg bg-card hover:bg-accent transition-colors",
-                condensed && "cursor-default hover:bg-card",
-                selectedQuizId === quiz.id && "bg-accent/50"
+                "w-full flex items-center gap-2 p-4 rounded-lg bg-card transition-colors",
+                !condensed && "hover:bg-accent",
+                condensed && "cursor-default",
+                selectedQuizId === quiz.id && "bg-primary/10"
               )}
             >
-              <div className="flex items-center gap-3">
-                <Award className="h-5 w-5 text-primary" />
-                <span className="font-medium">{quiz.title}</span>
-              </div>
+              <Award className="h-5 w-5 text-primary" />
+              <span className="font-medium">{quiz.title}</span>
             </button>
           ))}
         </div>
