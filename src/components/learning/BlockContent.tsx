@@ -23,22 +23,20 @@ export function BlockContent({ blockId, condensed = false }: BlockContentProps) 
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const [blockData] = await Promise.all([
-        supabase
-          .from("skill_blocks")
-          .select(`
-            id,
-            name,
-            description,
-            formations (
-              name
-            )
-          `)
-          .eq("id", blockId)
-          .single(),
-      ]);
+      const { data: blockData } = await supabase
+        .from("skill_blocks")
+        .select(`
+          id,
+          name,
+          description,
+          formations (
+            name
+          )
+        `)
+        .eq("id", blockId)
+        .single();
 
-      return blockData.data;
+      return blockData;
     },
   });
 
@@ -187,7 +185,10 @@ export function BlockContent({ blockId, condensed = false }: BlockContentProps) 
     return (
       <div className="space-y-6">
         <CondensedView
-          block={block}
+          block={{
+            ...block,
+            progress: chaptersData?.progress || 0
+          }}
           chapters={chaptersData?.chapters || []}
           blockQuizzes={chaptersData?.blockQuizzes || []}
           completedLessonIds={chaptersData?.completedLessons || new Set()}

@@ -5,20 +5,22 @@ interface Skill {
   attempts: number | null;
 }
 
+interface Chapter {
+  id: string;
+  completedLessons: number;
+  lessons: Array<any>;
+  quizzes?: Array<{
+    id: string;
+    title: string;
+    quiz_type: string;
+    chapter_id: string | null;
+  }>;
+}
+
 interface Block {
   id: string;
   skills: Skill[];
-  chapters?: Array<{
-    id: string;
-    completedLessons: number;
-    lessons: Array<any>;
-    quizzes?: Array<{
-      id: string;
-      title: string;
-      quiz_type: string;
-      chapter_id: string | null;
-    }>;
-  }>;
+  chapters?: Chapter[];
 }
 
 export function calculateChapterProgress(
@@ -45,17 +47,7 @@ export function calculateChapterProgress(
 }
 
 export function calculateBlockProgress(
-  chapters: Array<{
-    id: string;
-    completedLessons: number;
-    lessons: Array<any>;
-    quizzes?: Array<{
-      id: string;
-      title: string;
-      quiz_type: string;
-      chapter_id: string | null;
-    }>;
-  }>,
+  chapters: Chapter[],
   blockQuizzes: Array<any> = [],
   quizScores: { [key: string]: number } = {}
 ): number {
@@ -120,6 +112,6 @@ export function isBlockStarted(block: Block): boolean {
 export function calculateFormationProgress(blocks: Block[]): number {
   if (blocks.length === 0) return 0;
   
-  const totalProgress = blocks.reduce((acc, block) => acc + calculateBlockProgress(block), 0);
+  const totalProgress = blocks.reduce((acc, block) => acc + calculateBlockProgress(block.chapters || [], [], {}), 0);
   return Math.min(100, totalProgress / blocks.length);
 }
