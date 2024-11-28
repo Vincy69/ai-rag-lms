@@ -428,22 +428,28 @@ export type Database = {
         Row: {
           answer: string
           created_at: string
+          explanation: string | null
           id: string
           is_correct: boolean
+          order_index: number
           question_id: string
         }
         Insert: {
           answer: string
           created_at?: string
+          explanation?: string | null
           id?: string
           is_correct?: boolean
+          order_index?: number
           question_id: string
         }
         Update: {
           answer?: string
           created_at?: string
+          explanation?: string | null
           id?: string
           is_correct?: boolean
+          order_index?: number
           question_id?: string
         }
         Relationships: [

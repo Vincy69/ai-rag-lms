@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Check, ChevronDown, ChevronUp, BookOpen, GraduationCap } from "lucide-react";
+import { Check, ChevronDown, ChevronUp, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ChapterProgress } from "./ChapterProgress";
+import { QuizNavigator } from "./quiz/QuizNavigator";
 
 interface Lesson {
   id: string;
@@ -26,6 +27,7 @@ interface ChapterNavigatorProps {
   chapters: Chapter[];
   selectedLessonId?: string;
   onSelectLesson: (lessonId: string) => void;
+  onSelectQuiz: (quizId: string) => void;
   completedLessonIds: Set<string>;
 }
 
@@ -33,6 +35,7 @@ export function ChapterNavigator({
   chapters, 
   selectedLessonId, 
   onSelectLesson,
+  onSelectQuiz,
   completedLessonIds
 }: ChapterNavigatorProps) {
   const [expandedChapterId, setExpandedChapterId] = useState<string | null>(null);
@@ -90,16 +93,12 @@ export function ChapterNavigator({
                 </button>
               ))}
               
-              {chapter.quizzes?.map((quiz) => (
-                <button
-                  key={quiz.id}
-                  onClick={() => {/* TODO: Implement quiz navigation */}}
-                  className="w-full flex items-center gap-2 p-2 text-sm rounded-lg transition-colors hover:bg-accent/50"
-                >
-                  <GraduationCap className="h-4 w-4" />
-                  <span>{quiz.title}</span>
-                </button>
-              ))}
+              {chapter.quizzes && (
+                <QuizNavigator
+                  quizzes={chapter.quizzes}
+                  onSelectQuiz={onSelectQuiz}
+                />
+              )}
             </div>
           )}
         </div>

@@ -7,35 +7,16 @@ import { Loader2 } from "lucide-react";
 import { LessonContent } from "./LessonContent";
 import { LessonCompletionButton } from "./LessonCompletionButton";
 import { ChapterNavigator } from "./ChapterNavigator";
+import { QuizContent } from "./quiz/QuizContent";
 
 interface BlockContentProps {
   blockId: string;
 }
 
-interface Quiz {
-  id: string;
-  title: string;
-}
-
-interface Chapter {
-  id: string;
-  title: string;
-  description: string | null;
-  order_index: number;
-  lessons: {
-    id: string;
-    title: string;
-    duration: number | null;
-    order_index: number;
-  }[];
-  quizzes: Quiz[];
-  completedLessons: number;
-}
-
 export function BlockContent({ blockId }: BlockContentProps) {
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
+  const [selectedQuizId, setSelectedQuizId] = useState<string | null>(null);
 
-  // Fetch block details and progress
   const { data: block } = useQuery({
     queryKey: ["block", blockId],
     queryFn: async () => {
@@ -137,13 +118,13 @@ export function BlockContent({ blockId }: BlockContentProps) {
   });
 
   useEffect(() => {
-    if (chapters?.length && !selectedLessonId) {
+    if (chapters?.length && !selectedLessonId && !selectedQuizId) {
       const firstChapter = chapters[0];
       if (firstChapter?.lessons?.length) {
         setSelectedLessonId(firstChapter.lessons[0].id);
       }
     }
-  }, [chapters, selectedLessonId]);
+  }, [chapters, selectedLessonId, selectedQuizId]);
 
   if (isLoadingChapters) {
     return (
@@ -187,19 +168,24 @@ export function BlockContent({ blockId }: BlockContentProps) {
             <ChapterNavigator
               chapters={chapters}
               selectedLessonId={selectedLessonId || undefined}
-              onSelectLesson={setSelectedLessonId}
+              onSelectLesson={(lessonId) => {
+                setSelectedLessonId(lessonId);
+                setSelectedQuizId(null);
+              }}
+              onSelectQuiz={(quizId) => {
+                setSelectedQuizId(quizId);
+                setSelectedLessonId(null);
+              }}
               completedLessonIds={completedLessonIds}
             />
           )}
         </Card>
 
-        {/* Lesson content */}
+        {/* Content area */}
         <Card className="col-span-8 p-6">
-          {isLoadingLesson ? (
-            <div className="flex items-center justify-center h-[calc(100vh-20rem)]">
-              <Loader2 className="w-6 h-6 animate-spin text-primary" />
-            </div>
-          ) : selectedLesson ? (
+          {selectedQuizId ? (
+            <QuizContent quizId={selectedQuizId} />
+          ) : selectedLessonId ? (
             <div className="space-y-6">
               <LessonContent lesson={selectedLesson} />
               <LessonCompletionButton
@@ -207,14 +193,13 @@ export function BlockContent({ blockId }: BlockContentProps) {
                 chapterId={selectedLesson.chapter_id}
                 blockId={blockId}
                 onComplete={() => {
-                  // Refetch chapters to update progress
                   window.location.reload();
                 }}
               />
             </div>
           ) : (
             <p className="text-muted-foreground text-sm">
-              Sélectionnez une leçon pour voir son contenu
+              Sélectionnez une leçon ou un quiz pour voir son contenu
             </p>
           )}
         </Card>
