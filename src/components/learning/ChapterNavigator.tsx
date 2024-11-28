@@ -51,25 +51,38 @@ export function ChapterNavigator({
     chapters.length > 0 ? chapters[0].id : null
   );
 
-  // Fetch completed quizzes
-  const { data: completedQuizzes } = useQuery({
-    queryKey: ["completed-quizzes"],
+  // Fetch completed quizzes and scores
+  const { data: quizScores } = useQuery({
+    queryKey: ["quiz-scores"],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return new Set<string>();
+      if (!user) return new Map<string, number>();
 
       const { data: attempts } = await supabase
         .from("quiz_attempts")
         .select("quiz_id, score")
-        .eq("user_id", user.id)
-        .gte("score", 70); // Considérer comme complété si score >= 70
+        .eq("user_id", user.id);
 
-      return new Set(attempts?.map(a => a.quiz_id) || []);
+      // Get the highest score for each quiz
+      const scoreMap = new Map<string, number>();
+      attempts?.forEach(attempt => {
+        const currentScore = scoreMap.get(attempt.quiz_id) || 0;
+        if (attempt.score > currentScore) {
+          scoreMap.set(attempt.quiz_id, attempt.score);
+        }
+      });
+
+      return scoreMap;
     },
   });
 
   const isQuizCompleted = (quizId: string) => {
-    return completedQuizzes?.has(quizId) || false;
+    const score = quizScores?.get(quizId) || 0;
+    return score >= 70;
+  };
+
+  const getQuizScore = (quizId: string) => {
+    return quizScores?.get(quizId);
   };
 
   return (
@@ -144,16 +157,23 @@ export function ChapterNavigator({
                       "w-full flex items-center gap-2 p-2 text-sm rounded-lg transition-colors",
                       selectedQuizId === quiz.id 
                         ? "bg-primary/10 text-primary" 
-                        : "hover:bg-accent/50"
+                        : "hover:bg-accent/50 bg-secondary/30"
                     )}
                   >
                     <div className="flex items-center gap-2 flex-1">
                       <GraduationCap className="h-4 w-4" />
                       <span>{quiz.title}</span>
                     </div>
-                    {isQuizCompleted(quiz.id) && (
-                      <Check className="h-4 w-4 text-green-500" />
-                    )}
+                    <div className="flex items-center gap-2">
+                      {getQuizScore(quiz.id) !== undefined && (
+                        <span className="text-xs text-muted-foreground">
+                          {getQuizScore(quiz.id)}%
+                        </span>
+                      )}
+                      {isQuizCompleted(quiz.id) && (
+                        <Check className="h-4 w-4 text-green-500" />
+                      )}
+                    </div>
                   </button>
                 ))}
               </div>
@@ -170,17 +190,24 @@ export function ChapterNavigator({
               key={quiz.id}
               onClick={() => !condensed && onSelectQuiz(quiz.id)}
               className={cn(
-                "w-full flex items-center gap-2 p-4 rounded-lg bg-card transition-colors",
+                "w-full flex items-center gap-2 p-4 rounded-lg transition-colors",
                 !condensed && "hover:bg-accent",
                 condensed && "cursor-default",
-                selectedQuizId === quiz.id && "bg-primary/10"
+                selectedQuizId === quiz.id ? "bg-primary/10" : "bg-secondary/30"
               )}
             >
               <Award className="h-5 w-5 text-primary" />
               <span className="font-medium flex-1">{quiz.title}</span>
-              {isQuizCompleted(quiz.id) && (
-                <Check className="h-4 w-4 text-green-500" />
-              )}
+              <div className="flex items-center gap-2">
+                {getQuizScore(quiz.id) !== undefined && (
+                  <span className="text-sm text-muted-foreground">
+                    {getQuizScore(quiz.id)}%
+                  </span>
+                )}
+                {isQuizCompleted(quiz.id) && (
+                  <Check className="h-4 w-4 text-green-500" />
+                )}
+              </div>
             </button>
           ))}
         </div>
