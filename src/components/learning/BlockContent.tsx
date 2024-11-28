@@ -3,13 +3,33 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Loader2, ChevronLeft } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { LessonContent } from "./LessonContent";
 import { LessonCompletionButton } from "./LessonCompletionButton";
 import { ChapterNavigator } from "./ChapterNavigator";
 
 interface BlockContentProps {
   blockId: string;
+}
+
+interface Quiz {
+  id: string;
+  title: string;
+}
+
+interface Chapter {
+  id: string;
+  title: string;
+  description: string | null;
+  order_index: number;
+  lessons: {
+    id: string;
+    title: string;
+    duration: number | null;
+    order_index: number;
+  }[];
+  quizzes: Quiz[];
+  completedLessons: number;
 }
 
 export function BlockContent({ blockId }: BlockContentProps) {
@@ -84,21 +104,16 @@ export function BlockContent({ blockId }: BlockContentProps) {
           
         supabase
           .from("quizzes")
-          .select("id, title, chapter_id")
+          .select("id, title")
           .eq("block_id", blockId)
       ]);
 
       const completedLessons = new Set(completedLessonsData.data?.map(p => p.lesson_id) || []);
-      const quizzesByChapter = (quizzesData.data || []).reduce((acc, quiz) => {
-        if (!acc[quiz.chapter_id]) acc[quiz.chapter_id] = [];
-        acc[quiz.chapter_id].push(quiz);
-        return acc;
-      }, {} as Record<string, typeof quizzesData.data>);
 
       return chaptersData.data?.map(chapter => ({
         ...chapter,
         lessons: chapter.lessons.sort((a, b) => a.order_index - b.order_index),
-        quizzes: quizzesByChapter[chapter.id] || [],
+        quizzes: quizzesData.data || [],
         completedLessons: chapter.lessons.reduce(
           (acc, lesson) => acc + (completedLessons.has(lesson.id) ? 1 : 0), 
           0
