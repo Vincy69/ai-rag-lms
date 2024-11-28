@@ -16,6 +16,15 @@ interface BlockProgressProps {
       score: number | null;
       attempts: number | null;
     }>;
+    chapters?: Array<{
+      id: string;
+      completedLessons: number;
+      lessons: Array<any>;
+      quizzes?: Array<{
+        id: string;
+        title: string;
+      }>;
+    }>;
   };
   onClick?: () => void;
 }
@@ -24,10 +33,9 @@ export function BlockProgressCard({ block, onClick }: BlockProgressProps) {
   const navigate = useNavigate();
   const blockProgress = calculateBlockProgress(block);
   const isStarted = isBlockStarted(block);
-  const startedSkills = block.skills.filter(skill => 
-    (skill.score !== null && skill.score > 0) || 
-    (skill.attempts !== null && skill.attempts > 0)
-  );
+  
+  const totalLessons = block.chapters?.reduce((acc, chapter) => acc + chapter.lessons.length, 0) || 0;
+  const completedLessons = block.chapters?.reduce((acc, chapter) => acc + chapter.completedLessons, 0) || 0;
 
   const handleClick = () => {
     if (onClick) {
@@ -43,7 +51,7 @@ export function BlockProgressCard({ block, onClick }: BlockProgressProps) {
         <div className="flex items-center justify-between">
           <h3 className="font-medium">{block.name}</h3>
           <span className="text-sm text-muted-foreground">
-            {startedSkills.length} / {block.skills.length} compétences
+            {completedLessons} / {totalLessons} leçons
           </span>
         </div>
       </CardHeader>

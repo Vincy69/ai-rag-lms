@@ -9,6 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { BlockContent } from "../learning/BlockContent";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { calculateBlockProgress, calculateChapterProgress } from "@/lib/progress";
 
 interface BlockDetailsDialogProps {
   block: {
@@ -23,6 +24,16 @@ interface BlockDetailsDialogProps {
       score: number | null;
       attempts: number | null;
     }>;
+    chapters?: Array<{
+      id: string;
+      title?: string;
+      completedLessons: number;
+      lessons: Array<any>;
+      quizzes?: Array<{
+        id: string;
+        title: string;
+      }>;
+    }>;
   } | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -35,11 +46,7 @@ export function BlockDetailsDialog({
 }: BlockDetailsDialogProps) {
   if (!block) return null;
 
-  // Calculate block progress based on skills progress
-  const skillsWithProgress = block.skills.filter(skill => skill.score !== null && skill.score > 0);
-  const blockProgress = skillsWithProgress.length > 0
-    ? skillsWithProgress.reduce((acc, skill) => acc + (skill.score || 0), 0) / skillsWithProgress.length
-    : 0;
+  const blockProgress = calculateBlockProgress(block);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -48,7 +55,7 @@ export function BlockDetailsDialog({
           <DialogTitle className="flex items-center justify-between">
             <span>{block.name}</span>
             <span className="text-base font-normal text-muted-foreground">
-              {skillsWithProgress.length > 0 ? `${Math.round(blockProgress)}%` : 'Non commencé'}
+              {blockProgress > 0 ? `${Math.round(blockProgress)}%` : 'Non commencé'}
             </span>
           </DialogTitle>
         </DialogHeader>
@@ -76,17 +83,52 @@ export function BlockDetailsDialog({
                 />
                 
                 <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <h3 className="font-medium">Compétences du bloc</h3>
-                    <span className="text-sm text-muted-foreground">
-                      {skillsWithProgress.length} / {block.skills.length} compétences évaluées
-                    </span>
-                  </div>
-                  <div className="space-y-4">
-                    {block.skills.map((skill, index) => (
-                      <SkillProgressCard key={index} skill={skill} />
-                    ))}
-                  </div>
+                  {block.chapters && block.chapters.length > 0 ? (
+                    <>
+                      <div className="flex justify-between items-center">
+                        <h3 className="font-medium">Chapitres</h3>
+                        <span className="text-sm text-muted-foreground">
+                          {block.chapters.reduce((acc, chapter) => acc + chapter.completedLessons, 0)} / {
+                            block.chapters.reduce((acc, chapter) => acc + chapter.lessons.length, 0)
+                          } leçons complétées
+                        </span>
+                      </div>
+                      <div className="space-y-4">
+                        {block.chapters.map((chapter, index) => (
+                          <div key={index} className="space-y-2">
+                            <h4 className="text-sm font-medium">{chapter.title}</h4>
+                            <Progress 
+                              value={calculateChapterProgress(
+                                chapter.completedLessons,
+                                chapter.lessons.length
+                              )} 
+                              className="h-2"
+                            />
+                            <div className="flex justify-between text-sm text-muted-foreground">
+                              <span>{chapter.completedLessons} / {chapter.lessons.length} leçons</span>
+                              {chapter.quizzes && chapter.quizzes.length > 0 && (
+                                <span>{chapter.quizzes.length} quiz{chapter.quizzes.length > 1 ? 's' : ''}</span>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex justify-between items-center">
+                        <h3 className="font-medium">Compétences du bloc</h3>
+                        <span className="text-sm text-muted-foreground">
+                          {block.skills.filter(s => s.score && s.score > 0).length} / {block.skills.length} compétences évaluées
+                        </span>
+                      </div>
+                      <div className="space-y-4">
+                        {block.skills.map((skill, index) => (
+                          <SkillProgressCard key={index} skill={skill} />
+                        ))}
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </ScrollArea>
