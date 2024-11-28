@@ -47,6 +47,7 @@ interface FormationContentProps {
 const normalizeBlockName = (name: string): string => {
   return name.toLowerCase()
     .replace(/[:\-–—]/g, '') // Supprime les caractères spéciaux
+    .replace(/ue\s*(\d+)\s*[:\-–—]?\s*/i, 'ue$1') // Normalise le format UE
     .replace(/\s+/g, ' ')    // Normalise les espaces
     .trim();                 // Supprime les espaces au début et à la fin
 };
