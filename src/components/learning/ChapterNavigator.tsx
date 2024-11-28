@@ -1,34 +1,36 @@
 import { useState } from "react";
-import { Check, ChevronDown, ChevronUp, BookOpen, Award, GraduationCap } from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ChapterProgress } from "./ChapterProgress";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-
-interface Lesson {
-  id: string;
-  title: string;
-  duration: number | null;
-}
-
-interface Quiz {
-  id: string;
-  title: string;
-  quiz_type: string;
-  chapter_id?: string | null;
-}
+import { LessonItem } from "./LessonItem";
+import { QuizItem } from "./QuizItem";
 
 interface Chapter {
   id: string;
   title: string;
-  lessons: Lesson[];
-  quizzes?: Quiz[];
+  lessons: Array<{
+    id: string;
+    title: string;
+    duration: number | null;
+  }>;
+  quizzes?: Array<{
+    id: string;
+    title: string;
+    quiz_type: string;
+    chapter_id: string | null;
+  }>;
   completedLessons: number;
 }
 
 interface ChapterNavigatorProps {
   chapters: Chapter[];
-  blockQuizzes?: Quiz[];
+  blockQuizzes?: Array<{
+    id: string;
+    title: string;
+    quiz_type: string;
+  }>;
   selectedLessonId?: string;
   selectedQuizId?: string;
   onSelectLesson: (lessonId: string) => void;
@@ -63,7 +65,6 @@ export function ChapterNavigator({
         .select("quiz_id, score")
         .eq("user_id", user.id);
 
-      // Get the highest score for each quiz
       const scoreMap = new Map<string, number>();
       attempts?.forEach(attempt => {
         const currentScore = scoreMap.get(attempt.quiz_id) || 0;
@@ -75,15 +76,6 @@ export function ChapterNavigator({
       return scoreMap;
     },
   });
-
-  const isQuizCompleted = (quizId: string) => {
-    const score = quizScores?.get(quizId) || 0;
-    return score >= 70;
-  };
-
-  const getQuizScore = (quizId: string) => {
-    return quizScores?.get(quizId);
-  };
 
   return (
     <div className="space-y-2">
@@ -124,57 +116,24 @@ export function ChapterNavigator({
             {!condensed && expandedChapterId === chapter.id && (
               <div className="ml-4 space-y-1">
                 {chapter.lessons.map((lesson) => (
-                  <button
+                  <LessonItem
                     key={lesson.id}
-                    onClick={() => onSelectLesson(lesson.id)}
-                    className={cn(
-                      "w-full flex items-center gap-2 p-2 text-sm rounded-lg transition-colors",
-                      selectedLessonId === lesson.id 
-                        ? "bg-accent/50 text-primary" 
-                        : "hover:bg-accent/50"
-                    )}
-                  >
-                    <div className="flex items-center gap-2 flex-1">
-                      <BookOpen className="h-4 w-4" />
-                      <span>{lesson.title}</span>
-                    </div>
-                    {completedLessonIds.has(lesson.id) && (
-                      <Check className="h-4 w-4 text-green-500" />
-                    )}
-                    {lesson.duration && (
-                      <span className="text-xs text-muted-foreground">
-                        {lesson.duration} min
-                      </span>
-                    )}
-                  </button>
+                    lesson={lesson}
+                    isSelected={selectedLessonId === lesson.id}
+                    isCompleted={completedLessonIds.has(lesson.id)}
+                    onSelect={onSelectLesson}
+                  />
                 ))}
                 
                 {chapterQuizzes.map(quiz => (
-                  <button
+                  <QuizItem
                     key={quiz.id}
-                    onClick={() => onSelectQuiz(quiz.id)}
-                    className={cn(
-                      "w-full flex items-center gap-2 p-2 text-sm rounded-lg transition-colors",
-                      selectedQuizId === quiz.id 
-                        ? "bg-primary/10 text-primary" 
-                        : "hover:bg-accent/50 bg-secondary/30"
-                    )}
-                  >
-                    <div className="flex items-center gap-2 flex-1">
-                      <GraduationCap className="h-4 w-4" />
-                      <span>{quiz.title}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {getQuizScore(quiz.id) !== undefined && (
-                        <span className="text-xs text-muted-foreground">
-                          {getQuizScore(quiz.id)}%
-                        </span>
-                      )}
-                      {isQuizCompleted(quiz.id) && (
-                        <Check className="h-4 w-4 text-green-500" />
-                      )}
-                    </div>
-                  </button>
+                    quiz={quiz}
+                    isSelected={selectedQuizId === quiz.id}
+                    score={quizScores?.get(quiz.id)}
+                    onSelect={onSelectQuiz}
+                    condensed={condensed}
+                  />
                 ))}
               </div>
             )}
@@ -186,29 +145,14 @@ export function ChapterNavigator({
         <div className="mt-4 space-y-2">
           <h3 className="text-sm font-medium text-muted-foreground px-4">Quiz du bloc</h3>
           {blockQuizzes.map(quiz => (
-            <button
+            <QuizItem
               key={quiz.id}
-              onClick={() => !condensed && onSelectQuiz(quiz.id)}
-              className={cn(
-                "w-full flex items-center gap-2 p-4 rounded-lg transition-colors",
-                !condensed && "hover:bg-accent",
-                condensed && "cursor-default",
-                selectedQuizId === quiz.id ? "bg-primary/10" : "bg-secondary/30"
-              )}
-            >
-              <Award className="h-5 w-5 text-primary" />
-              <span className="font-medium flex-1">{quiz.title}</span>
-              <div className="flex items-center gap-2">
-                {getQuizScore(quiz.id) !== undefined && (
-                  <span className="text-sm text-muted-foreground">
-                    {getQuizScore(quiz.id)}%
-                  </span>
-                )}
-                {isQuizCompleted(quiz.id) && (
-                  <Check className="h-4 w-4 text-green-500" />
-                )}
-              </div>
-            </button>
+              quiz={quiz}
+              isSelected={selectedQuizId === quiz.id}
+              score={quizScores?.get(quiz.id)}
+              onSelect={onSelectQuiz}
+              condensed={condensed}
+            />
           ))}
         </div>
       )}
