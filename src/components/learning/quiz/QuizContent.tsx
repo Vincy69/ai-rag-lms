@@ -38,7 +38,7 @@ export function QuizContent({ quizId }: QuizContentProps) {
         answers: (q.quiz_answers || [])
           .sort((a, b) => a.order_index - b.order_index)
           .slice(0, 4),
-        skill_id: q.skill_id || null // Ensure skill_id is always present, even if null
+        skill_id: q.skill_id || null
       })) as QuizQuestionType[] || [];
     },
   });
@@ -96,6 +96,9 @@ export function QuizContent({ quizId }: QuizContentProps) {
   };
 
   const handleNext = async () => {
+    // Ensure we have an answer before proceeding
+    if (!currentAttempt?.selectedAnswerId) return;
+
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
     } else {
@@ -105,15 +108,11 @@ export function QuizContent({ quizId }: QuizContentProps) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { error } = await supabase.from("quiz_attempts").insert({
+      await supabase.from("quiz_attempts").insert({
         quiz_id: quizId,
         score: score,
         user_id: user.id
       });
-
-      if (error) {
-        console.error('Error saving quiz attempt:', error);
-      }
     }
   };
 

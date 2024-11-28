@@ -31,6 +31,7 @@ export function QuizQuestion({
       <RadioGroup
         value={selectedAnswerId || ""}
         onValueChange={onSelectAnswer}
+        className="space-y-2"
       >
         {question.answers.map((answer) => (
           <div key={answer.id} className="flex items-start space-x-3 p-4 rounded-lg hover:bg-accent">
@@ -58,8 +59,8 @@ export function QuizQuestion({
         </Alert>
       )}
 
-      {showExplanation && (
-        <Button onClick={onNext}>
+      {selectedAnswerId && (
+        <Button onClick={onNext} className="w-full">
           {isLastQuestion ? "Terminer le quiz" : "Question suivante"}
         </Button>
       )}
