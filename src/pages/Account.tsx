@@ -48,11 +48,11 @@ export default function Account() {
                   title,
                   lessons (
                     id
-                  ),
-                  quizzes (
-                    id,
-                    title
                   )
+                ),
+                quizzes (
+                  id,
+                  title
                 ),
                 skills (
                   id,
@@ -106,7 +106,7 @@ export default function Account() {
               title: chapter.title,
               completedLessons: completedLessonsByChapter[chapter.id] || 0,
               lessons: chapter.lessons || [],
-              quizzes: chapter.quizzes || [],
+              quizzes: block.quizzes || [], // Changed this line to use block.quizzes instead of chapter.quizzes
             })) || [],
             skills: block.skills.map(skill => ({
               id: skill.id,
