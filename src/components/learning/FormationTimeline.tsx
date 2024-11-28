@@ -23,7 +23,7 @@ export function FormationTimeline({ blocks, selectedBlockId, onSelectBlock }: Fo
           <span>Progression globale</span>
           <span>{Math.round(totalProgress)}%</span>
         </div>
-        <Progress value={totalProgress} className="h-3" />
+        <Progress value={totalProgress} className="h-12" />
       </div>
       
       <div className="flex gap-1 mt-2">
@@ -40,13 +40,13 @@ export function FormationTimeline({ blocks, selectedBlockId, onSelectBlock }: Fo
               <Progress 
                 value={block.progress} 
                 className={cn(
-                  "h-2 cursor-pointer transition-all",
+                  "h-12 cursor-pointer transition-all",
                   selectedBlockId === block.id ? "opacity-100" : "opacity-50 group-hover:opacity-75"
                 )}
               />
               <div className={cn(
-                "absolute -bottom-6 left-0 right-0 text-xs text-center transition-all",
-                selectedBlockId === block.id ? "text-primary font-medium" : "text-muted-foreground group-hover:text-foreground"
+                "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-sm text-center transition-all whitespace-nowrap px-2",
+                selectedBlockId === block.id ? "text-primary font-medium" : "text-foreground group-hover:text-primary"
               )}>
                 {block.name}
               </div>
