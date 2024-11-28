@@ -4,12 +4,10 @@ import Layout from "@/components/Layout";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
-import { AccountFormations } from "@/components/account/AccountFormations";
 import { AccountInfo } from "@/components/account/AccountInfo";
 
 export default function Account() {
   const [isLoading, setIsLoading] = useState(true);
-  const [formations, setFormations] = useState([]);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -23,102 +21,6 @@ export default function Account() {
           navigate("/login");
           return;
         }
-
-        // Fetch formations with complete progress data
-        const { data: enrollments, error: enrollmentsError } = await supabase
-          .from('formation_enrollments')
-          .select(`
-            formation_id,
-            status,
-            progress,
-            formations (
-              id,
-              name,
-              description,
-              skill_blocks (
-                id,
-                name,
-                description,
-                block_enrollments!inner (
-                  status,
-                  progress
-                ),
-                chapters!left (
-                  id,
-                  title,
-                  lessons (
-                    id
-                  )
-                ),
-                quizzes (
-                  id,
-                  title
-                ),
-                skills (
-                  id,
-                  name,
-                  skill_progress!inner (
-                    level,
-                    score,
-                    attempts
-                  )
-                )
-              )
-            )
-          `)
-          .eq('user_id', session.user.id);
-
-        if (enrollmentsError) throw enrollmentsError;
-
-        // Fetch lesson progress for each block
-        const { data: lessonProgress, error: lessonProgressError } = await supabase
-          .from('lesson_progress')
-          .select('*')
-          .eq('user_id', session.user.id);
-
-        if (lessonProgressError) throw lessonProgressError;
-
-        // Create a map of completed lessons by chapter
-        const completedLessonsByChapter = lessonProgress.reduce((acc, progress) => {
-          if (!acc[progress.chapter_id]) {
-            acc[progress.chapter_id] = 0;
-          }
-          if (progress.is_completed) {
-            acc[progress.chapter_id]++;
-          }
-          return acc;
-        }, {});
-
-        const formationsWithProgress = enrollments.map(enrollment => ({
-          id: enrollment.formation_id,
-          name: enrollment.formations?.name || '',
-          description: enrollment.formations?.description,
-          status: enrollment.status,
-          progress: enrollment.progress,
-          blocks: enrollment.formations?.skill_blocks.map(block => ({
-            id: block.id,
-            name: block.name,
-            description: block.description,
-            status: block.block_enrollments[0]?.status || 'not_started',
-            progress: block.block_enrollments[0]?.progress || 0,
-            chapters: block.chapters?.map(chapter => ({
-              id: chapter.id,
-              title: chapter.title,
-              completedLessons: completedLessonsByChapter[chapter.id] || 0,
-              lessons: chapter.lessons || [],
-              quizzes: block.quizzes || [], // Changed this line to use block.quizzes instead of chapter.quizzes
-            })) || [],
-            skills: block.skills.map(skill => ({
-              id: skill.id,
-              name: skill.name,
-              level: skill.skill_progress[0]?.level || null,
-              score: skill.skill_progress[0]?.score || null,
-              attempts: skill.skill_progress[0]?.attempts || null,
-            })),
-          })) || [],
-        }));
-
-        setFormations(formationsWithProgress);
       } catch (error) {
         console.error('Error fetching profile:', error);
         toast({
@@ -149,7 +51,6 @@ export default function Account() {
       <div className="container mx-auto py-8 space-y-8">
         <h1 className="text-2xl font-bold">Mon compte</h1>
         <AccountInfo />
-        <AccountFormations formations={formations} />
       </div>
     </Layout>
   );
