@@ -2,6 +2,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { LessonItem } from "./LessonItem";
 import { QuizItem } from "./QuizItem";
 import { Progress } from "@/components/ui/progress";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ChapterNavigatorProps {
   chapters: any[];
@@ -24,12 +26,31 @@ export function ChapterNavigator({
   completedLessonIds,
   condensed = false
 }: ChapterNavigatorProps) {
+  // Récupérer les scores des quiz
+  const { data: quizScores } = useQuery({
+    queryKey: ["quiz-scores"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { data } = await supabase
+        .from("quiz_attempts")
+        .select("quiz_id, score")
+        .eq("user_id", user.id);
+
+      return data?.reduce((acc: { [key: string]: number }, attempt) => {
+        acc[attempt.quiz_id] = attempt.score;
+        return acc;
+      }, {}) || {};
+    },
+  });
+
   return (
     <div className="h-[calc(100vh-8rem)] overflow-auto">
       <Accordion type="single" collapsible defaultValue={chapters[0]?.id}>
         {chapters.map((chapter) => {
           const totalItems = chapter.lessons.length + (chapter.quizzes?.length || 0);
-          const completedItems = chapter.completedLessons + (chapter.quizzes?.filter((q: any) => q.completed)?.length || 0);
+          const completedItems = chapter.completedLessons + (chapter.quizzes?.filter((q: any) => quizScores?.[q.id] >= 70)?.length || 0);
           const progress = totalItems > 0 ? (completedItems / totalItems) * 100 : 0;
 
           return (
@@ -61,6 +82,7 @@ export function ChapterNavigator({
                       key={quiz.id}
                       quiz={quiz}
                       isSelected={selectedQuizId === quiz.id}
+                      score={quizScores?.[quiz.id]}
                       onSelect={onSelectQuiz}
                     />
                   ))}
@@ -80,6 +102,7 @@ export function ChapterNavigator({
                 key={quiz.id}
                 quiz={quiz}
                 isSelected={selectedQuizId === quiz.id}
+                score={quizScores?.[quiz.id]}
                 onSelect={onSelectQuiz}
               />
             ))}
