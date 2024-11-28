@@ -5,6 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { BookOpen, ChevronRight, GraduationCap, Trophy } from "lucide-react";
 import { Block } from "@/types/learning";
 import { supabase } from "@/integrations/supabase/client";
+import { cn } from "@/lib/utils";
 
 interface BlockListProps {
   formationName: string;
