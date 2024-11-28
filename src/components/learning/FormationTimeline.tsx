@@ -124,7 +124,7 @@ export function FormationTimeline({ blocks, selectedBlockId, onSelectBlock }: Fo
 
   if (!detailedProgress || detailedProgress.length === 0) {
     return (
-      <div className="h-3 bg-secondary/30 rounded-full">
+      <div className="h-6 bg-secondary/30 rounded-full">
         <div className="h-full w-full bg-secondary/20" />
       </div>
     );
@@ -133,7 +133,7 @@ export function FormationTimeline({ blocks, selectedBlockId, onSelectBlock }: Fo
   return (
     <TooltipProvider>
       <div className="space-y-4">
-        <div className="h-3 bg-secondary/30 rounded-full overflow-hidden">
+        <div className="h-6 bg-secondary/30 rounded-full overflow-hidden">
           {detailedProgress.map((item, index) => (
             <Tooltip key={item.id}>
               <TooltipTrigger asChild>
