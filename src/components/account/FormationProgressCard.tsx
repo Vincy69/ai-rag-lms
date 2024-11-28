@@ -4,6 +4,7 @@ import { BlockProgressCard } from "./BlockProgressCard";
 import { useState } from "react";
 import { BlockDetailsDialog } from "./BlockDetailsDialog";
 import { GraduationCap, Trophy } from "lucide-react";
+import { calculateBlockProgress } from "@/lib/progress";
 
 interface FormationProgressProps {
   formation: {
@@ -32,18 +33,12 @@ export function FormationProgressCard({ formation }: FormationProgressProps) {
 
   // Calculate formation progress based on blocks progress
   const blocksWithProgress = formation.blocks.filter(block => {
-    const skillsWithProgress = block.skills.filter(skill => skill.score !== null && skill.score > 0);
-    return skillsWithProgress.length > 0;
+    const blockProgress = calculateBlockProgress(block);
+    return blockProgress > 0;
   });
 
   const formationProgress = blocksWithProgress.length > 0
-    ? blocksWithProgress.reduce((acc, block) => {
-        const skillsWithProgress = block.skills.filter(skill => skill.score !== null && skill.score > 0);
-        const blockProgress = skillsWithProgress.length > 0
-          ? skillsWithProgress.reduce((sum, skill) => sum + (skill.score || 0), 0) / skillsWithProgress.length
-          : 0;
-        return acc + blockProgress;
-      }, 0) / blocksWithProgress.length
+    ? blocksWithProgress.reduce((acc, block) => acc + calculateBlockProgress(block), 0) / blocksWithProgress.length
     : 0;
 
   return (

@@ -1,6 +1,7 @@
 import { Progress } from "@/components/ui/progress";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
+import { calculateBlockProgress } from "@/lib/progress";
 
 interface BlockProgressProps {
   block: {
@@ -21,10 +22,11 @@ interface BlockProgressProps {
 
 export function BlockProgressCard({ block, onClick }: BlockProgressProps) {
   const navigate = useNavigate();
-  const skillsWithProgress = block.skills.filter(skill => skill.score !== null && skill.score > 0);
-  const blockProgress = skillsWithProgress.length > 0
-    ? skillsWithProgress.reduce((acc, skill) => acc + (skill.score || 0), 0) / skillsWithProgress.length
-    : 0;
+  const blockProgress = calculateBlockProgress(block);
+  const skillsStarted = block.skills.filter(skill => 
+    (skill.score !== null && skill.score > 0) || 
+    (skill.attempts !== null && skill.attempts > 0)
+  );
 
   const handleClick = () => {
     if (onClick) {
@@ -40,7 +42,7 @@ export function BlockProgressCard({ block, onClick }: BlockProgressProps) {
         <div className="flex items-center justify-between">
           <h3 className="font-medium">{block.name}</h3>
           <span className="text-sm text-muted-foreground">
-            {skillsWithProgress.length} / {block.skills.length} compétences
+            {skillsStarted.length} / {block.skills.length} compétences
           </span>
         </div>
       </CardHeader>
