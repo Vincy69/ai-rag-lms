@@ -47,10 +47,10 @@ interface FormationContentProps {
 const normalizeBlockName = (name: string): string => {
   return name.toLowerCase()
     .replace(/[:\-–—]/g, '') // Supprime les caractères spéciaux
-    .replace(/ue\s*(\d+)\s*[:\-–—]?\s*/i, 'ue$1') // Normalise le format UE
-    .replace(/\s+/g, ' ')    // Normalise les espaces
-    .replace(/^ue/, 'ue ')   // Ajoute un espace après "ue" si nécessaire
-    .trim();                 // Supprime les espaces au début et à la fin
+    .replace(/\s+et\s+.*$/, '') // Supprime tout ce qui suit "et"
+    .replace(/ue\s*(\d+).*$/i, 'ue$1') // Garde uniquement "UEX" où X est un nombre
+    .replace(/\s+/g, '') // Supprime tous les espaces
+    .trim(); // Supprime les espaces au début et à la fin
 };
 
 // Vérifie si un bloc a du contenu
@@ -64,18 +64,34 @@ const getUniqueBlocks = (blocks: Block[]): Block[] => {
   const blockMap = new Map<string, Block>();
   
   blocks
-    .filter(hasContent) // Filtre d'abord les blocs sans contenu
+    .filter(hasContent)
     .forEach(block => {
       const normalizedName = normalizeBlockName(block.name);
-      console.log('Normalized name:', normalizedName, 'Original name:', block.name); // Debug
-      
       const existingBlock = blockMap.get(normalizedName);
       
       if (!existingBlock || (block.order_index < existingBlock.order_index)) {
+        // Fusionner avec le bloc existant s'il existe
+        const mergedSkills = existingBlock 
+          ? [...existingBlock.skills, ...block.skills]
+          : block.skills;
+        
+        const mergedQuizzes = existingBlock
+          ? [...existingBlock.quizzes, ...block.quizzes]
+          : block.quizzes;
+
+        // Dédupliquer les skills et quizzes par ID
+        const uniqueSkills = Array.from(
+          new Map(mergedSkills.map(skill => [skill.id, skill])).values()
+        ).sort((a, b) => a.order_index - b.order_index);
+
+        const uniqueQuizzes = Array.from(
+          new Map(mergedQuizzes.map(quiz => [quiz.id, quiz])).values()
+        );
+
         blockMap.set(normalizedName, {
           ...block,
-          skills: [...(existingBlock?.skills || []), ...block.skills].sort((a, b) => a.order_index - b.order_index),
-          quizzes: [...(existingBlock?.quizzes || []), ...block.quizzes]
+          skills: uniqueSkills,
+          quizzes: uniqueQuizzes
         });
       }
     });
