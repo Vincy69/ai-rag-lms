@@ -43,7 +43,34 @@ interface FormationContentProps {
   formation: Formation;
 }
 
+// Fonction utilitaire pour normaliser les noms de blocs
+const normalizeBlockName = (name: string): string => {
+  return name.toLowerCase()
+    .replace(/[:\-–—]/g, '') // Supprime les caractères spéciaux
+    .replace(/\s+/g, ' ')    // Normalise les espaces
+    .trim();                 // Supprime les espaces au début et à la fin
+};
+
+// Fonction pour regrouper les blocs similaires
+const getUniqueBlocks = (blocks: Block[]): Block[] => {
+  const blockMap = new Map<string, Block>();
+  
+  blocks.forEach(block => {
+    const normalizedName = normalizeBlockName(block.name);
+    const existingBlock = blockMap.get(normalizedName);
+    
+    if (!existingBlock || (block.order_index < existingBlock.order_index)) {
+      blockMap.set(normalizedName, block);
+    }
+  });
+  
+  return Array.from(blockMap.values())
+    .sort((a, b) => a.order_index - b.order_index);
+};
+
 export function FormationContent({ formation }: FormationContentProps) {
+  const uniqueBlocks = getUniqueBlocks(formation.blocks);
+
   return (
     <div className="space-y-6">
       {formation.description && (
@@ -53,7 +80,7 @@ export function FormationContent({ formation }: FormationContentProps) {
       <div>
         <h3 className="font-semibold mb-4">Blocs de compétences</h3>
         <Accordion type="single" collapsible className="space-y-4">
-          {formation.blocks.map((block) => (
+          {uniqueBlocks.map((block) => (
             <AccordionItem key={block.id} value={block.id} className="border rounded-lg px-4">
               <AccordionTrigger className="hover:no-underline">
                 <div className="flex items-center gap-4">
