@@ -5,6 +5,7 @@ import { Loader2 } from "lucide-react";
 import { BlockHeader } from "./BlockHeader";
 import { NavigationArea } from "./NavigationArea";
 import { ContentArea } from "./ContentArea";
+import { Card } from "@/components/ui/card";
 
 interface BlockContentProps {
   blockId: string;
@@ -152,28 +153,32 @@ export function BlockContent({ blockId }: BlockContentProps) {
       />
 
       <div className="grid grid-cols-12 gap-6">
-        {chapters && (
-          <NavigationArea
-            chapters={chapters.chapters}
-            blockQuizzes={chapters.blockQuizzes}
-            selectedLessonId={selectedLessonId}
-            onSelectLesson={(lessonId) => {
-              setSelectedLessonId(lessonId);
-              setSelectedQuizId(null);
-            }}
-            onSelectQuiz={(quizId) => {
-              setSelectedQuizId(quizId);
-              setSelectedLessonId(null);
-            }}
-            completedLessonIds={completedLessonIds}
-          />
-        )}
+        <Card className="col-span-4 p-4">
+          {chapters && (
+            <NavigationArea
+              chapters={chapters.chapters}
+              blockQuizzes={chapters.blockQuizzes}
+              selectedLessonId={selectedLessonId}
+              onSelectLesson={(lessonId) => {
+                setSelectedLessonId(lessonId);
+                setSelectedQuizId(null);
+              }}
+              onSelectQuiz={(quizId) => {
+                setSelectedQuizId(quizId);
+                setSelectedLessonId(null);
+              }}
+              completedLessonIds={completedLessonIds}
+            />
+          )}
+        </Card>
 
-        <ContentArea
-          selectedQuizId={selectedQuizId}
-          selectedLesson={selectedLesson}
-          blockId={blockId}
-        />
+        <Card className="col-span-8 p-6">
+          <ContentArea
+            selectedQuizId={selectedQuizId}
+            selectedLesson={selectedLesson}
+            blockId={blockId}
+          />
+        </Card>
       </div>
     </div>
   );
