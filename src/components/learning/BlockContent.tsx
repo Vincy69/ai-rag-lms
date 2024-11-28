@@ -67,6 +67,12 @@ export function BlockContent({ blockId, condensed = false }: BlockContentProps) 
               title,
               duration,
               order_index
+            ),
+            quizzes (
+              id,
+              title,
+              quiz_type,
+              chapter_id
             )
           `)
           .eq("block_id", blockId)

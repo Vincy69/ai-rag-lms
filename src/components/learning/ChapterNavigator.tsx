@@ -126,21 +126,25 @@ export function ChapterNavigator({
         </div>
       ))}
 
-      {blockQuizzes && blockQuizzes.length > 0 && blockQuizzes.map(quiz => (
-        <button
-          key={quiz.id}
-          onClick={() => !condensed && onSelectQuiz(quiz.id)}
-          className={cn(
-            "w-full text-left p-4 rounded-lg bg-card hover:bg-accent transition-colors",
-            condensed && "cursor-default hover:bg-card"
-          )}
-        >
-          <div className="flex items-center gap-3">
-            <Award className="h-5 w-5 text-primary" />
-            <span className="font-medium">{quiz.title}</span>
-          </div>
-        </button>
-      ))}
+      {blockQuizzes && blockQuizzes.length > 0 && (
+        <div className="space-y-2">
+          {blockQuizzes.map(quiz => (
+            <button
+              key={quiz.id}
+              onClick={() => !condensed && onSelectQuiz(quiz.id)}
+              className={cn(
+                "w-full text-left p-4 rounded-lg bg-card hover:bg-accent transition-colors",
+                condensed && "cursor-default hover:bg-card"
+              )}
+            >
+              <div className="flex items-center gap-3">
+                <Award className="h-5 w-5 text-primary" />
+                <span className="font-medium">{quiz.title}</span>
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
