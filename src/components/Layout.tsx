@@ -85,7 +85,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       {section.title && (
         <>
           <h2 className={cn(
-            "text-xs uppercase text-muted-foreground font-semibold px-2",
+            "text-sm uppercase text-muted-foreground font-semibold px-2",
             isCollapsed && "sr-only"
           )}>
             {section.title}
@@ -136,7 +136,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         {/* Sidebar pour desktop */}
         <aside
           className={cn(
-            "fixed left-0 z-30 hidden h-[calc(100vh-4rem)] border-r bg-background transition-all duration-300 md:block",
+            "fixed left-0 z-30 hidden h-[calc(100vh-4rem)] border bg-card/50 transition-all duration-300 md:block",
             isCollapsed ? "w-16" : "w-64"
           )}
         >
@@ -165,7 +165,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
           <div className="space-y-6 px-2">
             {mainNavItems.map((section, index) => {
-              // Ne montre la section admin qu'aux admins
               if (section.title === "Administration" && !isAdmin) return null;
               return renderNavSection(section);
             })}
@@ -175,7 +174,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         {/* Menu mobile */}
         <aside
           className={cn(
-            "fixed inset-y-0 left-0 z-50 w-64 border-r bg-background transition-transform duration-300 md:hidden",
+            "fixed inset-y-0 left-0 z-50 w-64 border bg-background transition-transform duration-300 md:hidden",
             isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
           )}
         >
@@ -209,11 +208,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
         <main
           className={cn(
-            "flex-1 p-8 transition-all duration-300",
+            "flex-1 p-4 md:p-8 transition-all duration-300",
             isCollapsed ? "md:ml-16" : "md:ml-64"
           )}
         >
-          <div className="mx-auto max-w-7xl">
+          <div className="mx-auto max-w-[1600px]">
             {children}
           </div>
         </main>

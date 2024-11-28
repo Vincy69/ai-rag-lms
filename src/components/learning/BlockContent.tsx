@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { LoadingState } from "./LoadingState";
 import { CondensedView } from "./CondensedView";
 import { FullView } from "./FullView";
+import { Card } from "@/components/ui/card";
 
 interface BlockContentProps {
   blockId: string;
@@ -150,10 +151,10 @@ export function BlockContent({ blockId, condensed = false }: BlockContentProps) 
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <div className="col-span-4">
+      <div className="col-span-12 md:col-span-4">
         <div className="sticky top-4 space-y-4">
-          <h2 className="text-xl font-semibold">{block?.name}</h2>
-          <div className="bg-card rounded-lg p-4">
+          <h2 className="text-xl font-semibold text-left">{block?.name}</h2>
+          <Card className="border bg-card/50 p-4">
             <FullView
               block={block}
               chapters={chapters?.chapters || []}
@@ -172,17 +173,17 @@ export function BlockContent({ blockId, condensed = false }: BlockContentProps) 
                 setSelectedLessonId(null);
               }}
             />
-          </div>
+          </Card>
         </div>
       </div>
-      <div className="col-span-8">
+      <div className="col-span-12 md:col-span-8">
         {selectedLesson && (
-          <div className="bg-card rounded-lg p-6">
-            <h3 className="text-2xl font-semibold mb-4">{selectedLesson.title}</h3>
+          <Card className="border bg-card/50 p-6">
+            <h3 className="text-2xl font-semibold mb-4 text-left">{selectedLesson.title}</h3>
             <div className="prose prose-invert max-w-none">
               {selectedLesson.content}
             </div>
-          </div>
+          </Card>
         )}
       </div>
     </div>

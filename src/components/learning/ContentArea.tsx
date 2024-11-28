@@ -12,7 +12,7 @@ interface ContentAreaProps {
 export function ContentArea({ selectedQuizId, selectedLesson, blockId }: ContentAreaProps) {
   if (selectedQuizId) {
     return (
-      <Card className="col-span-8 p-6">
+      <Card className="border bg-card/50 p-6">
         <QuizContent quizId={selectedQuizId} />
       </Card>
     );
@@ -20,7 +20,7 @@ export function ContentArea({ selectedQuizId, selectedLesson, blockId }: Content
 
   if (selectedLesson) {
     return (
-      <Card className="col-span-8 p-6">
+      <Card className="border bg-card/50 p-6">
         <div className="space-y-6">
           <LessonContent lesson={selectedLesson} />
           <LessonCompletionButton
@@ -37,8 +37,8 @@ export function ContentArea({ selectedQuizId, selectedLesson, blockId }: Content
   }
 
   return (
-    <Card className="col-span-8 p-6">
-      <p className="text-muted-foreground text-sm">
+    <Card className="border bg-card/50 p-6">
+      <p className="text-muted-foreground text-sm text-center">
         Sélectionnez une leçon ou un quiz pour voir son contenu
       </p>
     </Card>
