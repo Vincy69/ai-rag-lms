@@ -1,14 +1,8 @@
-import { Card } from "@/components/ui/card";
-import { NavigationArea } from "./NavigationArea";
-import { ContentArea } from "./ContentArea";
-import { BlockHeader } from "./BlockHeader";
+import { ChapterNavigator } from "./ChapterNavigator";
+import { Progress } from "@/components/ui/progress";
 
 interface FullViewProps {
-  block: {
-    name: string;
-    formations?: { name: string };
-    progress: number;
-  };
+  block: any;
   chapters: any[];
   blockQuizzes: any[];
   selectedLessonId: string | null;
@@ -20,47 +14,26 @@ interface FullViewProps {
   onSelectQuiz: (quizId: string) => void;
 }
 
-export function FullView({ 
-  block,
+export function FullView({
   chapters,
   blockQuizzes,
   selectedLessonId,
   selectedQuizId,
-  selectedLesson,
-  blockId,
   completedLessonIds,
   onSelectLesson,
-  onSelectQuiz
+  onSelectQuiz,
 }: FullViewProps) {
   return (
-    <div className="space-y-6">
-      <BlockHeader 
-        name={block?.name}
-        formationName={block?.formations?.name}
-        progress={block?.progress}
+    <div className="space-y-4">
+      <ChapterNavigator
+        chapters={chapters}
+        blockQuizzes={blockQuizzes}
+        selectedLessonId={selectedLessonId}
+        selectedQuizId={selectedQuizId}
+        onSelectLesson={onSelectLesson}
+        onSelectQuiz={onSelectQuiz}
+        completedLessonIds={completedLessonIds}
       />
-
-      <div className="grid grid-cols-12 gap-6">
-        <Card className="col-span-4 p-4">
-          <NavigationArea
-            chapters={chapters}
-            blockQuizzes={blockQuizzes}
-            selectedLessonId={selectedLessonId}
-            selectedQuizId={selectedQuizId}
-            onSelectLesson={onSelectLesson}
-            onSelectQuiz={onSelectQuiz}
-            completedLessonIds={completedLessonIds}
-          />
-        </Card>
-
-        <Card className="col-span-8 p-6">
-          <ContentArea
-            selectedQuizId={selectedQuizId}
-            selectedLesson={selectedLesson}
-            blockId={blockId}
-          />
-        </Card>
-      </div>
     </div>
   );
 }

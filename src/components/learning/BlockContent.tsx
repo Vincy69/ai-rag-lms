@@ -54,7 +54,6 @@ export function BlockContent({ blockId, condensed = false }: BlockContentProps) 
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      // Fetch chapters with lessons
       const { data: chaptersData } = await supabase
         .from("chapters")
         .select(`
@@ -72,13 +71,11 @@ export function BlockContent({ blockId, condensed = false }: BlockContentProps) 
         .eq("block_id", blockId)
         .order("order_index");
 
-      // Fetch all quizzes for this block, including chapter quizzes
       const { data: quizzesData } = await supabase
         .from("quizzes")
         .select("*")
         .eq("block_id", blockId);
 
-      // Fetch completed lessons
       const { data: completedLessonsData } = await supabase
         .from("lesson_progress")
         .select("lesson_id")
@@ -89,7 +86,6 @@ export function BlockContent({ blockId, condensed = false }: BlockContentProps) 
       const completedLessons = new Set(completedLessonsData?.map(p => p.lesson_id) || []);
       const quizzes = quizzesData || [];
 
-      // Organize chapters with their respective quizzes
       const chaptersWithQuizzes = chaptersData?.map(chapter => ({
         ...chapter,
         lessons: chapter.lessons.sort((a, b) => a.order_index - b.order_index),
@@ -100,7 +96,6 @@ export function BlockContent({ blockId, condensed = false }: BlockContentProps) 
         )
       })) || [];
 
-      // Get block-level quizzes (quizzes with quiz_type = 'block_quiz')
       const blockQuizzes = quizzes.filter(q => q.quiz_type === 'block_quiz');
 
       return {
@@ -142,33 +137,54 @@ export function BlockContent({ blockId, condensed = false }: BlockContentProps) 
 
   if (condensed) {
     return (
-      <CondensedView
-        block={block}
-        chapters={chapters?.chapters || []}
-        blockQuizzes={chapters?.blockQuizzes || []}
-        completedLessonIds={completedLessonIds}
-      />
+      <div className="space-y-6">
+        <CondensedView
+          block={block}
+          chapters={chapters?.chapters || []}
+          blockQuizzes={chapters?.blockQuizzes || []}
+          completedLessonIds={completedLessonIds}
+        />
+      </div>
     );
   }
 
   return (
-    <FullView
-      block={block}
-      chapters={chapters?.chapters || []}
-      blockQuizzes={chapters?.blockQuizzes || []}
-      selectedLessonId={selectedLessonId}
-      selectedQuizId={selectedQuizId}
-      selectedLesson={selectedLesson}
-      blockId={blockId}
-      completedLessonIds={completedLessonIds}
-      onSelectLesson={(lessonId) => {
-        setSelectedLessonId(lessonId);
-        setSelectedQuizId(null);
-      }}
-      onSelectQuiz={(quizId) => {
-        setSelectedQuizId(quizId);
-        setSelectedLessonId(null);
-      }}
-    />
+    <div className="grid grid-cols-12 gap-6">
+      <div className="col-span-4">
+        <div className="sticky top-4 space-y-4">
+          <h2 className="text-xl font-semibold">{block?.name}</h2>
+          <div className="bg-card rounded-lg p-4">
+            <FullView
+              block={block}
+              chapters={chapters?.chapters || []}
+              blockQuizzes={chapters?.blockQuizzes || []}
+              selectedLessonId={selectedLessonId}
+              selectedQuizId={selectedQuizId}
+              selectedLesson={selectedLesson}
+              blockId={blockId}
+              completedLessonIds={completedLessonIds}
+              onSelectLesson={(lessonId) => {
+                setSelectedLessonId(lessonId);
+                setSelectedQuizId(null);
+              }}
+              onSelectQuiz={(quizId) => {
+                setSelectedQuizId(quizId);
+                setSelectedLessonId(null);
+              }}
+            />
+          </div>
+        </div>
+      </div>
+      <div className="col-span-8">
+        {selectedLesson && (
+          <div className="bg-card rounded-lg p-6">
+            <h3 className="text-2xl font-semibold mb-4">{selectedLesson.title}</h3>
+            <div className="prose prose-invert max-w-none">
+              {selectedLesson.content}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
