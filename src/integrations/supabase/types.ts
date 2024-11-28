@@ -46,46 +46,11 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "block_enrollments_block_id_fkey"
-            columns: ["block_id"]
-            isOneToOne: false
-            referencedRelation: "user_competence_analysis"
-            referencedColumns: ["block_id"]
-          },
-          {
-            foreignKeyName: "block_enrollments_block_id_fkey"
-            columns: ["block_id"]
-            isOneToOne: false
-            referencedRelation: "user_training_progress"
-            referencedColumns: ["block_id"]
-          },
-          {
             foreignKeyName: "block_enrollments_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "block_enrollments_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_competence_analysis"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "block_enrollments_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_progress_overview"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "block_enrollments_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_training_progress"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -146,20 +111,6 @@ export type Database = {
             referencedRelation: "skill_blocks"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "chapters_block_id_fkey"
-            columns: ["block_id"]
-            isOneToOne: false
-            referencedRelation: "user_competence_analysis"
-            referencedColumns: ["block_id"]
-          },
-          {
-            foreignKeyName: "chapters_block_id_fkey"
-            columns: ["block_id"]
-            isOneToOne: false
-            referencedRelation: "user_training_progress"
-            referencedColumns: ["block_id"]
-          },
         ]
       }
       chat_history: {
@@ -191,27 +142,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "chat_history_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_competence_analysis"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "chat_history_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_progress_overview"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "chat_history_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_training_progress"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -296,39 +226,11 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "formation_enrollments_formation_id_fkey"
-            columns: ["formation_id"]
-            isOneToOne: false
-            referencedRelation: "user_training_progress"
-            referencedColumns: ["formation_id"]
-          },
-          {
             foreignKeyName: "formation_enrollments_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "formation_enrollments_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_competence_analysis"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "formation_enrollments_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_progress_overview"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "formation_enrollments_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_training_progress"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -407,32 +309,11 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "lesson_progress_block_id_fkey"
-            columns: ["block_id"]
-            isOneToOne: false
-            referencedRelation: "user_competence_analysis"
-            referencedColumns: ["block_id"]
-          },
-          {
-            foreignKeyName: "lesson_progress_block_id_fkey"
-            columns: ["block_id"]
-            isOneToOne: false
-            referencedRelation: "user_training_progress"
-            referencedColumns: ["block_id"]
-          },
-          {
             foreignKeyName: "lesson_progress_chapter_id_fkey"
             columns: ["chapter_id"]
             isOneToOne: false
             referencedRelation: "chapters"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "lesson_progress_chapter_id_fkey"
-            columns: ["chapter_id"]
-            isOneToOne: false
-            referencedRelation: "user_competence_analysis"
-            referencedColumns: ["chapter_id"]
           },
           {
             foreignKeyName: "lesson_progress_lesson_id_fkey"
@@ -447,27 +328,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "lesson_progress_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_competence_analysis"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "lesson_progress_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_progress_overview"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "lesson_progress_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_training_progress"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -510,13 +370,6 @@ export type Database = {
             referencedRelation: "chapters"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "lessons_chapter_id_fkey"
-            columns: ["chapter_id"]
-            isOneToOne: false
-            referencedRelation: "user_competence_analysis"
-            referencedColumns: ["chapter_id"]
-          },
         ]
       }
       profiles: {
@@ -542,238 +395,6 @@ export type Database = {
           role?: Database["public"]["Enums"]["user_role"]
         }
         Relationships: []
-      }
-      quiz_answers: {
-        Row: {
-          answer: string
-          created_at: string
-          explanation: string | null
-          id: string
-          is_correct: boolean
-          order_index: number
-          question_id: string
-        }
-        Insert: {
-          answer: string
-          created_at?: string
-          explanation?: string | null
-          id?: string
-          is_correct?: boolean
-          order_index?: number
-          question_id: string
-        }
-        Update: {
-          answer?: string
-          created_at?: string
-          explanation?: string | null
-          id?: string
-          is_correct?: boolean
-          order_index?: number
-          question_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "quiz_answers_question_id_fkey"
-            columns: ["question_id"]
-            isOneToOne: false
-            referencedRelation: "quiz_questions"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      quiz_attempts: {
-        Row: {
-          completed_at: string
-          created_at: string
-          id: string
-          quiz_id: string
-          score: number
-          user_id: string
-        }
-        Insert: {
-          completed_at?: string
-          created_at?: string
-          id?: string
-          quiz_id: string
-          score: number
-          user_id: string
-        }
-        Update: {
-          completed_at?: string
-          created_at?: string
-          id?: string
-          quiz_id?: string
-          score?: number
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "quiz_attempts_quiz_id_fkey"
-            columns: ["quiz_id"]
-            isOneToOne: false
-            referencedRelation: "quizzes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "quiz_attempts_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "quiz_attempts_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_competence_analysis"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "quiz_attempts_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_progress_overview"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "quiz_attempts_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_training_progress"
-            referencedColumns: ["user_id"]
-          },
-        ]
-      }
-      quiz_questions: {
-        Row: {
-          created_at: string
-          explanation: string | null
-          id: string
-          order_index: number
-          question: string
-          quiz_id: string
-          skill_id: string | null
-        }
-        Insert: {
-          created_at?: string
-          explanation?: string | null
-          id?: string
-          order_index: number
-          question: string
-          quiz_id: string
-          skill_id?: string | null
-        }
-        Update: {
-          created_at?: string
-          explanation?: string | null
-          id?: string
-          order_index?: number
-          question?: string
-          quiz_id?: string
-          skill_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "quiz_questions_quiz_id_fkey"
-            columns: ["quiz_id"]
-            isOneToOne: false
-            referencedRelation: "quizzes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "quiz_questions_skill_id_fkey"
-            columns: ["skill_id"]
-            isOneToOne: false
-            referencedRelation: "skills"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "quiz_questions_skill_id_fkey"
-            columns: ["skill_id"]
-            isOneToOne: false
-            referencedRelation: "user_competence_analysis"
-            referencedColumns: ["skill_id"]
-          },
-          {
-            foreignKeyName: "quiz_questions_skill_id_fkey"
-            columns: ["skill_id"]
-            isOneToOne: false
-            referencedRelation: "user_training_progress"
-            referencedColumns: ["skill_id"]
-          },
-        ]
-      }
-      quizzes: {
-        Row: {
-          block_id: string
-          chapter_id: string | null
-          created_at: string
-          description: string | null
-          id: string
-          passing_score: number
-          quiz_type: string
-          title: string
-          updated_at: string
-        }
-        Insert: {
-          block_id: string
-          chapter_id?: string | null
-          created_at?: string
-          description?: string | null
-          id?: string
-          passing_score?: number
-          quiz_type?: string
-          title: string
-          updated_at?: string
-        }
-        Update: {
-          block_id?: string
-          chapter_id?: string | null
-          created_at?: string
-          description?: string | null
-          id?: string
-          passing_score?: number
-          quiz_type?: string
-          title?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "quizzes_block_id_fkey"
-            columns: ["block_id"]
-            isOneToOne: false
-            referencedRelation: "skill_blocks"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "quizzes_block_id_fkey"
-            columns: ["block_id"]
-            isOneToOne: false
-            referencedRelation: "user_competence_analysis"
-            referencedColumns: ["block_id"]
-          },
-          {
-            foreignKeyName: "quizzes_block_id_fkey"
-            columns: ["block_id"]
-            isOneToOne: false
-            referencedRelation: "user_training_progress"
-            referencedColumns: ["block_id"]
-          },
-          {
-            foreignKeyName: "quizzes_chapter_id_fkey"
-            columns: ["chapter_id"]
-            isOneToOne: false
-            referencedRelation: "chapters"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "quizzes_chapter_id_fkey"
-            columns: ["chapter_id"]
-            isOneToOne: false
-            referencedRelation: "user_competence_analysis"
-            referencedColumns: ["chapter_id"]
-          },
-        ]
       }
       skill_blocks: {
         Row: {
@@ -810,13 +431,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "formations"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "skill_blocks_formation_id_fkey"
-            columns: ["formation_id"]
-            isOneToOne: false
-            referencedRelation: "user_training_progress"
-            referencedColumns: ["formation_id"]
           },
         ]
       }
@@ -863,46 +477,11 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "skill_progress_skill_id_fkey"
-            columns: ["skill_id"]
-            isOneToOne: false
-            referencedRelation: "user_competence_analysis"
-            referencedColumns: ["skill_id"]
-          },
-          {
-            foreignKeyName: "skill_progress_skill_id_fkey"
-            columns: ["skill_id"]
-            isOneToOne: false
-            referencedRelation: "user_training_progress"
-            referencedColumns: ["skill_id"]
-          },
-          {
             foreignKeyName: "skill_progress_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "skill_progress_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_competence_analysis"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "skill_progress_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_progress_overview"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "skill_progress_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_training_progress"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -942,184 +521,11 @@ export type Database = {
             referencedRelation: "skill_blocks"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "skills_block_id_fkey"
-            columns: ["block_id"]
-            isOneToOne: false
-            referencedRelation: "user_competence_analysis"
-            referencedColumns: ["block_id"]
-          },
-          {
-            foreignKeyName: "skills_block_id_fkey"
-            columns: ["block_id"]
-            isOneToOne: false
-            referencedRelation: "user_training_progress"
-            referencedColumns: ["block_id"]
-          },
-        ]
-      }
-      wrong_answers: {
-        Row: {
-          created_at: string
-          id: string
-          question_id: string
-          skill_id: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          question_id: string
-          skill_id: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          question_id?: string
-          skill_id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "wrong_answers_question_id_fkey"
-            columns: ["question_id"]
-            isOneToOne: false
-            referencedRelation: "quiz_questions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "wrong_answers_skill_id_fkey"
-            columns: ["skill_id"]
-            isOneToOne: false
-            referencedRelation: "skills"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "wrong_answers_skill_id_fkey"
-            columns: ["skill_id"]
-            isOneToOne: false
-            referencedRelation: "user_competence_analysis"
-            referencedColumns: ["skill_id"]
-          },
-          {
-            foreignKeyName: "wrong_answers_skill_id_fkey"
-            columns: ["skill_id"]
-            isOneToOne: false
-            referencedRelation: "user_training_progress"
-            referencedColumns: ["skill_id"]
-          },
-          {
-            foreignKeyName: "wrong_answers_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "wrong_answers_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_competence_analysis"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "wrong_answers_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_progress_overview"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "wrong_answers_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_training_progress"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
     }
     Views: {
-      user_competence_analysis: {
-        Row: {
-          average_skill_score: number | null
-          block_id: string | null
-          block_name: string | null
-          chapter_description: string | null
-          chapter_id: string | null
-          first_name: string | null
-          formation_id: string | null
-          formation_name: string | null
-          formation_progress: number | null
-          formation_status: string | null
-          last_name: string | null
-          skill_description: string | null
-          skill_id: string | null
-          skill_name: string | null
-          skill_total_score: number | null
-          total_quizzes: number | null
-          user_id: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "formation_enrollments_formation_id_fkey"
-            columns: ["formation_id"]
-            isOneToOne: false
-            referencedRelation: "formations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "formation_enrollments_formation_id_fkey"
-            columns: ["formation_id"]
-            isOneToOne: false
-            referencedRelation: "user_training_progress"
-            referencedColumns: ["formation_id"]
-          },
-        ]
-      }
-      user_progress_overview: {
-        Row: {
-          average_quiz_score: number | null
-          first_name: string | null
-          formation_name: string | null
-          formation_progress: number | null
-          formation_status: string | null
-          last_name: string | null
-          total_quiz_attempts: number | null
-          user_id: string | null
-          wrong_answers_count: number | null
-        }
-        Relationships: []
-      }
-      user_training_progress: {
-        Row: {
-          block_description: string | null
-          block_id: string | null
-          block_name: string | null
-          first_name: string | null
-          formation_completed_at: string | null
-          formation_enrolled_at: string | null
-          formation_id: string | null
-          formation_name: string | null
-          formation_status: string | null
-          last_name: string | null
-          lesson_description: string | null
-          lesson_title: string | null
-          profile_created_at: string | null
-          skill_description: string | null
-          skill_id: string | null
-          skill_name: string | null
-          user_block_completed_at: string | null
-          user_block_progress: number | null
-          user_formation_progress: number | null
-          user_id: string | null
-          user_lesson_completed_at: string | null
-          user_skill_level: number | null
-          user_skill_score: number | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       binary_quantize:
