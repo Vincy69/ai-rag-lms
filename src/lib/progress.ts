@@ -15,22 +15,54 @@ interface Block {
     quizzes?: Array<{
       id: string;
       title: string;
+      quiz_type: string;
+      chapter_id: string | null;
     }>;
   }>;
 }
 
-export function calculateChapterProgress(completedLessons: number, totalLessons: number, quizScore?: number | null): number {
-  if (totalLessons === 0) return 0;
-  return Math.min(100, (completedLessons / totalLessons) * 100);
+export function calculateChapterProgress(
+  completedLessons: number, 
+  totalLessons: number, 
+  chapterQuizzes: number = 0,
+  completedQuizzes: number = 0
+): number {
+  if (totalLessons === 0 && chapterQuizzes === 0) return 0;
+  
+  const totalItems = totalLessons + chapterQuizzes;
+  const completedItems = completedLessons + completedQuizzes;
+  
+  return Math.min(100, (completedItems / totalItems) * 100);
 }
 
 export function calculateBlockProgress(block: Block): number {
   if (block.chapters && block.chapters.length > 0) {
-    const totalLessons = block.chapters.reduce((acc, chapter) => acc + chapter.lessons.length, 0);
-    if (totalLessons === 0) return 0;
+    let totalProgress = 0;
+    let totalWeight = 0;
 
-    const completedLessons = block.chapters.reduce((acc, chapter) => acc + chapter.completedLessons, 0);
-    return Math.min(100, (completedLessons / totalLessons) * 100);
+    block.chapters.forEach(chapter => {
+      const chapterQuizzes = chapter.quizzes?.filter(q => 
+        q.quiz_type === 'chapter_quiz' && q.chapter_id === chapter.id
+      ) || [];
+      
+      const totalLessons = chapter.lessons.length;
+      const totalQuizzes = chapterQuizzes.length;
+      
+      if (totalLessons > 0 || totalQuizzes > 0) {
+        const chapterProgress = calculateChapterProgress(
+          chapter.completedLessons,
+          totalLessons,
+          totalQuizzes,
+          0 // TODO: Add completed quizzes count
+        );
+        
+        // Chaque chapitre a un poids égal dans la progression totale
+        totalProgress += chapterProgress;
+        totalWeight++;
+      }
+    });
+
+    return totalWeight > 0 ? Math.min(100, totalProgress / totalWeight) : 0;
   }
 
   // Fallback to skill-based progress if no chapters

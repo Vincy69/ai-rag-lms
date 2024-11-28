@@ -116,14 +116,18 @@ export function BlockDetailsDialog({
                             q.quiz_type === 'chapter_quiz' && q.chapter_id === chapter.id
                           ) || [];
                           
+                          const chapterProgress = calculateChapterProgress(
+                            chapter.completedLessons,
+                            chapter.lessons.length,
+                            chapterQuizzes.length,
+                            0 // TODO: Add completed quizzes count
+                          );
+                          
                           return (
                             <div key={chapter.id} className="space-y-2">
                               <h4 className="text-sm font-medium">{chapter.title}</h4>
                               <Progress 
-                                value={calculateChapterProgress(
-                                  chapter.completedLessons,
-                                  chapter.lessons.length
-                                )} 
+                                value={chapterProgress}
                                 className="h-2"
                               />
                               <div className="flex justify-between text-sm text-muted-foreground">
@@ -131,7 +135,7 @@ export function BlockDetailsDialog({
                                 {chapterQuizzes.length > 0 && (
                                   <span className="flex items-center gap-2">
                                     <GraduationCap className="w-4 h-4" />
-                                    {chapterQuizzes.length} quiz{chapterQuizzes.length > 1 ? 's' : ''}
+                                    {chapterQuizzes.length} quiz{chapterQuizzes.length > 1 ? 's' : ''} de chapitre
                                   </span>
                                 )}
                               </div>
