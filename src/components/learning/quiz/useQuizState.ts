@@ -26,27 +26,12 @@ export function useQuizState(questions: QuizQuestion[] | undefined) {
       }
     }));
 
-    // If this is a wrong answer on first attempt and we have a skill_id, record it
-    if (isFirstAttempt && !isCorrect && skillId) {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast({
-          variant: "destructive",
-          title: "Erreur",
-          description: "Vous devez être connecté pour enregistrer vos réponses"
-        });
-        return;
-      }
-
-      const { error } = await supabase.from('wrong_answers').insert({
-        user_id: user.id,
-        question_id: questionId,
-        skill_id: skillId
+    if (!isCorrect) {
+      toast({
+        variant: "destructive",
+        title: "Réponse incorrecte",
+        description: "Essayez de nouveau ou passez à la question suivante"
       });
-
-      if (error) {
-        console.error('Error recording wrong answer:', error);
-      }
     }
   };
 
