@@ -11,7 +11,8 @@ import {
   Settings,
   Menu,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  MessageSquare
 } from "lucide-react";
 import { Header } from "./Header";
 import { supabase } from "@/integrations/supabase/client";
@@ -33,6 +34,7 @@ const mainNavItems: NavSection[] = [
   {
     items: [
       { icon: User, label: "Mon compte", path: "/account" },
+      { icon: MessageSquare, label: "Chat", path: "/chat" },
       { icon: BookOpen, label: "E-Learning", path: "/elearning" },
       { icon: GraduationCap, label: "Formations", path: "/formations" },
     ]
