@@ -54,51 +54,57 @@ export function BlockContent({ blockId, condensed = false }: BlockContentProps) 
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const [chaptersData, completedLessonsData, quizzesData] = await Promise.all([
-        supabase
-          .from("chapters")
-          .select(`
+      // Fetch chapters with lessons
+      const { data: chaptersData } = await supabase
+        .from("chapters")
+        .select(`
+          id,
+          title,
+          description,
+          order_index,
+          lessons (
             id,
             title,
-            description,
-            order_index,
-            lessons (
-              id,
-              title,
-              duration,
-              order_index
-            )
-          `)
-          .eq("block_id", blockId)
-          .order("order_index"),
-        
-        supabase
-          .from("lesson_progress")
-          .select("lesson_id")
-          .eq("user_id", user.id)
-          .eq("block_id", blockId)
-          .eq("is_completed", true),
-          
-        supabase
-          .from("quizzes")
-          .select("id, title, quiz_type, chapter_id")
-          .eq("block_id", blockId)
-      ]);
+            duration,
+            order_index
+          )
+        `)
+        .eq("block_id", blockId)
+        .order("order_index");
 
-      const completedLessons = new Set(completedLessonsData.data?.map(p => p.lesson_id) || []);
-      const blockQuizzes = quizzesData.data?.filter(q => q.quiz_type === 'block_quiz') || [];
-      const chapterQuizzes = quizzesData.data?.filter(q => q.quiz_type === 'chapter_quiz') || [];
+      // Fetch all quizzes for this block
+      const { data: quizzesData } = await supabase
+        .from("quizzes")
+        .select("*")
+        .eq("block_id", blockId);
+
+      // Fetch completed lessons
+      const { data: completedLessonsData } = await supabase
+        .from("lesson_progress")
+        .select("lesson_id")
+        .eq("user_id", user.id)
+        .eq("block_id", blockId)
+        .eq("is_completed", true);
+
+      const completedLessons = new Set(completedLessonsData?.map(p => p.lesson_id) || []);
+      const quizzes = quizzesData || [];
+
+      // Organize chapters with their respective quizzes
+      const chaptersWithQuizzes = chaptersData?.map(chapter => ({
+        ...chapter,
+        lessons: chapter.lessons.sort((a, b) => a.order_index - b.order_index),
+        quizzes: quizzes.filter(q => q.chapter_id === chapter.id),
+        completedLessons: chapter.lessons.reduce(
+          (acc, lesson) => acc + (completedLessons.has(lesson.id) ? 1 : 0),
+          0
+        )
+      })) || [];
+
+      // Get block-level quizzes (quizzes without a chapter_id)
+      const blockQuizzes = quizzes.filter(q => !q.chapter_id);
 
       return {
-        chapters: chaptersData.data?.map(chapter => ({
-          ...chapter,
-          lessons: chapter.lessons.sort((a, b) => a.order_index - b.order_index),
-          quizzes: chapterQuizzes.filter(q => q.chapter_id === chapter.id),
-          completedLessons: chapter.lessons.reduce(
-            (acc, lesson) => acc + (completedLessons.has(lesson.id) ? 1 : 0), 
-            0
-          )
-        })) || [],
+        chapters: chaptersWithQuizzes,
         blockQuizzes,
         completedLessons
       };
