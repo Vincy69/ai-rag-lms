@@ -396,6 +396,176 @@ export type Database = {
         }
         Relationships: []
       }
+      quiz_answers: {
+        Row: {
+          answer: string
+          created_at: string
+          explanation: string
+          id: string
+          is_correct: boolean
+          order_index: number
+          question_id: string
+        }
+        Insert: {
+          answer: string
+          created_at?: string
+          explanation: string
+          id?: string
+          is_correct?: boolean
+          order_index: number
+          question_id: string
+        }
+        Update: {
+          answer?: string
+          created_at?: string
+          explanation?: string
+          id?: string
+          is_correct?: boolean
+          order_index?: number
+          question_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "quiz_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quiz_attempts: {
+        Row: {
+          created_at: string
+          id: string
+          quiz_id: string
+          score: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          quiz_id: string
+          score: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          quiz_id?: string
+          score?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_attempts_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "quizzes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quiz_attempts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quiz_questions: {
+        Row: {
+          created_at: string
+          explanation: string | null
+          id: string
+          order_index: number
+          question: string
+          quiz_id: string
+          skill_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          explanation?: string | null
+          id?: string
+          order_index: number
+          question: string
+          quiz_id: string
+          skill_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          explanation?: string | null
+          id?: string
+          order_index?: number
+          question?: string
+          quiz_id?: string
+          skill_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_questions_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "quizzes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quiz_questions_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skills"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quizzes: {
+        Row: {
+          block_id: string
+          chapter_id: string | null
+          created_at: string
+          description: string | null
+          id: string
+          quiz_type: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          block_id: string
+          chapter_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          quiz_type: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          block_id?: string
+          chapter_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          quiz_type?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quizzes_block_id_fkey"
+            columns: ["block_id"]
+            isOneToOne: false
+            referencedRelation: "skill_blocks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quizzes_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       skill_blocks: {
         Row: {
           created_at: string
