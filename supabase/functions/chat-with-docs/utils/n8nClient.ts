@@ -39,13 +39,18 @@ export async function callN8nWebhook(requestBody: { sessionId: string; input: st
     const rawResponse = await response.text();
     console.log('Raw n8n response:', rawResponse);
 
-    if (!rawResponse) {
+    if (!rawResponse || rawResponse.trim() === '') {
       throw new Error('Empty response from n8n');
     }
 
     try {
       const data = JSON.parse(rawResponse);
       console.log('Parsed n8n response:', data);
+
+      // Check for empty or invalid response
+      if (!data || Object.keys(data).length === 0 || (Object.keys(data).length === 1 && data[''] === '')) {
+        throw new Error('Invalid empty response from n8n');
+      }
 
       // Handle different response formats
       if (typeof data === 'string') {
