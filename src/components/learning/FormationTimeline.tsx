@@ -1,5 +1,13 @@
+import { useQuery } from "@tanstack/react-query";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Block {
   id: string;
@@ -13,47 +21,172 @@ interface FormationTimelineProps {
   onSelectBlock: (blockId: string) => void;
 }
 
+interface DetailedProgress {
+  type: 'lesson' | 'chapter_quiz' | 'block_quiz';
+  id: string;
+  name: string;
+  progress: number;
+  parentName?: string;
+}
+
 export function FormationTimeline({ blocks, selectedBlockId, onSelectBlock }: FormationTimelineProps) {
-  const totalProgress = blocks.reduce((acc, block) => acc + block.progress, 0) / blocks.length;
+  const { data: detailedProgress } = useQuery({
+    queryKey: ["formation-detailed-progress", blocks.map(b => b.id)],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const blockIds = blocks.map(block => block.id);
+      
+      // Fetch all chapters, lessons, and quizzes for these blocks
+      const [chaptersData, lessonsData, quizzesData, quizAttemptsData] = await Promise.all([
+        supabase
+          .from('chapters')
+          .select('id, title, block_id, order_index')
+          .in('block_id', blockIds)
+          .order('order_index'),
+        
+        supabase
+          .from('lessons')
+          .select('id, title, chapter_id, order_index')
+          .order('order_index'),
+        
+        supabase
+          .from('quizzes')
+          .select('id, title, block_id, chapter_id, quiz_type')
+          .in('block_id', blockIds),
+        
+        supabase
+          .from('quiz_attempts')
+          .select('quiz_id, score')
+          .eq('user_id', user.id)
+      ]);
+
+      const progressItems: DetailedProgress[] = [];
+      let totalItems = 0;
+
+      blocks.forEach(block => {
+        const blockChapters = chaptersData.data?.filter(c => c.block_id === block.id) || [];
+        const blockQuizzes = quizzesData.data?.filter(q => q.block_id === block.id && q.quiz_type === 'block_quiz') || [];
+        
+        blockChapters.forEach(chapter => {
+          const chapterLessons = lessonsData.data?.filter(l => l.chapter_id === chapter.id) || [];
+          const chapterQuizzes = quizzesData.data?.filter(q => q.chapter_id === chapter.id && q.quiz_type === 'chapter_quiz') || [];
+          
+          // Add lessons
+          chapterLessons.forEach(lesson => {
+            progressItems.push({
+              type: 'lesson',
+              id: lesson.id,
+              name: lesson.title,
+              progress: 0, // You can fetch actual lesson progress if needed
+              parentName: chapter.title
+            });
+            totalItems++;
+          });
+
+          // Add chapter quizzes
+          chapterQuizzes.forEach(quiz => {
+            const attempt = quizAttemptsData.data?.find(a => a.quiz_id === quiz.id);
+            progressItems.push({
+              type: 'chapter_quiz',
+              id: quiz.id,
+              name: quiz.title,
+              progress: attempt?.score || 0,
+              parentName: chapter.title
+            });
+            totalItems++;
+          });
+        });
+
+        // Add block quizzes
+        blockQuizzes.forEach(quiz => {
+          const attempt = quizAttemptsData.data?.find(a => a.quiz_id === quiz.id);
+          progressItems.push({
+            type: 'block_quiz',
+            id: quiz.id,
+            name: quiz.title,
+            progress: attempt?.score || 0,
+            parentName: block.name
+          });
+          totalItems++;
+        });
+      });
+
+      // Calculate segment width percentage
+      const segmentWidth = 100 / totalItems;
+      return progressItems.map(item => ({
+        ...item,
+        width: segmentWidth
+      }));
+    }
+  });
+
+  if (!detailedProgress) return null;
 
   return (
-    <div className="space-y-4">
-      <div className="space-y-2">
-        <div className="flex justify-between text-sm">
-          <span>Progression globale</span>
-          <span>{Math.round(totalProgress)}%</span>
+    <TooltipProvider>
+      <div className="space-y-4">
+        <div className="h-16 bg-secondary rounded-lg overflow-hidden flex">
+          {detailedProgress.map((item, index) => (
+            <Tooltip key={item.id}>
+              <TooltipTrigger asChild>
+                <div 
+                  style={{ 
+                    width: `${item.width}%`,
+                    background: getProgressBackground(item.type, item.progress)
+                  }}
+                  className={cn(
+                    "h-full transition-all duration-200 hover:brightness-110",
+                    item.progress > 0 && "cursor-pointer"
+                  )}
+                >
+                  <div className="w-full h-full" />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <div className="text-sm">
+                  <p className="font-medium">{item.name}</p>
+                  <p className="text-muted-foreground text-xs">{item.parentName}</p>
+                  <p className="text-xs mt-1">
+                    {item.type === 'lesson' ? (
+                      item.progress > 0 ? 'Complété' : 'Non complété'
+                    ) : (
+                      `Score: ${item.progress}%`
+                    )}
+                  </p>
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          ))}
         </div>
-        <Progress value={totalProgress} className="h-12" />
       </div>
-      
-      <div className="flex gap-1 mt-2">
-        {blocks.map((block, index) => (
-          <button
-            key={block.id}
-            onClick={() => onSelectBlock(block.id)}
-            className={cn(
-              "flex-1 group relative",
-              index !== blocks.length - 1 && "after:content-[''] after:absolute after:top-1/2 after:right-0 after:w-2 after:h-px after:bg-border"
-            )}
-          >
-            <div className="relative">
-              <Progress 
-                value={block.progress} 
-                className={cn(
-                  "h-12 cursor-pointer transition-all",
-                  selectedBlockId === block.id ? "opacity-100" : "opacity-50 group-hover:opacity-75"
-                )}
-              />
-              <div className={cn(
-                "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-sm text-center transition-all whitespace-nowrap px-2",
-                selectedBlockId === block.id ? "text-primary font-medium" : "text-foreground group-hover:text-primary"
-              )}>
-                {block.name}
-              </div>
-            </div>
-          </button>
-        ))}
-      </div>
-    </div>
+    </TooltipProvider>
   );
+}
+
+function getProgressBackground(type: DetailedProgress['type'], progress: number): string {
+  // Base colors for different types
+  const colors = {
+    lesson: {
+      start: 'rgb(203, 213, 225)', // slate-300
+      end: 'rgb(71, 85, 105)'      // slate-600
+    },
+    chapter_quiz: {
+      start: 'rgb(147, 197, 253)', // blue-300
+      end: 'rgb(59, 130, 246)'     // blue-500
+    },
+    block_quiz: {
+      start: 'rgb(167, 139, 250)', // violet-400
+      end: 'rgb(109, 40, 217)'     // violet-700
+    }
+  };
+
+  const { start, end } = colors[type];
+  
+  if (progress === 0) {
+    return `linear-gradient(135deg, ${start}33 0%, ${end}33 100%)`; // 33 for 20% opacity
+  }
+
+  return `linear-gradient(135deg, ${start} 0%, ${end} 100%)`;
 }
