@@ -25,11 +25,14 @@ interface FormationProgressProps {
       }>;
       chapters?: Array<{
         id: string;
+        title?: string;
         completedLessons: number;
         lessons: Array<any>;
         quizzes?: Array<{
           id: string;
           title: string;
+          quiz_type: string;
+          chapter_id: string;
         }>;
       }>;
     }>;
