@@ -21,16 +21,7 @@ interface Block {
 
 export function calculateChapterProgress(completedLessons: number, totalLessons: number, quizScore?: number | null): number {
   if (totalLessons === 0) return 0;
-  
-  // Base progress from completed lessons
-  const lessonProgress = (completedLessons / totalLessons) * 100;
-  
-  // If there's a quiz score, include it in the calculation
-  if (quizScore !== undefined && quizScore !== null) {
-    return (lessonProgress + quizScore) / 2;
-  }
-  
-  return lessonProgress;
+  return Math.min(100, (completedLessons / totalLessons) * 100);
 }
 
 export function calculateBlockProgress(block: Block): number {
@@ -39,9 +30,7 @@ export function calculateBlockProgress(block: Block): number {
     if (totalLessons === 0) return 0;
 
     const completedLessons = block.chapters.reduce((acc, chapter) => acc + chapter.completedLessons, 0);
-    const totalProgress = (completedLessons / totalLessons) * 100;
-    
-    return Math.min(100, totalProgress);
+    return Math.min(100, (completedLessons / totalLessons) * 100);
   }
 
   // Fallback to skill-based progress if no chapters
@@ -80,5 +69,5 @@ export function calculateFormationProgress(blocks: Block[]): number {
   if (blocks.length === 0) return 0;
   
   const totalProgress = blocks.reduce((acc, block) => acc + calculateBlockProgress(block), 0);
-  return totalProgress / blocks.length;
+  return Math.min(100, totalProgress / blocks.length);
 }

@@ -43,14 +43,11 @@ export default function Account() {
                   status,
                   progress
                 ),
-                chapters (
+                chapters!left (
                   id,
                   title,
                   lessons (
                     id
-                  ),
-                  lesson_progress!inner (
-                    is_completed
                   ),
                   quizzes (
                     id,
@@ -73,6 +70,25 @@ export default function Account() {
 
         if (enrollmentsError) throw enrollmentsError;
 
+        // Fetch lesson progress for each block
+        const { data: lessonProgress, error: lessonProgressError } = await supabase
+          .from('lesson_progress')
+          .select('*')
+          .eq('user_id', session.user.id);
+
+        if (lessonProgressError) throw lessonProgressError;
+
+        // Create a map of completed lessons by chapter
+        const completedLessonsByChapter = lessonProgress.reduce((acc, progress) => {
+          if (!acc[progress.chapter_id]) {
+            acc[progress.chapter_id] = 0;
+          }
+          if (progress.is_completed) {
+            acc[progress.chapter_id]++;
+          }
+          return acc;
+        }, {});
+
         const formationsWithProgress = enrollments.map(enrollment => ({
           id: enrollment.formation_id,
           name: enrollment.formations?.name || '',
@@ -88,7 +104,7 @@ export default function Account() {
             chapters: block.chapters?.map(chapter => ({
               id: chapter.id,
               title: chapter.title,
-              completedLessons: chapter.lesson_progress?.filter(p => p.is_completed).length || 0,
+              completedLessons: completedLessonsByChapter[chapter.id] || 0,
               lessons: chapter.lessons || [],
               quizzes: chapter.quizzes || [],
             })) || [],
