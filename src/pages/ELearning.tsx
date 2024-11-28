@@ -55,7 +55,33 @@ export default function ELearning() {
 
       if (error) throw error;
 
-      return data;
+      // Transform the data into the correct format
+      const blocks: Block[] = data.map(enrollment => {
+        const totalLessons = enrollment.skill_blocks.chapters?.reduce(
+          (sum, chapter) => sum + (chapter.lessons?.length || 0), 
+          0
+        ) || 0;
+        
+        const totalQuizzes = enrollment.skill_blocks.chapters?.reduce(
+          (sum, chapter) => sum + (chapter.quizzes?.length || 0),
+          0
+        ) || 0;
+
+        return {
+          id: enrollment.block_id,
+          name: enrollment.skill_blocks.name,
+          description: enrollment.skill_blocks.description,
+          orderIndex: enrollment.skill_blocks.order_index,
+          status: enrollment.status,
+          progress: enrollment.progress || 0,
+          formationName: enrollment.skill_blocks.formations?.name || "Sans formation",
+          totalLessons,
+          totalQuizzes,
+        };
+      });
+
+      // Sort blocks by order_index
+      return blocks.sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
     },
   });
 
@@ -96,7 +122,7 @@ export default function ELearning() {
     );
   }
 
-  if (!enrolledBlocks || Object.keys(enrolledBlocks).length === 0) {
+  if (!enrolledBlocks || enrolledBlocks.length === 0) {
     return (
       <Layout>
         <div className="container mx-auto py-8">
@@ -112,8 +138,16 @@ export default function ELearning() {
 
   // Si aucun bloc n'est sélectionné, afficher la liste des UE
   if (!blockId) {
-    const allBlocks = enrolledBlocks || [];
-    const totalProgress = allBlocks.reduce((acc, block) => acc + (block.progress || 0), 0) / allBlocks.length;
+    const totalProgress = enrolledBlocks.reduce((acc, block) => acc + block.progress, 0) / enrolledBlocks.length;
+
+    // Group blocks by formation name
+    const blocksByFormation = enrolledBlocks.reduce((acc: { [key: string]: Block[] }, block) => {
+      if (!acc[block.formationName]) {
+        acc[block.formationName] = [];
+      }
+      acc[block.formationName].push(block);
+      return acc;
+    }, {});
 
     return (
       <Layout>
@@ -132,7 +166,7 @@ export default function ELearning() {
 
           <FormationProgress progress={totalProgress} />
 
-          {Object.entries(enrolledBlocks).map(([formationName, blocks]) => (
+          {Object.entries(blocksByFormation).map(([formationName, blocks]) => (
             <BlockList
               key={formationName}
               formationName={formationName}
