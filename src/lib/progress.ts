@@ -29,10 +29,19 @@ export function calculateChapterProgress(
 ): number {
   if (totalLessons === 0 && chapterQuizzes === 0) return 0;
   
-  const totalItems = totalLessons + chapterQuizzes;
-  const completedItems = completedLessons + completedQuizzes;
+  // Si il y a un quiz de chapitre, il compte pour 25% de la progression
+  const quizWeight = chapterQuizzes > 0 ? 0.25 : 0;
+  const lessonWeight = 1 - quizWeight;
   
-  return Math.min(100, (completedItems / totalItems) * 100);
+  const lessonProgress = totalLessons > 0 
+    ? (completedLessons / totalLessons) * lessonWeight 
+    : 0;
+    
+  const quizProgress = chapterQuizzes > 0 
+    ? (completedQuizzes / chapterQuizzes) * quizWeight 
+    : 0;
+  
+  return Math.min(100, (lessonProgress + quizProgress) * 100);
 }
 
 export function calculateBlockProgress(block: Block): number {
