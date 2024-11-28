@@ -79,7 +79,7 @@ export function QuizContent({ quizId }: QuizContentProps) {
     return Math.round((correctAnswers / questions.length) * 100);
   };
 
-  const handleNextQuestion = () => {
+  const handleNextQuestion = async () => {
     setShowExplanation(false);
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
@@ -87,19 +87,30 @@ export function QuizContent({ quizId }: QuizContentProps) {
       const score = calculateScore();
       setQuizCompleted(true);
       
-      // Save quiz attempt
-      supabase.from("quiz_attempts").insert({
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Vous devez être connecté pour enregistrer votre score"
+        });
+        return;
+      }
+
+      const { error } = await supabase.from("quiz_attempts").insert({
         quiz_id: quizId,
         score: score,
-      }).then(({ error }) => {
-        if (error) {
-          toast({
-            variant: "destructive",
-            title: "Erreur",
-            description: "Impossible d'enregistrer votre score"
-          });
-        }
+        user_id: user.id
       });
+
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Impossible d'enregistrer votre score"
+        });
+      }
     }
   };
 
