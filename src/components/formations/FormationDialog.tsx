@@ -64,7 +64,10 @@ export function FormationDialog({
         blocks: blocks.map((block) => ({
           ...block,
           skills: block.skills.sort((a, b) => a.order_index - b.order_index),
-          quizzes: block.quizzes || []
+          quizzes: (block.quizzes || []).map(quiz => ({
+            ...quiz,
+            quiz_type: quiz.quiz_type as 'chapter_quiz' | 'block_quiz'
+          }))
         })),
       };
     },
