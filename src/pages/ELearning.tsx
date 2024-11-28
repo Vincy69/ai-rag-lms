@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, BookOpen, ChevronRight, RotateCcw, GraduationCap } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { FormationTimeline } from "@/components/learning/FormationTimeline";
 
 export default function ELearning() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -34,9 +35,7 @@ export default function ELearning() {
             order_index,
             formations (
               name
-            )
-          ),
-          chapters:skill_blocks(
+            ),
             chapters (
               id,
               lessons (
@@ -56,51 +55,44 @@ export default function ELearning() {
 
       if (error) throw error;
 
-      // Get lesson progress for each block
-      const lessonProgressPromises = data.map(async (enrollment) => {
-        const { data: lessonProgress } = await supabase
-          .from("lesson_progress")
-          .select("*")
-          .eq("user_id", user.id)
-          .eq("block_id", enrollment.block_id)
-          .eq("is_completed", true);
-        return { blockId: enrollment.block_id, completedLessons: lessonProgress?.length || 0 };
+      // Group blocks by formation
+      const blocksByFormation = data.reduce((acc, enrollment) => {
+        const formationName = enrollment.skill_blocks.formations?.name;
+        if (!acc[formationName]) {
+          acc[formationName] = [];
+        }
+        
+        const totalLessons = enrollment.skill_blocks.chapters?.reduce(
+          (sum, chapter) => sum + (chapter.lessons?.length || 0), 
+          0
+        ) || 0;
+        
+        const totalQuizzes = enrollment.skill_blocks.chapters?.reduce(
+          (sum, chapter) => sum + (chapter.quizzes?.length || 0),
+          0
+        ) || 0;
+
+        acc[formationName].push({
+          id: enrollment.block_id,
+          name: enrollment.skill_blocks.name,
+          description: enrollment.skill_blocks.description,
+          orderIndex: enrollment.skill_blocks.order_index,
+          status: enrollment.status,
+          progress: enrollment.progress,
+          formationName,
+          totalLessons,
+          totalQuizzes,
+        });
+
+        return acc;
+      }, {});
+
+      // Sort blocks within each formation by order_index
+      Object.values(blocksByFormation).forEach(blocks => {
+        blocks.sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
       });
 
-      // Get quiz attempts for each block
-      const quizAttemptsPromises = data.map(async (enrollment) => {
-        const { data: quizAttempts } = await supabase
-          .from("quiz_attempts")
-          .select("*")
-          .eq("user_id", user.id)
-          .eq("is_completed", true)
-          .in("quiz_id", enrollment.chapters.chapters.flatMap(chapter => 
-            chapter.quizzes.map(quiz => quiz.id)
-          ));
-        return { blockId: enrollment.block_id, completedQuizzes: quizAttempts?.length || 0 };
-      });
-
-      const lessonProgress = await Promise.all(lessonProgressPromises);
-      const quizAttempts = await Promise.all(quizAttemptsPromises);
-
-      return data.map(enrollment => ({
-        id: enrollment.block_id,
-        name: enrollment.skill_blocks.name,
-        description: enrollment.skill_blocks.description,
-        orderIndex: enrollment.skill_blocks.order_index,
-        status: enrollment.status,
-        progress: enrollment.progress,
-        formationName: enrollment.skill_blocks.formations?.name,
-        totalLessons: enrollment.chapters.chapters.reduce((acc, chapter) => 
-          acc + chapter.lessons.length, 0
-        ),
-        totalQuizzes: enrollment.chapters.chapters.reduce((acc, chapter) => 
-          acc + chapter.quizzes.length, 0
-        ),
-        completedLessons: lessonProgress.find(p => p.blockId === enrollment.block_id)?.completedLessons || 0,
-        completedQuizzes: quizAttempts.find(a => a.blockId === enrollment.block_id)?.completedQuizzes || 0,
-      }))
-      .sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
+      return blocksByFormation;
     },
   });
 
@@ -142,7 +134,7 @@ export default function ELearning() {
     );
   }
 
-  if (!enrolledBlocks || enrolledBlocks.length === 0) {
+  if (!enrolledBlocks || Object.keys(enrolledBlocks).length === 0) {
     return (
       <Layout>
         <div className="container mx-auto py-8">
@@ -160,7 +152,7 @@ export default function ELearning() {
   if (!blockId) {
     return (
       <Layout>
-        <div className="container mx-auto py-8 space-y-6">
+        <div className="container mx-auto py-8 space-y-8">
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold">Mes UE</h1>
             <Button 
@@ -173,67 +165,71 @@ export default function ELearning() {
             </Button>
           </div>
 
-          <div className="space-y-4">
-            {enrolledBlocks.map((block) => (
-              <Card
-                key={block.id}
-                className="group hover:shadow-md transition-all duration-300"
-              >
-                <CardContent className="p-6">
-                  <div className="space-y-6">
-                    {/* Header */}
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                          <BookOpen className="w-5 h-5 text-primary" />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold">{block.name}</h3>
-                          {block.formationName && (
-                            <p className="text-sm text-muted-foreground">
-                              Formation : {block.formationName}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        className="gap-2"
-                        onClick={() => setSearchParams({ blockId: block.id })}
-                      >
-                        Accéder au contenu
-                        <ChevronRight className="w-4 h-4" />
-                      </Button>
-                    </div>
+          {Object.entries(enrolledBlocks).map(([formationName, blocks]) => (
+            <div key={formationName} className="space-y-6">
+              <div className="space-y-4">
+                <h2 className="text-xl font-semibold">{formationName}</h2>
+                <FormationTimeline 
+                  blocks={blocks}
+                  onSelectBlock={(blockId) => setSearchParams({ blockId })}
+                />
+              </div>
 
-                    {/* Progress */}
-                    <div className="space-y-2">
-                      <Progress value={block.progress} className="h-2" />
-                      <div className="flex justify-between text-sm text-muted-foreground">
-                        <div className="flex items-center gap-4">
-                          <span className="flex items-center gap-2">
-                            <BookOpen className="w-4 h-4" />
-                            {block.completedLessons} / {block.totalLessons} leçons
-                          </span>
-                          <span className="flex items-center gap-2">
-                            <GraduationCap className="w-4 h-4" />
-                            {block.completedQuizzes} / {block.totalQuizzes} quiz
-                          </span>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {blocks.map((block) => (
+                  <Card
+                    key={block.id}
+                    className="group hover:shadow-md transition-all duration-300"
+                  >
+                    <CardContent className="p-6">
+                      <div className="space-y-6">
+                        {/* Header */}
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                            <BookOpen className="w-5 h-5 text-primary" />
+                          </div>
+                          <div className="flex-1">
+                            <h3 className="font-semibold line-clamp-1">{block.name}</h3>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setSearchParams({ blockId: block.id })}
+                          >
+                            <ChevronRight className="w-4 h-4" />
+                          </Button>
                         </div>
-                        <span>{Math.round(block.progress)}%</span>
-                      </div>
-                    </div>
 
-                    {block.description && (
-                      <p className="text-sm text-muted-foreground">
-                        {block.description}
-                      </p>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                        {/* Progress */}
+                        <div className="space-y-2">
+                          <Progress value={block.progress} className="h-2" />
+                          <div className="flex justify-between text-sm text-muted-foreground">
+                            <div className="flex items-center gap-4">
+                              <span className="flex items-center gap-2">
+                                <BookOpen className="w-4 h-4" />
+                                {block.totalLessons} leçons
+                              </span>
+                              <span className="flex items-center gap-2">
+                                <GraduationCap className="w-4 h-4" />
+                                {block.totalQuizzes} quiz
+                              </span>
+                            </div>
+                            <span>{Math.round(block.progress)}%</span>
+                          </div>
+                        </div>
+
+                        {block.description && (
+                          <p className="text-sm text-muted-foreground line-clamp-2">
+                            {block.description}
+                          </p>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       </Layout>
     );
