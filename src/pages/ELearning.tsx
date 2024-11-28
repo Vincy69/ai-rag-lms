@@ -1,14 +1,15 @@
 import { useSearchParams } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { BlockContent } from "@/components/learning/BlockContent";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, BookOpen, ChevronRight, RotateCcw, GraduationCap } from "lucide-react";
+import { Loader2, RotateCcw } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { FormationTimeline } from "@/components/learning/FormationTimeline";
+import { BlockList } from "@/components/learning/BlockList";
+import { Block, BlocksByFormation } from "@/types/learning";
 
 export default function ELearning() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -21,7 +22,6 @@ export default function ELearning() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      // Fetch block enrollments with additional data
       const { data, error } = await supabase
         .from("block_enrollments")
         .select(`
@@ -56,8 +56,8 @@ export default function ELearning() {
       if (error) throw error;
 
       // Group blocks by formation
-      const blocksByFormation = data.reduce((acc, enrollment) => {
-        const formationName = enrollment.skill_blocks.formations?.name;
+      const blocksByFormation = data.reduce((acc: BlocksByFormation, enrollment) => {
+        const formationName = enrollment.skill_blocks.formations?.name || "Sans formation";
         if (!acc[formationName]) {
           acc[formationName] = [];
         }
@@ -101,7 +101,7 @@ export default function ELearning() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const { data, error } = await supabase.functions.invoke('reset-progress', {
+      const { error } = await supabase.functions.invoke('reset-progress', {
         body: { user_id: user.id },
       });
 
@@ -112,7 +112,6 @@ export default function ELearning() {
         description: "Votre progression a été réinitialisée avec succès.",
       });
 
-      // Refresh the page to show updated progress
       window.location.reload();
     } catch (error) {
       console.error('Error resetting progress:', error);
@@ -150,6 +149,8 @@ export default function ELearning() {
 
   // Si aucun bloc n'est sélectionné, afficher la liste des UE
   if (!blockId) {
+    const allBlocks = Object.values(enrolledBlocks).flat();
+
     return (
       <Layout>
         <div className="container mx-auto py-8 space-y-8">
@@ -165,70 +166,18 @@ export default function ELearning() {
             </Button>
           </div>
 
+          <FormationTimeline 
+            blocks={allBlocks}
+            onSelectBlock={(blockId) => setSearchParams({ blockId })}
+          />
+
           {Object.entries(enrolledBlocks).map(([formationName, blocks]) => (
-            <div key={formationName} className="space-y-6">
-              <div className="space-y-4">
-                <h2 className="text-xl font-semibold">{formationName}</h2>
-                <FormationTimeline 
-                  blocks={blocks}
-                  onSelectBlock={(blockId) => setSearchParams({ blockId })}
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {blocks.map((block) => (
-                  <Card
-                    key={block.id}
-                    className="group hover:shadow-md transition-all duration-300"
-                  >
-                    <CardContent className="p-6">
-                      <div className="space-y-6">
-                        {/* Header */}
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                            <BookOpen className="w-5 h-5 text-primary" />
-                          </div>
-                          <div className="flex-1">
-                            <h3 className="font-semibold line-clamp-1">{block.name}</h3>
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setSearchParams({ blockId: block.id })}
-                          >
-                            <ChevronRight className="w-4 h-4" />
-                          </Button>
-                        </div>
-
-                        {/* Progress */}
-                        <div className="space-y-2">
-                          <Progress value={block.progress} className="h-2" />
-                          <div className="flex justify-between text-sm text-muted-foreground">
-                            <div className="flex items-center gap-4">
-                              <span className="flex items-center gap-2">
-                                <BookOpen className="w-4 h-4" />
-                                {block.totalLessons} leçons
-                              </span>
-                              <span className="flex items-center gap-2">
-                                <GraduationCap className="w-4 h-4" />
-                                {block.totalQuizzes} quiz
-                              </span>
-                            </div>
-                            <span>{Math.round(block.progress)}%</span>
-                          </div>
-                        </div>
-
-                        {block.description && (
-                          <p className="text-sm text-muted-foreground line-clamp-2">
-                            {block.description}
-                          </p>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
+            <BlockList
+              key={formationName}
+              formationName={formationName}
+              blocks={blocks}
+              onSelectBlock={(blockId) => setSearchParams({ blockId })}
+            />
           ))}
         </div>
       </Layout>
