@@ -165,7 +165,7 @@ export interface Tables {
     }
     Insert: {
       completed_at?: string | null
-      enrolled_at?: string
+      enrolled_at: string
       formation_id: string
       id?: string
       progress?: number | null
@@ -304,7 +304,7 @@ export interface Tables {
     Insert: {
       attempts?: number | null
       created_at?: string
-      id?: string
+      id: string
       last_attempt_at?: string | null
       level?: number | null
       score?: number | null
@@ -374,6 +374,68 @@ export interface Tables {
         columns: ["block_id"]
         isOneToOne: false
         referencedRelation: "skill_blocks"
+        referencedColumns: ["id"]
+      }
+    ]
+  }
+  lesson_progress: {
+    Row: {
+      id: string
+      user_id: string
+      lesson_id: string
+      chapter_id: string
+      block_id: string
+      is_completed: boolean | null
+      completed_at: string | null
+      created_at: string | null
+    }
+    Insert: {
+      id?: string
+      user_id: string
+      lesson_id: string
+      chapter_id: string
+      block_id: string
+      is_completed?: boolean | null
+      completed_at?: string | null
+      created_at?: string | null
+    }
+    Update: {
+      id?: string
+      user_id?: string
+      lesson_id?: string
+      chapter_id?: string
+      block_id?: string
+      is_completed?: boolean | null
+      completed_at?: string | null
+      created_at?: string | null
+    }
+    Relationships: [
+      {
+        foreignKeyName: "lesson_progress_block_id_fkey"
+        columns: ["block_id"]
+        isOneToOne: false
+        referencedRelation: "skill_blocks"
+        referencedColumns: ["id"]
+      },
+      {
+        foreignKeyName: "lesson_progress_chapter_id_fkey"
+        columns: ["chapter_id"]
+        isOneToOne: false
+        referencedRelation: "chapters"
+        referencedColumns: ["id"]
+      },
+      {
+        foreignKeyName: "lesson_progress_lesson_id_fkey"
+        columns: ["lesson_id"]
+        isOneToOne: false
+        referencedRelation: "lessons"
+        referencedColumns: ["id"]
+      },
+      {
+        foreignKeyName: "lesson_progress_user_id_fkey"
+        columns: ["user_id"]
+        isOneToOne: false
+        referencedRelation: "profiles"
         referencedColumns: ["id"]
       }
     ]
