@@ -50,7 +50,7 @@ export function BlockContent({ blockId, condensed = false }: BlockContentProps) 
     },
   });
 
-  const { data: chapters, isLoading: isLoadingChapters } = useQuery({
+  const { data: chaptersData, isLoading: isLoadingChapters } = useQuery({
     queryKey: ["chapters-with-lessons", blockId],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -123,23 +123,23 @@ export function BlockContent({ blockId, condensed = false }: BlockContentProps) 
   });
 
   useEffect(() => {
-    if (chapters?.chapters.length && !selectedLessonId && !selectedQuizId && !condensed) {
-      const firstChapter = chapters.chapters[0];
+    if (chaptersData?.chapters.length && !selectedLessonId && !selectedQuizId && !condensed) {
+      const firstChapter = chaptersData.chapters[0];
       if (firstChapter?.lessons?.length) {
         setSelectedLessonId(firstChapter.lessons[0].id);
       }
     }
-  }, [chapters, selectedLessonId, selectedQuizId, condensed]);
+  }, [chaptersData, selectedLessonId, selectedQuizId, condensed]);
 
   // Get all lessons in order
-  const orderedLessons = chapters?.chapters.flatMap(chapter => 
+  const orderedLessons = chaptersData?.chapters.flatMap(chapter => 
     chapter.lessons.map(lesson => ({
       ...lesson,
       chapter_id: chapter.id
     }))
   ).sort((a, b) => {
-    const chapterA = chapters.chapters.find(c => c.id === a.chapter_id);
-    const chapterB = chapters.chapters.find(c => c.id === b.chapter_id);
+    const chapterA = chaptersData.chapters.find(c => c.id === a.chapter_id);
+    const chapterB = chaptersData.chapters.find(c => c.id === b.chapter_id);
     if (chapterA?.order_index !== chapterB?.order_index) {
       return (chapterA?.order_index || 0) - (chapterB?.order_index || 0);
     }
@@ -153,7 +153,7 @@ export function BlockContent({ blockId, condensed = false }: BlockContentProps) 
 
   // Check if lesson is completed
   const isLessonCompleted = selectedLesson ? 
-    completedLessonIds?.has(selectedLesson.id) : 
+    chaptersData?.completedLessons?.has(selectedLesson.id) : 
     false;
 
   if (isLoadingChapters) {
@@ -165,9 +165,9 @@ export function BlockContent({ blockId, condensed = false }: BlockContentProps) 
       <div className="space-y-6">
         <CondensedView
           block={block}
-          chapters={chapters?.chapters || []}
-          blockQuizzes={chapters?.blockQuizzes || []}
-          completedLessonIds={completedLessonIds}
+          chapters={chaptersData?.chapters || []}
+          blockQuizzes={chaptersData?.blockQuizzes || []}
+          completedLessonIds={chaptersData?.completedLessons || new Set()}
         />
       </div>
     );
@@ -181,13 +181,13 @@ export function BlockContent({ blockId, condensed = false }: BlockContentProps) 
           <Card className="border bg-card/50 p-4">
             <FullView
               block={block}
-              chapters={chapters?.chapters || []}
-              blockQuizzes={chapters?.blockQuizzes || []}
+              chapters={chaptersData?.chapters || []}
+              blockQuizzes={chaptersData?.blockQuizzes || []}
               selectedLessonId={selectedLessonId}
               selectedQuizId={selectedQuizId}
               selectedLesson={selectedLesson}
               blockId={blockId}
-              completedLessonIds={completedLessonIds}
+              completedLessonIds={chaptersData?.completedLessons || new Set()}
               onSelectLesson={(lessonId) => {
                 setSelectedLessonId(lessonId);
                 setSelectedQuizId(null);
