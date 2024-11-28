@@ -1,12 +1,11 @@
-import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { BlockContent } from "@/components/learning/BlockContent";
 import { Card, CardContent } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2 } from "lucide-react";
-import { BlockProgressCard } from "@/components/account/BlockProgressCard";
+import { Loader2, BookOpen } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function ELearning() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -111,51 +110,62 @@ export default function ELearning() {
     );
   }
 
-  if (!blockId) {
-    return (
-      <Layout>
-        <div className="container mx-auto py-8">
-          <h1 className="text-2xl font-bold mb-6">E-Learning</h1>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {enrolledBlocks.map((block) => (
-              <BlockProgressCard
-                key={block.id}
-                block={block}
-                onClick={() => setSearchParams({ blockId: block.id })}
-              />
-            ))}
-          </div>
-        </div>
-      </Layout>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <Layout>
-        <div className="flex items-center justify-center h-[calc(100vh-8rem)]">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        </div>
-      </Layout>
-    );
-  }
-
   return (
     <Layout>
-      <div className="container mx-auto py-8 space-y-6">
-        <div className="space-y-2">
-          <h1 className="text-2xl font-bold">{block?.name}</h1>
-          {block?.formations?.name && (
-            <p className="text-muted-foreground">
-              Formation : {block.formations.name}
-            </p>
-          )}
-          {block?.description && (
-            <p className="text-muted-foreground">{block.description}</p>
-          )}
-        </div>
+      <div className="container mx-auto py-8">
+        <div className="flex gap-6">
+          {/* Navigation latérale */}
+          <div className="w-80 shrink-0">
+            <div className="sticky top-24 space-y-4">
+              <h2 className="font-semibold text-lg mb-4">Mes blocs de compétences</h2>
+              <div className="space-y-2">
+                {enrolledBlocks.map((enrolledBlock) => (
+                  <button
+                    key={enrolledBlock.id}
+                    onClick={() => setSearchParams({ blockId: enrolledBlock.id })}
+                    className={cn(
+                      "w-full text-left px-4 py-3 rounded-lg transition-colors flex items-center gap-3",
+                      blockId === enrolledBlock.id
+                        ? "bg-primary/10 text-primary"
+                        : "hover:bg-accent"
+                    )}
+                  >
+                    <BookOpen className="w-5 h-5 shrink-0" />
+                    <div className="min-w-0">
+                      <p className="font-medium truncate">{enrolledBlock.name}</p>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <div className="w-full bg-secondary/20 rounded-full h-1.5">
+                          <div
+                            className="bg-primary rounded-full h-1.5 transition-all"
+                            style={{ width: `${enrolledBlock.progress}%` }}
+                          />
+                        </div>
+                        <span className="shrink-0">{enrolledBlock.progress}%</span>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
 
-        <BlockContent blockId={blockId} />
+          {/* Contenu principal */}
+          <div className="flex-1 min-w-0">
+            {blockId ? (
+              isLoading ? (
+                <div className="flex items-center justify-center h-[calc(100vh-16rem)]">
+                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                </div>
+              ) : (
+                <BlockContent blockId={blockId} />
+              )
+            ) : (
+              <div className="flex items-center justify-center h-[calc(100vh-16rem)] text-muted-foreground">
+                Sélectionnez un bloc de compétences pour commencer
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </Layout>
   );
