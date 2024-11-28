@@ -63,7 +63,7 @@ export function BlockDetailsDialog({
             
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <h3 className="font-medium">Progression par compétence</h3>
+                <h3 className="font-medium">Compétences du bloc</h3>
                 <span className="text-sm text-muted-foreground">
                   {skillsWithProgress.length} / {block.skills.length} compétences évaluées
                 </span>

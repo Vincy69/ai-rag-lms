@@ -74,32 +74,31 @@ export function FormationProgressCard({ formation }: FormationProgressProps) {
             <p className="text-sm text-muted-foreground">{formation.description}</p>
           )}
         </div>
-        {formation.blocks.length > 0 && (
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h3 className="font-medium">Blocs de compétences</h3>
-              <span className="text-sm text-muted-foreground">
-                {blocksWithProgress.length} / {formation.blocks.length} blocs commencés
-              </span>
-            </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              {formation.blocks.map((block, index) => (
-                <BlockProgressCard
-                  key={index}
-                  block={block}
-                  onClick={() => setSelectedBlock(block)}
-                />
-              ))}
-            </div>
+        
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h3 className="font-medium">Blocs de compétences</h3>
+            <span className="text-sm text-muted-foreground">
+              {blocksWithProgress.length} / {formation.blocks.length} blocs commencés
+            </span>
           </div>
-        )}
-      </CardContent>
+          <div className="grid gap-4 md:grid-cols-2">
+            {formation.blocks.map((block, index) => (
+              <BlockProgressCard
+                key={index}
+                block={block}
+                onClick={() => setSelectedBlock(block)}
+              />
+            ))}
+          </div>
+        </div>
 
-      <BlockDetailsDialog
-        block={selectedBlock}
-        open={!!selectedBlock}
-        onOpenChange={(open) => !open && setSelectedBlock(null)}
-      />
+        <BlockDetailsDialog
+          block={selectedBlock}
+          open={!!selectedBlock}
+          onOpenChange={(open) => !open && setSelectedBlock(null)}
+        />
+      </CardContent>
     </Card>
   );
 }

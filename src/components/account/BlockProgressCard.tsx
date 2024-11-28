@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle2, Circle, Clock, ArrowUp, ArrowDown } from "lucide-react";
+import { CheckCircle2, Circle, Clock, ArrowUp } from "lucide-react";
 
 interface BlockProgressProps {
   block: {
@@ -41,7 +41,7 @@ export function BlockProgressCard({ block, onClick }: BlockProgressProps) {
 
   return (
     <Card 
-      className="hover:shadow-md transition-all duration-200 cursor-pointer group animate-fade-in" 
+      className="hover:shadow-md transition-all duration-200 cursor-pointer group animate-fade-in hover:bg-accent/50" 
       onClick={onClick}
     >
       <CardHeader className="pb-2">
