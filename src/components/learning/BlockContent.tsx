@@ -5,6 +5,7 @@ import { LoadingState } from "./LoadingState";
 import { CondensedView } from "./CondensedView";
 import { ContentArea } from "./ContentArea";
 import { BlockSidebar } from "./BlockSidebar";
+import { BlockProgressHeader } from "./BlockProgressHeader";
 
 interface BlockContentProps {
   blockId: string;
@@ -159,6 +160,17 @@ export function BlockContent({ blockId, condensed = false }: BlockContentProps) 
     return <LoadingState />;
   }
 
+  // Calculate totals
+  const totalLessons = chaptersData?.chapters.reduce(
+    (sum, chapter) => sum + chapter.lessons.length, 
+    0
+  ) || 0;
+
+  const totalQuizzes = chaptersData?.chapters.reduce(
+    (sum, chapter) => sum + (chapter.quizzes?.length || 0), 
+    0
+  ) + (chaptersData?.blockQuizzes?.length || 0);
+
   if (condensed) {
     return (
       <div className="space-y-6">
@@ -174,7 +186,14 @@ export function BlockContent({ blockId, condensed = false }: BlockContentProps) 
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-semibold">{block?.name}</h2>
+      <BlockProgressHeader
+        name={block?.name}
+        formationName={block?.formations?.name}
+        progress={block?.progress || 0}
+        totalLessons={totalLessons}
+        totalQuizzes={totalQuizzes}
+      />
+
       <div className="flex gap-6 h-[calc(100vh-16rem)]">
         <div className="w-1/3">
           <BlockSidebar
