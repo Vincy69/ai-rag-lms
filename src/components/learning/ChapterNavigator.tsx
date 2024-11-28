@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { Check, ChevronDown, ChevronUp, BookOpen, Award } from "lucide-react";
+import { Check, ChevronDown, ChevronUp, BookOpen, Award, GraduationCap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ChapterProgress } from "./ChapterProgress";
-import { QuizNavigator } from "./quiz/QuizNavigator";
 
 interface Lesson {
   id: string;
@@ -28,6 +27,7 @@ interface ChapterNavigatorProps {
   chapters: Chapter[];
   blockQuizzes?: Quiz[];
   selectedLessonId?: string;
+  selectedQuizId?: string;
   onSelectLesson: (lessonId: string) => void;
   onSelectQuiz: (quizId: string) => void;
   completedLessonIds: Set<string>;
@@ -37,7 +37,8 @@ interface ChapterNavigatorProps {
 export function ChapterNavigator({ 
   chapters, 
   blockQuizzes,
-  selectedLessonId, 
+  selectedLessonId,
+  selectedQuizId,
   onSelectLesson,
   onSelectQuiz,
   completedLessonIds,
@@ -103,12 +104,23 @@ export function ChapterNavigator({
                 </button>
               ))}
               
-              {chapter.quizzes && chapter.quizzes.length > 0 && (
-                <QuizNavigator
-                  quizzes={chapter.quizzes}
-                  onSelectQuiz={onSelectQuiz}
-                />
-              )}
+              {chapter.quizzes && chapter.quizzes.length > 0 && chapter.quizzes.map(quiz => (
+                <button
+                  key={quiz.id}
+                  onClick={() => onSelectQuiz(quiz.id)}
+                  className={cn(
+                    "w-full flex items-center gap-2 p-2 text-sm rounded-lg transition-colors",
+                    selectedQuizId === quiz.id 
+                      ? "bg-accent/50 text-primary" 
+                      : "hover:bg-accent/50"
+                  )}
+                >
+                  <div className="flex items-center gap-2 flex-1">
+                    <GraduationCap className="h-4 w-4" />
+                    <span>{quiz.title}</span>
+                  </div>
+                </button>
+              ))}
             </div>
           )}
         </div>

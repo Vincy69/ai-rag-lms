@@ -26,6 +26,7 @@ export function CondensedView({ block, chapters, blockQuizzes, completedLessonId
           chapters={chapters || []}
           blockQuizzes={blockQuizzes || []}
           selectedLessonId={null}
+          selectedQuizId={null}
           onSelectLesson={() => {}}
           onSelectQuiz={() => {}}
           completedLessonIds={completedLessonIds}

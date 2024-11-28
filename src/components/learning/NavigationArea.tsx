@@ -4,6 +4,7 @@ interface NavigationAreaProps {
   chapters: any[];
   blockQuizzes?: any[];
   selectedLessonId: string | null;
+  selectedQuizId: string | null;
   onSelectLesson: (lessonId: string) => void;
   onSelectQuiz: (quizId: string) => void;
   completedLessonIds: Set<string>;
@@ -14,6 +15,7 @@ export function NavigationArea({
   chapters,
   blockQuizzes,
   selectedLessonId,
+  selectedQuizId,
   onSelectLesson,
   onSelectQuiz,
   completedLessonIds,
@@ -24,6 +26,7 @@ export function NavigationArea({
       chapters={chapters}
       blockQuizzes={blockQuizzes}
       selectedLessonId={selectedLessonId || undefined}
+      selectedQuizId={selectedQuizId || undefined}
       onSelectLesson={onSelectLesson}
       onSelectQuiz={onSelectQuiz}
       completedLessonIds={completedLessonIds}
