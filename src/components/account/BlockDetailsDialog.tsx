@@ -10,6 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { BlockContent } from "../learning/BlockContent";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { calculateBlockProgress, calculateChapterProgress } from "@/lib/progress";
+import { GraduationCap } from "lucide-react";
 
 interface BlockDetailsDialogProps {
   block: {
@@ -47,6 +48,7 @@ export function BlockDetailsDialog({
   if (!block) return null;
 
   const blockProgress = calculateBlockProgress(block);
+  const totalQuizzes = block.chapters?.reduce((acc, chapter) => acc + (chapter.quizzes?.length || 0), 0) || 0;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -87,11 +89,19 @@ export function BlockDetailsDialog({
                     <>
                       <div className="flex justify-between items-center">
                         <h3 className="font-medium">Chapitres</h3>
-                        <span className="text-sm text-muted-foreground">
-                          {block.chapters.reduce((acc, chapter) => acc + chapter.completedLessons, 0)} / {
-                            block.chapters.reduce((acc, chapter) => acc + chapter.lessons.length, 0)
-                          } leçons complétées
-                        </span>
+                        <div className="flex items-center gap-4">
+                          <span className="text-sm text-muted-foreground">
+                            {block.chapters.reduce((acc, chapter) => acc + chapter.completedLessons, 0)} / {
+                              block.chapters.reduce((acc, chapter) => acc + chapter.lessons.length, 0)
+                            } leçons complétées
+                          </span>
+                          {totalQuizzes > 0 && (
+                            <span className="text-sm text-muted-foreground flex items-center gap-2">
+                              <GraduationCap className="w-4 h-4" />
+                              {totalQuizzes} quiz{totalQuizzes > 1 ? 's' : ''}
+                            </span>
+                          )}
+                        </div>
                       </div>
                       <div className="space-y-4">
                         {block.chapters.map((chapter, index) => (
@@ -107,7 +117,10 @@ export function BlockDetailsDialog({
                             <div className="flex justify-between text-sm text-muted-foreground">
                               <span>{chapter.completedLessons} / {chapter.lessons.length} leçons</span>
                               {chapter.quizzes && chapter.quizzes.length > 0 && (
-                                <span>{chapter.quizzes.length} quiz{chapter.quizzes.length > 1 ? 's' : ''}</span>
+                                <span className="flex items-center gap-2">
+                                  <GraduationCap className="w-4 h-4" />
+                                  {chapter.quizzes.length} quiz{chapter.quizzes.length > 1 ? 's' : ''}
+                                </span>
                               )}
                             </div>
                           </div>
