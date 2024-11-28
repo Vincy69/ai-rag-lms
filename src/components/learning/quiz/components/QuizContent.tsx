@@ -21,6 +21,7 @@ export function QuizContent({ quizId }: QuizContentProps) {
           question,
           explanation,
           order_index,
+          skill_id,
           quiz_answers (
             id,
             answer,
@@ -34,7 +35,8 @@ export function QuizContent({ quizId }: QuizContentProps) {
 
       return questionsData?.map(q => ({
         ...q,
-        answers: q.quiz_answers.sort((a, b) => a.order_index - b.order_index)
+        answers: q.quiz_answers.sort((a, b) => a.order_index - b.order_index),
+        skill_id: q.skill_id || null // Ensure skill_id is always present
       })) as QuizQuestionType[] || [];
     },
   });
@@ -85,7 +87,7 @@ export function QuizContent({ quizId }: QuizContentProps) {
       currentQuestion.id,
       answerId,
       selectedAnswer.is_correct,
-      "skill_id"
+      currentQuestion.skill_id
     );
   };
 
