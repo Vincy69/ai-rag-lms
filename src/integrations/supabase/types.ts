@@ -414,17 +414,11 @@ export type Database = {
     Views: {
       user_progress_overview: {
         Row: {
-          block_name: string | null
-          block_progress: number | null
-          block_status: string | null
           first_name: string | null
           formation_name: string | null
           formation_progress: number | null
           formation_status: string | null
           last_name: string | null
-          skill_level: number | null
-          skill_name: string | null
-          skill_score: number | null
           user_id: string | null
         }
         Relationships: []
