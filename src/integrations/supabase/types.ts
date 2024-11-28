@@ -268,6 +268,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "formation_enrollments_formation_id_fkey"
+            columns: ["formation_id"]
+            isOneToOne: false
+            referencedRelation: "user_training_progress"
+            referencedColumns: ["formation_id"]
+          },
+          {
             foreignKeyName: "formation_enrollments_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
@@ -713,6 +720,13 @@ export type Database = {
             referencedRelation: "formations"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "skill_blocks_formation_id_fkey"
+            columns: ["formation_id"]
+            isOneToOne: false
+            referencedRelation: "user_training_progress"
+            referencedColumns: ["formation_id"]
+          },
         ]
       }
       skill_progress: {
@@ -938,15 +952,7 @@ export type Database = {
           user_skill_level: number | null
           user_skill_score: number | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "formation_enrollments_formation_id_fkey"
-            columns: ["formation_id"]
-            isOneToOne: false
-            referencedRelation: "formations"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
     }
     Functions: {
