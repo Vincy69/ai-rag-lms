@@ -46,6 +46,7 @@ export function FullView({
             chapters={chapters}
             blockQuizzes={blockQuizzes}
             selectedLessonId={selectedLessonId}
+            selectedQuizId={selectedQuizId}
             onSelectLesson={onSelectLesson}
             onSelectQuiz={onSelectQuiz}
             completedLessonIds={completedLessonIds}
