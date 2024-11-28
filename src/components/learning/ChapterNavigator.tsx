@@ -52,7 +52,7 @@ export function ChapterNavigator({
   return (
     <div className="space-y-2">
       {chapters.map((chapter) => {
-        // Filtrer les quiz pour n'afficher que ceux qui sont spécifiquement associés à ce chapitre
+        // Ne garder que les quiz qui sont spécifiquement liés à ce chapitre
         const chapterQuizzes = chapter.quizzes?.filter(quiz => 
           quiz.chapter_id === chapter.id && quiz.quiz_type === 'chapter_quiz'
         ) || [];
