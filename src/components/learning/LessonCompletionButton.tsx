@@ -46,23 +46,30 @@ export function LessonCompletionButton({
       const completedCount = (completedLessons?.length || 0) + 1;
       const progress = (completedCount / totalCount) * 100;
 
-      // Mark lesson as completed
-      await supabase
+      // Upsert lesson progress
+      const { error: progressError } = await supabase
         .from("lesson_progress")
         .upsert({
           user_id: user.id,
           lesson_id: lessonId,
           chapter_id: chapterId,
           block_id: blockId,
-          is_completed: true
+          is_completed: true,
+          completed_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id,lesson_id'
         });
 
+      if (progressError) throw progressError;
+
       // Update block progress
-      await supabase
+      const { error: blockError } = await supabase
         .from("block_enrollments")
         .update({ progress })
         .eq("user_id", user.id)
         .eq("block_id", blockId);
+
+      if (blockError) throw blockError;
 
       toast({
         title: "Leçon terminée !",
