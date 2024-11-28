@@ -4,6 +4,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Award, BookOpen, Check, GraduationCap } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface Skill {
   id: string;
@@ -12,12 +14,21 @@ interface Skill {
   order_index: number;
 }
 
+interface Quiz {
+  id: string;
+  title: string;
+  description: string | null;
+  quiz_type: 'chapter_quiz' | 'block_quiz';
+  chapter_id: string | null;
+}
+
 interface Block {
   id: string;
   name: string;
   description: string | null;
   order_index: number;
   skills: Skill[];
+  quizzes: Quiz[];
 }
 
 interface Formation {
@@ -50,22 +61,60 @@ export function FormationContent({ formation }: FormationContentProps) {
                 </div>
               </AccordionTrigger>
               <AccordionContent>
-                <div className="space-y-4 pt-4">
+                <div className="space-y-6 pt-4">
                   {block.description && (
                     <p className="text-sm text-muted-foreground">
                       {block.description}
                     </p>
                   )}
+
+                  {/* Skills Section */}
                   <div className="space-y-2">
-                    {block.skills.map((skill) => (
-                      <div
-                        key={skill.id}
-                        className="text-sm p-3 rounded-lg bg-secondary/50"
-                      >
-                        {skill.name}
-                      </div>
-                    ))}
+                    <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
+                      <BookOpen className="h-4 w-4 text-primary" />
+                      Compétences à acquérir
+                    </h4>
+                    <div className="grid gap-2">
+                      {block.skills.map((skill) => (
+                        <div
+                          key={skill.id}
+                          className="text-sm p-3 rounded-lg bg-secondary/50 hover:bg-secondary/70 transition-colors"
+                        >
+                          {skill.name}
+                        </div>
+                      ))}
+                    </div>
                   </div>
+
+                  {/* Quizzes Section */}
+                  {block.quizzes && block.quizzes.length > 0 && (
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
+                        <GraduationCap className="h-4 w-4 text-primary" />
+                        Évaluations
+                      </h4>
+                      <div className="grid gap-2">
+                        {block.quizzes.map((quiz) => (
+                          <div
+                            key={quiz.id}
+                            className={cn(
+                              "flex items-center gap-3 text-sm p-3 rounded-lg transition-colors",
+                              quiz.quiz_type === 'block_quiz' 
+                                ? "bg-primary/10 hover:bg-primary/20" 
+                                : "bg-secondary/50 hover:bg-secondary/70"
+                            )}
+                          >
+                            {quiz.quiz_type === 'block_quiz' ? (
+                              <Award className="h-4 w-4 text-primary" />
+                            ) : (
+                              <GraduationCap className="h-4 w-4 text-primary" />
+                            )}
+                            <span className="flex-1">{quiz.title}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </AccordionContent>
             </AccordionItem>
