@@ -39,7 +39,9 @@ export function calculateBlockProgress(block: Block): number {
     if (totalLessons === 0) return 0;
 
     const completedLessons = block.chapters.reduce((acc, chapter) => acc + chapter.completedLessons, 0);
-    return (completedLessons / totalLessons) * 100;
+    const totalProgress = (completedLessons / totalLessons) * 100;
+    
+    return Math.min(100, totalProgress);
   }
 
   // Fallback to skill-based progress if no chapters

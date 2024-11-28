@@ -36,6 +36,7 @@ export function BlockProgressCard({ block, onClick }: BlockProgressProps) {
   
   const totalLessons = block.chapters?.reduce((acc, chapter) => acc + chapter.lessons.length, 0) || 0;
   const completedLessons = block.chapters?.reduce((acc, chapter) => acc + chapter.completedLessons, 0) || 0;
+  const totalQuizzes = block.chapters?.reduce((acc, chapter) => acc + (chapter.quizzes?.length || 0), 0) || 0;
 
   const handleClick = () => {
     if (onClick) {
@@ -52,6 +53,7 @@ export function BlockProgressCard({ block, onClick }: BlockProgressProps) {
           <h3 className="font-medium">{block.name}</h3>
           <span className="text-sm text-muted-foreground">
             {completedLessons} / {totalLessons} leçons
+            {totalQuizzes > 0 && ` • ${totalQuizzes} quiz`}
           </span>
         </div>
       </CardHeader>

@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/Layout";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
@@ -53,6 +51,10 @@ export default function Account() {
                   ),
                   lesson_progress!inner (
                     is_completed
+                  ),
+                  quizzes (
+                    id,
+                    title
                   )
                 ),
                 skills (
@@ -88,6 +90,7 @@ export default function Account() {
               title: chapter.title,
               completedLessons: chapter.lesson_progress?.filter(p => p.is_completed).length || 0,
               lessons: chapter.lessons || [],
+              quizzes: chapter.quizzes || [],
             })) || [],
             skills: block.skills.map(skill => ({
               id: skill.id,
