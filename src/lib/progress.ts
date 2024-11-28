@@ -20,6 +20,8 @@ interface Block {
 }
 
 export function calculateChapterProgress(completedLessons: number, totalLessons: number, quizScore?: number | null): number {
+  if (totalLessons === 0) return 0;
+  
   // Base progress from completed lessons
   const lessonProgress = (completedLessons / totalLessons) * 100;
   
@@ -33,12 +35,11 @@ export function calculateChapterProgress(completedLessons: number, totalLessons:
 
 export function calculateBlockProgress(block: Block): number {
   if (block.chapters && block.chapters.length > 0) {
-    const chapterProgressValues = block.chapters.map(chapter => {
-      const quizScore = chapter.quizzes?.length ? 0 : null; // TODO: Get actual quiz score
-      return calculateChapterProgress(chapter.completedLessons, chapter.lessons.length, quizScore);
-    });
-    
-    return chapterProgressValues.reduce((acc, progress) => acc + progress, 0) / block.chapters.length;
+    const totalLessons = block.chapters.reduce((acc, chapter) => acc + chapter.lessons.length, 0);
+    if (totalLessons === 0) return 0;
+
+    const completedLessons = block.chapters.reduce((acc, chapter) => acc + chapter.completedLessons, 0);
+    return (completedLessons / totalLessons) * 100;
   }
 
   // Fallback to skill-based progress if no chapters
@@ -64,10 +65,7 @@ export function calculateBlockProgress(block: Block): number {
 
 export function isBlockStarted(block: Block): boolean {
   if (block.chapters && block.chapters.length > 0) {
-    return block.chapters.some(chapter => 
-      chapter.completedLessons > 0 || 
-      (chapter.quizzes && chapter.quizzes.some(quiz => true)) // TODO: Check quiz attempts
-    );
+    return block.chapters.some(chapter => chapter.completedLessons > 0);
   }
 
   return block.skills.some(skill => 
@@ -77,9 +75,8 @@ export function isBlockStarted(block: Block): boolean {
 }
 
 export function calculateFormationProgress(blocks: Block[]): number {
-  const startedBlocks = blocks.filter(block => isBlockStarted(block));
+  if (blocks.length === 0) return 0;
   
-  if (startedBlocks.length === 0) return 0;
-  
-  return startedBlocks.reduce((acc, block) => acc + calculateBlockProgress(block), 0) / blocks.length;
+  const totalProgress = blocks.reduce((acc, block) => acc + calculateBlockProgress(block), 0);
+  return totalProgress / blocks.length;
 }
