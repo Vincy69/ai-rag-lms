@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
-import { useQuizState } from "./hooks/useQuizState";
+import { useQuizState } from "../hooks/useQuizState";
 import { QuizQuestion } from "./QuizQuestion";
 import { QuizResult } from "./QuizResult";
-import { QuizQuestion as QuizQuestionType } from "./types/quiz";
+import { QuizQuestion as QuizQuestionType } from "../types/quiz";
 
 interface QuizContentProps {
   quizId: string;
@@ -21,6 +21,7 @@ export function QuizContent({ quizId }: QuizContentProps) {
           question,
           explanation,
           order_index,
+          skill_id,
           quiz_answers (
             id,
             answer,
@@ -36,7 +37,7 @@ export function QuizContent({ quizId }: QuizContentProps) {
         ...q,
         answers: (q.quiz_answers || [])
           .sort((a, b) => a.order_index - b.order_index)
-          .slice(0, 4) // Limiter à 4 réponses maximum
+          .slice(0, 4)
       })) as QuizQuestionType[] || [];
     },
   });
@@ -87,7 +88,7 @@ export function QuizContent({ quizId }: QuizContentProps) {
       currentQuestion.id,
       answerId,
       selectedAnswer.is_correct,
-      "skill_id"
+      currentQuestion.skill_id
     );
   };
 
