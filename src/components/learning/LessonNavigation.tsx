@@ -19,7 +19,7 @@ export function LessonNavigation({
   isCompleted
 }: LessonNavigationProps) {
   return (
-    <div className="flex items-center justify-between border-t pt-6 mt-8">
+    <div className="flex items-center justify-between border-t pt-4 mt-4 bg-background">
       <Button
         variant="outline"
         onClick={onPrevious}

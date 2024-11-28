@@ -33,37 +33,37 @@ export function ContentArea({
 
   if (selectedLesson) {
     return (
-      <Card className="border bg-card/50 p-6">
-        <div className="space-y-6">
+      <Card className="border bg-card/50 p-6 flex flex-col h-[calc(100vh-12rem)]">
+        <div className="flex-1 overflow-hidden">
           <LessonContent lesson={selectedLesson} />
-          
-          <LessonNavigation
-            onPrevious={previousLessonId ? () => onNavigate?.(previousLessonId) : undefined}
-            onNext={nextLessonId ? () => onNavigate?.(nextLessonId) : undefined}
+        </div>
+        
+        <LessonNavigation
+          onPrevious={previousLessonId ? () => onNavigate?.(previousLessonId) : undefined}
+          onNext={nextLessonId ? () => onNavigate?.(nextLessonId) : undefined}
+          onComplete={() => {
+            const button = document.querySelector('[data-complete-button]') as HTMLButtonElement;
+            if (button) button.click();
+          }}
+          hasPrevious={!!previousLessonId}
+          hasNext={!!nextLessonId}
+          isCompleted={isLessonCompleted}
+        />
+        
+        <div className="hidden">
+          <LessonCompletionButton
+            lessonId={selectedLesson.id}
+            chapterId={selectedLesson.chapter_id}
+            blockId={blockId}
             onComplete={() => {
-              const button = document.querySelector('[data-complete-button]') as HTMLButtonElement;
-              if (button) button.click();
+              if (onNavigate && nextLessonId) {
+                onNavigate(nextLessonId);
+              } else {
+                window.location.reload();
+              }
             }}
-            hasPrevious={!!previousLessonId}
-            hasNext={!!nextLessonId}
-            isCompleted={isLessonCompleted}
+            data-complete-button
           />
-          
-          <div className="hidden">
-            <LessonCompletionButton
-              lessonId={selectedLesson.id}
-              chapterId={selectedLesson.chapter_id}
-              blockId={blockId}
-              onComplete={() => {
-                if (onNavigate && nextLessonId) {
-                  onNavigate(nextLessonId);
-                } else {
-                  window.location.reload();
-                }
-              }}
-              data-complete-button
-            />
-          </div>
         </div>
       </Card>
     );

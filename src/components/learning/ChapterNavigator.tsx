@@ -36,9 +36,9 @@ export function ChapterNavigator({
             <AccordionItem key={chapter.id} value={chapter.id} className="border-0">
               <AccordionTrigger className="hover:no-underline py-2 px-4 rounded-lg hover:bg-accent">
                 <div className="flex-1 space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium">{chapter.title}</span>
-                    <span className="text-xs text-muted-foreground">
+                  <div className="flex justify-between items-start gap-4">
+                    <span className="font-medium text-left">{chapter.title}</span>
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">
                       {completedItems}/{totalItems}
                     </span>
                   </div>

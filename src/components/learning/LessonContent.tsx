@@ -13,23 +13,23 @@ interface LessonContentProps {
 
 export function LessonContent({ lesson }: LessonContentProps) {
   return (
-    <ScrollArea className="h-[calc(100vh-16rem)] pr-4">
-      <div className="space-y-8">
-        <div>
-          <h2 className="text-2xl font-semibold">{lesson.title}</h2>
-          {lesson.duration && (
-            <p className="text-sm text-muted-foreground mt-1">
-              Durée estimée : {lesson.duration} minutes
-            </p>
-          )}
-        </div>
-        
+    <div className="flex flex-col h-[calc(100vh-16rem)]">
+      <div className="mb-6">
+        <h2 className="text-2xl font-semibold">{lesson.title}</h2>
+        {lesson.duration && (
+          <p className="text-sm text-muted-foreground mt-1">
+            Durée estimée : {lesson.duration} minutes
+          </p>
+        )}
+      </div>
+      
+      <ScrollArea className="flex-1 pr-4">
         <div className="prose prose-gray dark:prose-invert max-w-none">
           {lesson.content.split('\n').map((paragraph, index) => (
             <p key={index}>{paragraph}</p>
           ))}
         </div>
-      </div>
-    </ScrollArea>
+      </ScrollArea>
+    </div>
   );
 }
