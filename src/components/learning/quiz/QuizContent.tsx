@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
-import { useQuizState } from "./useQuizState";
+import { useQuizState } from "./hooks/useQuizState";
 import { QuizQuestion } from "./QuizQuestion";
 import { QuizResult } from "./QuizResult";
-import { QuizQuestion as QuizQuestionType } from "./types";
+import { QuizQuestion as QuizQuestionType } from "./types/quiz";
 
 interface QuizContentProps {
   quizId: string;
@@ -21,7 +21,6 @@ export function QuizContent({ quizId }: QuizContentProps) {
           question,
           explanation,
           order_index,
-          skill_id,
           quiz_answers (
             id,
             answer,
@@ -35,7 +34,9 @@ export function QuizContent({ quizId }: QuizContentProps) {
 
       return questionsData?.map(q => ({
         ...q,
-        answers: q.quiz_answers.sort((a, b) => a.order_index - b.order_index)
+        answers: (q.quiz_answers || [])
+          .sort((a, b) => a.order_index - b.order_index)
+          .slice(0, 4) // Limiter à 4 réponses maximum
       })) as QuizQuestionType[] || [];
     },
   });
@@ -86,7 +87,7 @@ export function QuizContent({ quizId }: QuizContentProps) {
       currentQuestion.id,
       answerId,
       selectedAnswer.is_correct,
-      currentQuestion.skill_id
+      "skill_id"
     );
   };
 
@@ -100,16 +101,6 @@ export function QuizContent({ quizId }: QuizContentProps) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Récupérer les informations du quiz pour s'assurer que nous enregistrons la tentative pour le bon quiz
-      const { data: quizData } = await supabase
-        .from("quizzes")
-        .select("*")
-        .eq("id", quizId)
-        .single();
-
-      if (!quizData) return;
-
-      // Enregistrer la tentative uniquement pour ce quiz spécifique
       const { error } = await supabase.from("quiz_attempts").insert({
         quiz_id: quizId,
         score: score,
