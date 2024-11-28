@@ -12,6 +12,7 @@ interface FormationProgressProps {
     status: string;
     progress: number | null;
     blocks: Array<{
+      id: string;
       name: string | null;
       description: string | null;
       status: string;

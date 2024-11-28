@@ -4,6 +4,7 @@ import { CheckCircle2, Circle, Clock, ArrowUp } from "lucide-react";
 
 interface BlockProgressProps {
   block: {
+    id: string;
     name: string | null;
     description: string | null;
     status: string;
