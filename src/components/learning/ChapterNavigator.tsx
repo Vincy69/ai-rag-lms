@@ -127,14 +127,16 @@ export function ChapterNavigator({
       ))}
 
       {blockQuizzes && blockQuizzes.length > 0 && (
-        <div className="space-y-2">
+        <div className="mt-4 space-y-2">
+          <h3 className="text-sm font-medium text-muted-foreground px-4">Quiz du bloc</h3>
           {blockQuizzes.map(quiz => (
             <button
               key={quiz.id}
               onClick={() => !condensed && onSelectQuiz(quiz.id)}
               className={cn(
                 "w-full text-left p-4 rounded-lg bg-card hover:bg-accent transition-colors",
-                condensed && "cursor-default hover:bg-card"
+                condensed && "cursor-default hover:bg-card",
+                selectedQuizId === quiz.id && "bg-accent/50"
               )}
             >
               <div className="flex items-center gap-3">
