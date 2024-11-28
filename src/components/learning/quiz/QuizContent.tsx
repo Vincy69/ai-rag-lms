@@ -21,6 +21,7 @@ export function QuizContent({ quizId }: QuizContentProps) {
           question,
           explanation,
           order_index,
+          skill_id,
           quiz_answers (
             id,
             answer,
@@ -85,8 +86,7 @@ export function QuizContent({ quizId }: QuizContentProps) {
       currentQuestion.id,
       answerId,
       selectedAnswer.is_correct,
-      // TODO: Add skill_id to quiz_questions table and pass it here
-      "skill_id"
+      currentQuestion.skill_id
     );
   };
 

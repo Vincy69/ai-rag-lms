@@ -13,7 +13,7 @@ export function useQuizState(questions: QuizQuestion[] | undefined) {
     questionId: string, 
     selectedAnswerId: string, 
     isCorrect: boolean,
-    skillId: string
+    skillId: string | null
   ) => {
     const isFirstAttempt = !attempts[questionId];
     
@@ -26,8 +26,8 @@ export function useQuizState(questions: QuizQuestion[] | undefined) {
       }
     }));
 
-    // If this is a wrong answer on first attempt, record it
-    if (isFirstAttempt && !isCorrect) {
+    // If this is a wrong answer on first attempt and we have a skill_id, record it
+    if (isFirstAttempt && !isCorrect && skillId) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         toast({
