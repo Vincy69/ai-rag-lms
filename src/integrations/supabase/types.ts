@@ -549,28 +549,34 @@ export type Database = {
       quizzes: {
         Row: {
           block_id: string
+          chapter_id: string | null
           created_at: string
           description: string | null
           id: string
           passing_score: number
+          quiz_type: string
           title: string
           updated_at: string
         }
         Insert: {
           block_id: string
+          chapter_id?: string | null
           created_at?: string
           description?: string | null
           id?: string
           passing_score?: number
+          quiz_type?: string
           title: string
           updated_at?: string
         }
         Update: {
           block_id?: string
+          chapter_id?: string | null
           created_at?: string
           description?: string | null
           id?: string
           passing_score?: number
+          quiz_type?: string
           title?: string
           updated_at?: string
         }
@@ -580,6 +586,13 @@ export type Database = {
             columns: ["block_id"]
             isOneToOne: false
             referencedRelation: "skill_blocks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quizzes_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "chapters"
             referencedColumns: ["id"]
           },
         ]
