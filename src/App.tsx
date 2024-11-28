@@ -12,6 +12,7 @@ import Formations from "@/pages/Formations";
 import Account from "@/pages/Account";
 import Admin from "@/pages/Admin";
 import Login from "@/pages/Login";
+import ELearning from "@/pages/ELearning";
 import "./App.css";
 
 const queryClient = new QueryClient();
@@ -115,6 +116,14 @@ function App() {
             element={
               <PrivateRoute>
                 <Formations />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/elearning"
+            element={
+              <PrivateRoute>
+                <ELearning />
               </PrivateRoute>
             }
           />

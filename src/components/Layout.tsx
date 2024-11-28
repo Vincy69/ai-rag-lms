@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { MessageSquare, Upload, Files, History, GraduationCap, User, Settings } from "lucide-react";
+import { MessageSquare, Upload, Files, History, GraduationCap, User, Settings, BookOpen } from "lucide-react";
 import { Header } from "./Header";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -10,6 +10,7 @@ const baseNavItems = [
   { icon: Upload, label: "Upload", path: "/upload" },
   { icon: Files, label: "Documents", path: "/documents" },
   { icon: History, label: "Historique", path: "/history" },
+  { icon: BookOpen, label: "E-Learning", path: "/elearning" },
   { icon: GraduationCap, label: "Formations", path: "/formations" },
   { icon: User, label: "Mon compte", path: "/account" },
 ];
