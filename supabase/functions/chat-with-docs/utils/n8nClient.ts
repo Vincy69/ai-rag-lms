@@ -6,7 +6,8 @@ interface N8nResponse {
 }
 
 export async function callN8nWebhook(requestBody: { sessionId: string; input: string; userId: string }): Promise<N8nResponse> {
-  const n8nUrl = 'https://elephorm.app.n8n.cloud/webhook/a7cc35a6-3fdf-4e2e-859a-5c16a15f0b99/chat';
+  // Updated URL format to match n8n's webhook URL structure
+  const n8nUrl = 'https://elephorm.app.n8n.cloud/webhook/chat';
   
   try {
     console.log('Calling n8n webhook with body:', JSON.stringify(requestBody));
@@ -26,8 +27,14 @@ export async function callN8nWebhook(requestBody: { sessionId: string; input: st
       
       try {
         const errorJson = JSON.parse(errorText);
+        if (response.status === 404) {
+          throw new Error('N8n workflow is not active. Please activate the workflow in n8n.');
+        }
         throw new Error(`n8n workflow error: ${errorJson.message || errorText}`);
       } catch (e) {
+        if (e.message.includes('workflow is not active')) {
+          throw e;
+        }
         throw new Error(`n8n webhook failed (${response.status}): ${errorText}`);
       }
     }
