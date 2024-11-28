@@ -1,13 +1,10 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Card } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { Loader2 } from "lucide-react";
-import { LessonContent } from "./LessonContent";
-import { LessonCompletionButton } from "./LessonCompletionButton";
-import { ChapterNavigator } from "./ChapterNavigator";
-import { QuizContent } from "./quiz/QuizContent";
+import { BlockHeader } from "./BlockHeader";
+import { NavigationArea } from "./NavigationArea";
+import { ContentArea } from "./ContentArea";
 
 interface BlockContentProps {
   blockId: string;
@@ -51,7 +48,6 @@ export function BlockContent({ blockId }: BlockContentProps) {
     },
   });
 
-  // Fetch chapters with their lessons and progress
   const { data: chapters, isLoading: isLoadingChapters } = useQuery({
     queryKey: ["chapters-with-lessons", blockId],
     queryFn: async () => {
@@ -103,7 +99,7 @@ export function BlockContent({ blockId }: BlockContentProps) {
     },
   });
 
-  const { data: selectedLesson, isLoading: isLoadingLesson } = useQuery({
+  const { data: selectedLesson } = useQuery({
     queryKey: ["lesson", selectedLessonId],
     queryFn: async () => {
       if (!selectedLessonId) return null;
@@ -144,65 +140,34 @@ export function BlockContent({ blockId }: BlockContentProps) {
 
   return (
     <div className="space-y-6">
-      {/* Block header with global progress */}
-      <div className="space-y-4">
-        <h1 className="text-2xl font-bold">{block?.name}</h1>
-        {block?.formations?.name && (
-          <p className="text-muted-foreground">
-            Formation : {block.formations.name}
-          </p>
-        )}
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm">
-            <span>Progression globale</span>
-            <span>{Math.round(block?.progress || 0)}%</span>
-          </div>
-          <Progress value={block?.progress || 0} className="h-2" />
-        </div>
-      </div>
+      <BlockHeader 
+        name={block?.name}
+        formationName={block?.formations?.name}
+        progress={block?.progress}
+      />
 
       <div className="grid grid-cols-12 gap-6">
-        {/* Chapters and lessons navigation */}
-        <Card className="col-span-4 p-4">
-          {chapters && (
-            <ChapterNavigator
-              chapters={chapters}
-              selectedLessonId={selectedLessonId || undefined}
-              onSelectLesson={(lessonId) => {
-                setSelectedLessonId(lessonId);
-                setSelectedQuizId(null);
-              }}
-              onSelectQuiz={(quizId) => {
-                setSelectedQuizId(quizId);
-                setSelectedLessonId(null);
-              }}
-              completedLessonIds={completedLessonIds}
-            />
-          )}
-        </Card>
+        {chapters && (
+          <NavigationArea
+            chapters={chapters}
+            selectedLessonId={selectedLessonId}
+            onSelectLesson={(lessonId) => {
+              setSelectedLessonId(lessonId);
+              setSelectedQuizId(null);
+            }}
+            onSelectQuiz={(quizId) => {
+              setSelectedQuizId(quizId);
+              setSelectedLessonId(null);
+            }}
+            completedLessonIds={completedLessonIds}
+          />
+        )}
 
-        {/* Content area */}
-        <Card className="col-span-8 p-6">
-          {selectedQuizId ? (
-            <QuizContent quizId={selectedQuizId} />
-          ) : selectedLessonId ? (
-            <div className="space-y-6">
-              <LessonContent lesson={selectedLesson} />
-              <LessonCompletionButton
-                lessonId={selectedLesson.id}
-                chapterId={selectedLesson.chapter_id}
-                blockId={blockId}
-                onComplete={() => {
-                  window.location.reload();
-                }}
-              />
-            </div>
-          ) : (
-            <p className="text-muted-foreground text-sm">
-              Sélectionnez une leçon ou un quiz pour voir son contenu
-            </p>
-          )}
-        </Card>
+        <ContentArea
+          selectedQuizId={selectedQuizId}
+          selectedLesson={selectedLesson}
+          blockId={blockId}
+        />
       </div>
     </div>
   );
