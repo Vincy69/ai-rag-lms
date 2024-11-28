@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface LessonCompletionButtonProps {
   lessonId: string;
@@ -21,6 +22,7 @@ export function LessonCompletionButton({
 }: LessonCompletionButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const handleComplete = async () => {
     try {
@@ -72,6 +74,12 @@ export function LessonCompletionButton({
         .eq("block_id", blockId);
 
       if (blockError) throw blockError;
+
+      // Invalidate relevant queries to trigger UI updates
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["chapters-with-lessons", blockId] }),
+        queryClient.invalidateQueries({ queryKey: ["enrolled-blocks"] })
+      ]);
 
       toast({
         title: "Leçon terminée !",
