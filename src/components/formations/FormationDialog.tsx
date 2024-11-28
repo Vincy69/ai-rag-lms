@@ -45,6 +45,13 @@ export function FormationDialog({
             name,
             description,
             order_index
+          ),
+          quizzes (
+            id,
+            title,
+            description,
+            quiz_type,
+            chapter_id
           )
         `)
         .eq("formation_id", formationId)
@@ -57,6 +64,7 @@ export function FormationDialog({
         blocks: blocks.map((block) => ({
           ...block,
           skills: block.skills.sort((a, b) => a.order_index - b.order_index),
+          quizzes: block.quizzes || []
         })),
       };
     },
