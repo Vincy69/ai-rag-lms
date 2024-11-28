@@ -1,4 +1,4 @@
-import { Award, Check, GraduationCap } from "lucide-react";
+import { Award, Check, GraduationCap, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface QuizItemProps {
@@ -14,7 +14,8 @@ interface QuizItemProps {
 }
 
 export function QuizItem({ quiz, isSelected, score, onSelect, condensed = false }: QuizItemProps) {
-  const isCompleted = score !== undefined && score >= 70;
+  const isCompleted = score !== undefined;
+  const isPassed = score !== undefined && score >= 70;
   const icon = quiz.quiz_type === 'block_quiz' ? Award : GraduationCap;
   const Icon = icon;
 
@@ -29,17 +30,25 @@ export function QuizItem({ quiz, isSelected, score, onSelect, condensed = false 
       )}
     >
       <div className="flex items-center gap-2 flex-1">
-        <Icon className="h-4 w-4" />
+        <Icon className={cn(
+          "h-4 w-4",
+          isCompleted && (isPassed ? "text-green-500" : "text-red-500")
+        )} />
         <span>{quiz.title}</span>
       </div>
       <div className="flex items-center gap-2">
         {score !== undefined && (
-          <span className="text-xs text-muted-foreground">
+          <span className={cn(
+            "text-xs",
+            isPassed ? "text-green-500" : "text-red-500"
+          )}>
             {score}%
           </span>
         )}
         {isCompleted && (
-          <Check className="h-4 w-4 text-green-500" />
+          isPassed ? 
+            <Check className="h-4 w-4 text-green-500" /> :
+            <X className="h-4 w-4 text-red-500" />
         )}
       </div>
     </button>
