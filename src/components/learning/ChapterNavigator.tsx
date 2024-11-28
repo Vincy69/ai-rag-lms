@@ -56,7 +56,7 @@ export function ChapterNavigator({
         const chapterQuizzes = chapter.quizzes?.filter(quiz => 
           quiz.chapter_id === chapter.id && quiz.quiz_type === 'chapter_quiz'
         ) || [];
-        
+
         return (
           <div key={chapter.id} className="space-y-2">
             <button

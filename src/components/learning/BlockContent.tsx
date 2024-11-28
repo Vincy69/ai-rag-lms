@@ -72,7 +72,7 @@ export function BlockContent({ blockId, condensed = false }: BlockContentProps) 
         .eq("block_id", blockId)
         .order("order_index");
 
-      // Fetch all quizzes for this block
+      // Fetch all quizzes for this block, including chapter quizzes
       const { data: quizzesData } = await supabase
         .from("quizzes")
         .select("*")
@@ -89,11 +89,11 @@ export function BlockContent({ blockId, condensed = false }: BlockContentProps) 
       const completedLessons = new Set(completedLessonsData?.map(p => p.lesson_id) || []);
       const quizzes = quizzesData || [];
 
-      // Organize chapters with their respective quizzes (only chapter quizzes)
+      // Organize chapters with their respective quizzes
       const chaptersWithQuizzes = chaptersData?.map(chapter => ({
         ...chapter,
         lessons: chapter.lessons.sort((a, b) => a.order_index - b.order_index),
-        quizzes: quizzes.filter(q => q.chapter_id === chapter.id && q.quiz_type === 'chapter_quiz'),
+        quizzes: quizzes.filter(q => q.chapter_id === chapter.id),
         completedLessons: chapter.lessons.reduce(
           (acc, lesson) => acc + (completedLessons.has(lesson.id) ? 1 : 0),
           0
