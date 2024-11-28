@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Check, ChevronDown, ChevronUp, BookOpen, Award, GraduationCap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ChapterProgress } from "./ChapterProgress";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Lesson {
   id: string;
@@ -48,6 +50,27 @@ export function ChapterNavigator({
   const [expandedChapterId, setExpandedChapterId] = useState<string | null>(
     chapters.length > 0 ? chapters[0].id : null
   );
+
+  // Fetch completed quizzes
+  const { data: completedQuizzes } = useQuery({
+    queryKey: ["completed-quizzes"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return new Set<string>();
+
+      const { data: attempts } = await supabase
+        .from("quiz_attempts")
+        .select("quiz_id, score")
+        .eq("user_id", user.id)
+        .gte("score", 70); // Considérer comme complété si score >= 70
+
+      return new Set(attempts?.map(a => a.quiz_id) || []);
+    },
+  });
+
+  const isQuizCompleted = (quizId: string) => {
+    return completedQuizzes?.has(quizId) || false;
+  };
 
   return (
     <div className="space-y-2">
@@ -128,6 +151,9 @@ export function ChapterNavigator({
                       <GraduationCap className="h-4 w-4" />
                       <span>{quiz.title}</span>
                     </div>
+                    {isQuizCompleted(quiz.id) && (
+                      <Check className="h-4 w-4 text-green-500" />
+                    )}
                   </button>
                 ))}
               </div>
@@ -151,7 +177,10 @@ export function ChapterNavigator({
               )}
             >
               <Award className="h-5 w-5 text-primary" />
-              <span className="font-medium">{quiz.title}</span>
+              <span className="font-medium flex-1">{quiz.title}</span>
+              {isQuizCompleted(quiz.id) && (
+                <Check className="h-4 w-4 text-green-500" />
+              )}
             </button>
           ))}
         </div>
