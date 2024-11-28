@@ -56,13 +56,6 @@ export function BlockDetailsDialog({
     q.quiz_type === 'block_quiz'
   ) || [];
 
-  const totalChapterQuizzes = block.chapters?.reduce((acc, chapter) => {
-    const chapterQuizzes = chapter.quizzes?.filter(q => 
-      q.quiz_type === 'chapter_quiz' && q.chapter_id === chapter.id
-    ).length || 0;
-    return acc + chapterQuizzes;
-  }, 0);
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-6xl max-h-[90vh]">
@@ -108,25 +101,17 @@ export function BlockDetailsDialog({
                               block.chapters.reduce((acc, chapter) => acc + chapter.lessons.length, 0)
                             } leçons complétées
                           </span>
-                          <div className="flex items-center gap-4">
-                            {totalChapterQuizzes > 0 && (
-                              <span className="text-sm text-muted-foreground flex items-center gap-2">
-                                <GraduationCap className="w-4 h-4" />
-                                {totalChapterQuizzes} quiz{totalChapterQuizzes > 1 ? 's' : ''} de chapitre
-                              </span>
-                            )}
-                            {blockQuizzes.length > 0 && (
-                              <span className="text-sm text-primary flex items-center gap-2">
-                                <GraduationCap className="w-4 h-4" />
-                                {blockQuizzes.length} quiz{blockQuizzes.length > 1 ? 's' : ''} de bloc
-                              </span>
-                            )}
-                          </div>
+                          {blockQuizzes.length > 0 && (
+                            <span className="text-sm text-primary flex items-center gap-2">
+                              <GraduationCap className="w-4 h-4" />
+                              {blockQuizzes.length} quiz{blockQuizzes.length > 1 ? 's' : ''} de bloc
+                            </span>
+                          )}
                         </div>
                       </div>
                       <div className="space-y-4">
                         {block.chapters.map((chapter) => {
-                          // Filtrer les quiz pour ce chapitre spécifique
+                          // Filtrer les quiz pour ce chapitre spécifique uniquement
                           const chapterQuizzes = chapter.quizzes?.filter(q => 
                             q.quiz_type === 'chapter_quiz' && q.chapter_id === chapter.id
                           ) || [];
