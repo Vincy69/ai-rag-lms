@@ -7,9 +7,9 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, RotateCcw } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { FormationTimeline } from "@/components/learning/FormationTimeline";
+import { FormationProgress } from "@/components/learning/FormationProgress";
 import { BlockList } from "@/components/learning/BlockList";
-import { Block, BlocksByFormation } from "@/types/learning";
+import { Block } from "@/types/learning";
 
 export default function ELearning() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -55,44 +55,7 @@ export default function ELearning() {
 
       if (error) throw error;
 
-      // Group blocks by formation
-      const blocksByFormation = data.reduce((acc: BlocksByFormation, enrollment) => {
-        const formationName = enrollment.skill_blocks.formations?.name || "Sans formation";
-        if (!acc[formationName]) {
-          acc[formationName] = [];
-        }
-        
-        const totalLessons = enrollment.skill_blocks.chapters?.reduce(
-          (sum, chapter) => sum + (chapter.lessons?.length || 0), 
-          0
-        ) || 0;
-        
-        const totalQuizzes = enrollment.skill_blocks.chapters?.reduce(
-          (sum, chapter) => sum + (chapter.quizzes?.length || 0),
-          0
-        ) || 0;
-
-        acc[formationName].push({
-          id: enrollment.block_id,
-          name: enrollment.skill_blocks.name,
-          description: enrollment.skill_blocks.description,
-          orderIndex: enrollment.skill_blocks.order_index,
-          status: enrollment.status,
-          progress: enrollment.progress,
-          formationName,
-          totalLessons,
-          totalQuizzes,
-        });
-
-        return acc;
-      }, {});
-
-      // Sort blocks within each formation by order_index
-      Object.values(blocksByFormation).forEach(blocks => {
-        blocks.sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
-      });
-
-      return blocksByFormation;
+      return data;
     },
   });
 
@@ -149,13 +112,14 @@ export default function ELearning() {
 
   // Si aucun bloc n'est sélectionné, afficher la liste des UE
   if (!blockId) {
-    const allBlocks = Object.values(enrolledBlocks).flat();
+    const allBlocks = enrolledBlocks || [];
+    const totalProgress = allBlocks.reduce((acc, block) => acc + (block.progress || 0), 0) / allBlocks.length;
 
     return (
       <Layout>
         <div className="container mx-auto py-8 space-y-8">
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold">Mes UE</h1>
+            <h1 className="text-2xl font-bold">Ma formation</h1>
             <Button 
               variant="outline" 
               onClick={resetProgress}
@@ -166,10 +130,7 @@ export default function ELearning() {
             </Button>
           </div>
 
-          <FormationTimeline 
-            blocks={allBlocks}
-            onSelectBlock={(blockId) => setSearchParams({ blockId })}
-          />
+          <FormationProgress progress={totalProgress} />
 
           {Object.entries(enrolledBlocks).map(([formationName, blocks]) => (
             <BlockList
@@ -184,7 +145,7 @@ export default function ELearning() {
     );
   }
 
-  // Si un bloc est sélectionné, afficher le contenu avec la navigation en cascade
+  // Si un bloc est sélectionné, afficher son contenu
   return (
     <Layout>
       <div className="container mx-auto py-8">
@@ -193,7 +154,7 @@ export default function ELearning() {
             onClick={() => setSearchParams({})}
             className="text-sm text-muted-foreground hover:text-primary transition-colors"
           >
-            ← Retour aux UE
+            ← Retour à ma formation
           </button>
         </div>
         

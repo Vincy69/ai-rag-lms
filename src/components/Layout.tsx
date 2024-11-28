@@ -35,7 +35,7 @@ const mainNavItems: NavSection[] = [
     items: [
       { icon: User, label: "Mon compte", path: "/account" },
       { icon: MessageSquare, label: "Chat", path: "/chat" },
-      { icon: BookOpen, label: "E-Learning", path: "/elearning" },
+      { icon: BookOpen, label: "Ma formation", path: "/elearning" },
       { icon: GraduationCap, label: "Formations", path: "/formations" },
     ]
   },
