@@ -5,7 +5,6 @@ import { ChapterList } from "./ChapterList";
 import { LessonList } from "./LessonList";
 import { LessonContent } from "./LessonContent";
 import { Card } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { Loader2 } from "lucide-react";
 
 interface BlockContentProps {
@@ -15,6 +14,27 @@ interface BlockContentProps {
 export function BlockContent({ blockId }: BlockContentProps) {
   const [selectedChapterId, setSelectedChapterId] = useState<string | null>(null);
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
+
+  const { data: block } = useQuery({
+    queryKey: ["block", blockId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("skill_blocks")
+        .select(`
+          id,
+          name,
+          description,
+          formations (
+            name
+          )
+        `)
+        .eq("id", blockId)
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+  });
 
   const { data: chapters, isLoading: isLoadingChapters } = useQuery({
     queryKey: ["chapters", blockId],
@@ -64,7 +84,6 @@ export function BlockContent({ blockId }: BlockContentProps) {
     enabled: !!selectedLessonId,
   });
 
-  // Select first chapter and lesson by default
   useEffect(() => {
     if (chapters?.length && !selectedChapterId) {
       setSelectedChapterId(chapters[0].id);
@@ -86,53 +105,67 @@ export function BlockContent({ blockId }: BlockContentProps) {
   }
 
   return (
-    <div className="grid grid-cols-12 gap-6">
-      <Card className="col-span-3 p-4">
-        <h2 className="font-semibold mb-4">Chapitres</h2>
-        {chapters && (
-          <ChapterList
-            chapters={chapters}
-            onSelectChapter={(id) => {
-              setSelectedChapterId(id);
-              setSelectedLessonId(null);
-            }}
-            selectedChapterId={selectedChapterId || undefined}
-          />
-        )}
-      </Card>
-
-      <Card className="col-span-3 p-4">
-        <h2 className="font-semibold mb-4">Leçons</h2>
-        {isLoadingLessons ? (
-          <div className="flex items-center justify-center h-[calc(100vh-20rem)]">
-            <Loader2 className="w-6 h-6 animate-spin text-primary" />
-          </div>
-        ) : lessons && lessons.length > 0 ? (
-          <LessonList
-            lessons={lessons}
-            onSelectLesson={setSelectedLessonId}
-            selectedLessonId={selectedLessonId || undefined}
-          />
-        ) : (
-          <p className="text-muted-foreground text-sm">
-            Sélectionnez un chapitre pour voir ses leçons
+    <div>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold">{block?.name}</h1>
+        {block?.formations?.name && (
+          <p className="text-muted-foreground mt-1">
+            Formation : {block.formations.name}
           </p>
         )}
-      </Card>
-
-      <Card className="col-span-6 p-6">
-        {isLoadingLesson ? (
-          <div className="flex items-center justify-center h-[calc(100vh-20rem)]">
-            <Loader2 className="w-6 h-6 animate-spin text-primary" />
-          </div>
-        ) : selectedLesson ? (
-          <LessonContent lesson={selectedLesson} />
-        ) : (
-          <p className="text-muted-foreground text-sm">
-            Sélectionnez une leçon pour voir son contenu
-          </p>
+        {block?.description && (
+          <p className="text-muted-foreground mt-2">{block.description}</p>
         )}
-      </Card>
+      </div>
+
+      <div className="grid grid-cols-12 gap-6">
+        <Card className="col-span-3 p-4">
+          <h2 className="font-semibold mb-4">Chapitres</h2>
+          {chapters && (
+            <ChapterList
+              chapters={chapters}
+              onSelectChapter={(id) => {
+                setSelectedChapterId(id);
+                setSelectedLessonId(null);
+              }}
+              selectedChapterId={selectedChapterId || undefined}
+            />
+          )}
+        </Card>
+
+        <Card className="col-span-3 p-4">
+          <h2 className="font-semibold mb-4">Leçons</h2>
+          {isLoadingLessons ? (
+            <div className="flex items-center justify-center h-[calc(100vh-20rem)]">
+              <Loader2 className="w-6 h-6 animate-spin text-primary" />
+            </div>
+          ) : lessons && lessons.length > 0 ? (
+            <LessonList
+              lessons={lessons}
+              onSelectLesson={setSelectedLessonId}
+              selectedLessonId={selectedLessonId || undefined}
+            />
+          ) : (
+            <p className="text-muted-foreground text-sm">
+              Sélectionnez un chapitre pour voir ses leçons
+            </p>
+          )}
+        </Card>
+
+        <Card className="col-span-6 p-6">
+          {isLoadingLesson ? (
+            <div className="flex items-center justify-center h-[calc(100vh-20rem)]">
+              <Loader2 className="w-6 h-6 animate-spin text-primary" />
+            </div>
+          ) : selectedLesson ? (
+            <LessonContent lesson={selectedLesson} />
+          ) : (
+            <p className="text-muted-foreground text-sm">
+              Sélectionnez une leçon pour voir son contenu
+            </p>
+          )}
+        </Card>
+      </div>
     </div>
   );
 }
