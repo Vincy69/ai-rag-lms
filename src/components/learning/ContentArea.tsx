@@ -25,7 +25,7 @@ export function ContentArea({
 }: ContentAreaProps) {
   if (selectedQuizId) {
     return (
-      <Card className="border bg-card/50 h-[calc(100vh-8rem)] flex flex-col">
+      <Card className="h-[calc(100vh-8rem)] flex flex-col">
         <div className="flex-1 p-6 overflow-hidden">
           <QuizContent quizId={selectedQuizId} />
         </div>
@@ -35,7 +35,7 @@ export function ContentArea({
 
   if (selectedLesson) {
     return (
-      <Card className="border bg-card/50 h-[calc(100vh-8rem)] flex flex-col">
+      <Card className="h-[calc(100vh-8rem)] flex flex-col">
         <div className="flex-1 p-6 overflow-hidden">
           <LessonContent lesson={selectedLesson} />
         </div>
@@ -74,7 +74,7 @@ export function ContentArea({
   }
 
   return (
-    <Card className="border bg-card/50 h-[calc(100vh-8rem)] flex items-center justify-center p-6">
+    <Card className="h-[calc(100vh-8rem)] flex items-center justify-center p-6">
       <p className="text-muted-foreground text-sm text-center">
         Sélectionnez une leçon ou un quiz pour voir son contenu
       </p>
