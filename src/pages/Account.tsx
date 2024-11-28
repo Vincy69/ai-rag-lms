@@ -48,26 +48,37 @@ export default function Account() {
     const getProfile = async () => {
       try {
         setIsLoading(true);
+        console.log("Fetching session...");
         const { data: { session } } = await supabase.auth.getSession();
         
         if (!session?.user) {
+          console.log("No session found, redirecting to login");
           navigate("/login");
           return;
         }
 
         setEmail(session.user.email);
+        console.log("Session found for email:", session.user.email);
 
         // Fetch profile with role
+        console.log("Fetching profile data...");
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('role')
           .eq('id', session.user.id)
           .single();
 
-        if (profileError) throw profileError;
-        if (profileData) setRole(profileData.role as UserRole);
+        if (profileError) {
+          console.error("Profile fetch error:", profileError);
+          throw profileError;
+        }
+        if (profileData) {
+          console.log("Profile data found:", profileData);
+          setRole(profileData.role as UserRole);
+        }
 
         // First, get all formations the user is enrolled in
+        console.log("Fetching enrollments...");
         const { data: enrollments, error: enrollmentsError } = await supabase
           .from('formation_enrollments')
           .select(`
@@ -82,11 +93,17 @@ export default function Account() {
           `)
           .eq('user_id', session.user.id);
 
-        if (enrollmentsError) throw enrollmentsError;
+        if (enrollmentsError) {
+          console.error("Enrollments fetch error:", enrollmentsError);
+          throw enrollmentsError;
+        }
+
+        console.log("Enrollments found:", enrollments);
 
         // For each formation, get the blocks and their progress
         const formationsWithProgress = await Promise.all(
           enrollments.map(async (enrollment) => {
+            console.log("Fetching blocks for formation:", enrollment.formation_id);
             // Get blocks for this formation
             const { data: blocks, error: blocksError } = await supabase
               .from('skill_blocks')
@@ -111,7 +128,12 @@ export default function Account() {
               .eq('formation_id', enrollment.formation_id)
               .eq('block_enrollments.user_id', session.user.id);
 
-            if (blocksError) throw blocksError;
+            if (blocksError) {
+              console.error("Blocks fetch error:", blocksError);
+              throw blocksError;
+            }
+
+            console.log("Blocks found:", blocks);
 
             return {
               id: enrollment.formation_id,
@@ -137,6 +159,7 @@ export default function Account() {
           })
         );
 
+        console.log("Final formations with progress:", formationsWithProgress);
         setFormations(formationsWithProgress);
 
       } catch (error) {
@@ -208,7 +231,7 @@ export default function Account() {
           </CardContent>
         </Card>
 
-        {formations.length > 0 && (
+        {formations.length > 0 ? (
           <div className="space-y-6">
             <h2 className="text-xl font-semibold">Mes formations</h2>
             <div className="space-y-6">
@@ -217,6 +240,14 @@ export default function Account() {
               ))}
             </div>
           </div>
+        ) : (
+          <Card>
+            <CardContent className="py-8">
+              <p className="text-center text-muted-foreground">
+                Vous n'êtes inscrit à aucune formation pour le moment.
+              </p>
+            </CardContent>
+          </Card>
         )}
       </div>
     </Layout>
