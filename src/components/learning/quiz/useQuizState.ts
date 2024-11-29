@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { QuizAttemptState, QuizQuestion } from './types';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 
 export function useQuizState(questions: QuizQuestion[] | undefined) {
@@ -12,16 +11,12 @@ export function useQuizState(questions: QuizQuestion[] | undefined) {
   const handleAnswer = async (
     questionId: string, 
     selectedAnswerId: string, 
-    isCorrect: boolean,
-    skillId: string | null
+    isCorrect: boolean
   ) => {
-    const isFirstAttempt = !attempts[questionId];
-    
     setAttempts(prev => ({
       ...prev,
       [questionId]: {
         selectedAnswerId,
-        isFirstAttempt,
         isCorrect
       }
     }));
@@ -37,10 +32,10 @@ export function useQuizState(questions: QuizQuestion[] | undefined) {
 
   const calculateScore = () => {
     if (!questions) return 0;
-    const correctFirstAttempts = questions.filter(q => 
-      attempts[q.id]?.isFirstAttempt && attempts[q.id]?.isCorrect
+    const correctAnswers = questions.filter(q => 
+      attempts[q.id]?.isCorrect
     ).length;
-    return Math.round((correctFirstAttempts / questions.length) * 100);
+    return Math.round((correctAnswers / questions.length) * 100);
   };
 
   return {
