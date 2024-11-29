@@ -58,22 +58,35 @@ export function BlockList({ formationName, blocks, onSelectBlock }: BlockListPro
           return (
             <Card
               key={block.id}
-              className="group hover:shadow-md transition-all duration-300"
+              className="group hover:shadow-md transition-all duration-300 bg-card/50 hover:bg-card"
             >
               <CardContent className="p-6">
                 <div className="space-y-6">
                   {/* Header */}
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors shrink-0">
                       <BookOpen className="w-5 h-5 text-primary" />
                     </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold line-clamp-1">{block.name}</h3>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-base leading-tight mb-1 line-clamp-2 group-hover:text-primary transition-colors">
+                        {block.name}
+                      </h3>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <span className="flex items-center gap-1.5">
+                          <BookOpen className="w-4 h-4" />
+                          {block.totalLessons}
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                          <GraduationCap className="w-4 h-4" />
+                          {block.totalQuizzes}
+                        </span>
+                      </div>
                     </div>
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => onSelectBlock(block.id)}
+                      className="shrink-0"
                     >
                       <ChevronRight className="w-4 h-4" />
                     </Button>
@@ -83,23 +96,14 @@ export function BlockList({ formationName, blocks, onSelectBlock }: BlockListPro
                   <div className="space-y-2">
                     <Progress value={block.progress} className="h-2" />
                     <div className="flex justify-between text-sm text-muted-foreground">
-                      <div className="flex items-center gap-4">
-                        <span className="flex items-center gap-2">
-                          <BookOpen className="w-4 h-4" />
-                          {block.totalLessons} leçons
-                        </span>
-                        <span className="flex items-center gap-2">
-                          <GraduationCap className="w-4 h-4" />
-                          {block.totalQuizzes} quiz
-                        </span>
-                      </div>
+                      <span>Progression</span>
                       <span>{Math.round(block.progress)}%</span>
                     </div>
                   </div>
 
                   {/* Quiz Final Score */}
                   {finalQuizScore !== undefined && (
-                    <div className="flex items-center gap-2 text-sm">
+                    <div className="flex items-center gap-2 text-sm border-t border-border/50 pt-4">
                       <Trophy className={cn(
                         "w-4 h-4",
                         finalQuizScore >= 70 ? "text-yellow-500" : "text-muted-foreground"
@@ -109,7 +113,7 @@ export function BlockList({ formationName, blocks, onSelectBlock }: BlockListPro
                   )}
 
                   {block.description && (
-                    <p className="text-sm text-muted-foreground line-clamp-2">
+                    <p className="text-sm text-muted-foreground line-clamp-2 border-t border-border/50 pt-4">
                       {block.description}
                     </p>
                   )}
