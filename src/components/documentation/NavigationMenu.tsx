@@ -1,37 +1,35 @@
 import { cn } from "@/lib/utils";
 import { Link } from "react-scroll";
 
-interface NavItem {
-  id: string;
-  label: string;
-}
-
-const navItems: NavItem[] = [
-  { id: "description", label: "Description" },
-  { id: "database", label: "Base de données" },
-];
-
 export function NavigationMenu() {
+  const sections = [
+    { id: "description", label: "Description" },
+    { id: "quiz-progression", label: "Quiz & Progression" },
+    { id: "database", label: "Base de données" },
+  ];
+
   return (
-    <nav className="sticky top-4 space-y-1 mb-8">
-      {navItems.map((item) => (
-        <Link
-          key={item.id}
-          to={item.id}
-          spy={true}
-          smooth={true}
-          offset={-100}
-          duration={500}
-          className={cn(
-            "flex items-center px-3 py-2 text-sm rounded-lg cursor-pointer transition-colors",
-            "hover:bg-accent hover:text-accent-foreground",
-            "active:bg-accent/80"
-          )}
-          activeClass="bg-accent text-accent-foreground"
-        >
-          {item.label}
-        </Link>
-      ))}
-    </nav>
+    <div className="space-y-4 sticky top-8">
+      <h2 className="text-lg font-semibold">Sections</h2>
+      <nav className="space-y-2">
+        {sections.map((section) => (
+          <Link
+            key={section.id}
+            to={section.id}
+            spy={true}
+            smooth={true}
+            offset={-100}
+            duration={500}
+            className={cn(
+              "block p-2 rounded-lg hover:bg-accent cursor-pointer",
+              "transition-colors duration-200"
+            )}
+            activeClass="bg-accent"
+          >
+            {section.label}
+          </Link>
+        ))}
+      </nav>
+    </div>
   );
 }

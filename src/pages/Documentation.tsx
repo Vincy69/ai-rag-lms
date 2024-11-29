@@ -2,6 +2,7 @@ import Layout from "@/components/Layout";
 import { NavigationMenu } from "@/components/documentation/NavigationMenu";
 import { Description } from "@/components/documentation/Description";
 import { DatabaseSection } from "@/components/documentation/DatabaseSection";
+import { QuizProgressSection } from "@/components/documentation/QuizProgressSection";
 
 export default function Documentation() {
   return (
@@ -21,6 +22,10 @@ export default function Documentation() {
               <Description />
             </div>
             
+            <div id="quiz-progression">
+              <QuizProgressSection />
+            </div>
+
             <div id="database">
               <DatabaseSection />
             </div>
