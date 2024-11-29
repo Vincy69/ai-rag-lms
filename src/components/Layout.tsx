@@ -12,7 +12,8 @@ import {
   Menu,
   ChevronLeft,
   ChevronRight,
-  MessageSquare
+  MessageSquare,
+  FileText
 } from "lucide-react";
 import { Header } from "./Header";
 import { supabase } from "@/integrations/supabase/client";
@@ -45,6 +46,7 @@ const mainNavItems: NavSection[] = [
       { icon: UploadIcon, label: "Upload", path: "/upload" },
       { icon: Files, label: "Documents", path: "/documents" },
       { icon: History, label: "Historique", path: "/history" },
+      { icon: FileText, label: "Documentation", path: "/documentation" },
       { icon: Settings, label: "Administration", path: "/admin" },
     ]
   }
