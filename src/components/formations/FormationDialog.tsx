@@ -93,11 +93,13 @@ export function FormationDialog({
         .from("formation_enrollments")
         .select("*")
         .eq("formation_id", formationId)
-        .eq("user_id", user.id)
-        .single();
+        .eq("user_id", user.id);
 
+      // If there's an error that's not "no rows returned", throw it
       if (error && error.code !== 'PGRST116') throw error;
-      return data;
+      
+      // Return the first enrollment if it exists, null otherwise
+      return data && data.length > 0 ? data[0] : null;
     },
     enabled: !!formationId,
   });
