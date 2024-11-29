@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { useQuizState } from "./hooks/useQuizState";
 import { QuizQuestion } from "./QuizQuestion";
 import { QuizResult } from "./QuizResult";
-import { QuizQuestion as QuizQuestionType } from "./types/quiz";
+import { QuizQuestion as QuizQuestionType } from "./types";
 
 interface QuizContentProps {
   quizId: string;
