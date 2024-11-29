@@ -7,13 +7,6 @@ import {
 import { Award, BookOpen, Check, GraduationCap, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface Skill {
-  id: string;
-  name: string;
-  description: string | null;
-  order_index: number;
-}
-
 interface Quiz {
   id: string;
   title: string;
@@ -28,7 +21,6 @@ interface Block {
   name: string;
   description: string | null;
   order_index: number;
-  skills: Skill[];
   quizzes: Quiz[];
 }
 
@@ -47,17 +39,16 @@ interface FormationContentProps {
 // Fonction utilitaire pour normaliser les noms de blocs
 const normalizeBlockName = (name: string): string => {
   return name.toLowerCase()
-    .replace(/[:\-–—]/g, '') // Supprime les caractères spéciaux
-    .replace(/\s+et\s+.*$/, '') // Supprime tout ce qui suit "et"
-    .replace(/ue\s*(\d+).*$/i, 'ue$1') // Garde uniquement "UEX" où X est un nombre
-    .replace(/\s+/g, '') // Supprime tous les espaces
-    .trim(); // Supprime les espaces au début et à la fin
+    .replace(/[:\-–—]/g, '')
+    .replace(/\s+et\s+.*$/, '')
+    .replace(/ue\s*(\d+).*$/i, 'ue$1')
+    .replace(/\s+/g, '')
+    .trim();
 };
 
 // Vérifie si un bloc a du contenu
 const hasContent = (block: Block): boolean => {
-  return (block.skills && block.skills.length > 0) || 
-         (block.quizzes && block.quizzes.length > 0);
+  return block.quizzes && block.quizzes.length > 0;
 };
 
 // Fonction pour regrouper les blocs similaires
@@ -71,19 +62,9 @@ const getUniqueBlocks = (blocks: Block[]): Block[] => {
       const existingBlock = blockMap.get(normalizedName);
       
       if (!existingBlock || (block.order_index < existingBlock.order_index)) {
-        // Fusionner avec le bloc existant s'il existe
-        const mergedSkills = existingBlock 
-          ? [...existingBlock.skills, ...block.skills]
-          : block.skills;
-        
         const mergedQuizzes = existingBlock
           ? [...existingBlock.quizzes, ...block.quizzes]
           : block.quizzes;
-
-        // Dédupliquer les skills et quizzes par ID
-        const uniqueSkills = Array.from(
-          new Map(mergedSkills.map(skill => [skill.id, skill])).values()
-        ).sort((a, b) => a.order_index - b.order_index);
 
         const uniqueQuizzes = Array.from(
           new Map(mergedQuizzes.map(quiz => [quiz.id, quiz])).values()
@@ -91,7 +72,6 @@ const getUniqueBlocks = (blocks: Block[]): Block[] => {
 
         blockMap.set(normalizedName, {
           ...block,
-          skills: uniqueSkills,
           quizzes: uniqueQuizzes
         });
       }
@@ -127,24 +107,6 @@ export function FormationContent({ formation }: FormationContentProps) {
                       {block.description}
                     </p>
                   )}
-
-                  {/* Skills Section */}
-                  <div className="space-y-2">
-                    <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
-                      <BookOpen className="h-4 w-4 text-primary" />
-                      Compétences à acquérir
-                    </h4>
-                    <div className="grid gap-2">
-                      {block.skills.map((skill) => (
-                        <div
-                          key={skill.id}
-                          className="text-sm p-3 rounded-lg bg-secondary/50 hover:bg-secondary/70 transition-colors"
-                        >
-                          {skill.name}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
 
                   {/* Quizzes Section */}
                   {block.quizzes && block.quizzes.length > 0 && (
