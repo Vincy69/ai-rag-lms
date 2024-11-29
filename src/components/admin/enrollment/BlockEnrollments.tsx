@@ -21,8 +21,7 @@ export function BlockEnrollments({ user, isLoading: isLoadingAction }: BlockEnro
         .select(`
           id,
           name,
-          formation_id,
-          block_enrollments!inner (
+          block_enrollments!left (
             id,
             user_id
           )

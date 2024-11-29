@@ -16,19 +16,19 @@ export function FormationEnrollments({ user, isLoading: isLoadingAction }: Forma
   const { data: formations, isLoading } = useQuery({
     queryKey: ["formations", user.id],
     queryFn: async () => {
-      const { data, error } = await supabaseAdmin
+      const { data: formationsData, error: formationsError } = await supabaseAdmin
         .from("formations")
         .select(`
           id,
           name,
-          formation_enrollments!inner (
+          formation_enrollments!left (
             id,
             user_id
           )
         `);
 
-      if (error) throw error;
-      return data;
+      if (formationsError) throw formationsError;
+      return formationsData;
     },
   });
 
