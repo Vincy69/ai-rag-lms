@@ -68,9 +68,19 @@ export function BlockList({ formationName, blocks, onSelectBlock }: BlockListPro
                       <BookOpen className="w-5 h-5 text-primary" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-base leading-tight mb-1 line-clamp-2 group-hover:text-primary transition-colors">
-                        {block.name}
-                      </h3>
+                      <div className="flex items-start justify-between gap-2">
+                        <h3 className="font-semibold text-base leading-tight mb-1 line-clamp-3 group-hover:text-primary transition-colors">
+                          {block.name}
+                        </h3>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => onSelectBlock(block.id)}
+                          className="shrink-0 mt-[-4px]"
+                        >
+                          <ChevronRight className="w-4 h-4" />
+                        </Button>
+                      </div>
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <span className="flex items-center gap-1.5">
                           <BookOpen className="w-4 h-4" />
@@ -82,14 +92,6 @@ export function BlockList({ formationName, blocks, onSelectBlock }: BlockListPro
                         </span>
                       </div>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => onSelectBlock(block.id)}
-                      className="shrink-0"
-                    >
-                      <ChevronRight className="w-4 h-4" />
-                    </Button>
                   </div>
 
                   {/* Progress */}
