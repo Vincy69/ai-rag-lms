@@ -53,7 +53,6 @@ export function QuizContent({ quizId }: QuizContentProps) {
 
       return questionsData?.map(q => ({
         ...q,
-        // Limit to 4 answers maximum and randomize their order
         answers: (q.quiz_answers || [])
           .sort(() => Math.random() - 0.5)
           .slice(0, 4)
@@ -72,7 +71,6 @@ export function QuizContent({ quizId }: QuizContentProps) {
     calculateScore
   } = useQuizState(questions);
 
-  // If quiz is already completed, show the result directly
   if (existingAttempt) {
     return (
       <QuizResult 
@@ -136,9 +134,12 @@ export function QuizContent({ quizId }: QuizContentProps) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
+      // Ensure score is between 0 and 100
+      const scorePercentage = Math.min(Math.max(Math.round(score), 0), 100);
+
       await supabase.from("quiz_attempts").insert({
         quiz_id: quizId,
-        score: score,
+        score: scorePercentage,
         user_id: user.id,
         is_completed: true
       });
