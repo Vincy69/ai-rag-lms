@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { QuizAttemptState, QuizQuestion } from '../types/quiz';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 
 export function useQuizState(questions: QuizQuestion[] | undefined) {
@@ -12,8 +11,7 @@ export function useQuizState(questions: QuizQuestion[] | undefined) {
   const handleAnswer = async (
     questionId: string, 
     selectedAnswerId: string, 
-    isCorrect: boolean,
-    skillId: string | null
+    isCorrect: boolean
   ) => {
     const isFirstAttempt = !attempts[questionId];
     

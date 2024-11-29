@@ -3,7 +3,6 @@ export interface QuizQuestion {
   question: string;
   explanation: string | null;
   order_index: number;
-  skill_id: string | null;
   answers: {
     id: string;
     answer: string;
