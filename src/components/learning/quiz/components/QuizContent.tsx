@@ -5,12 +5,31 @@ import { useQuizState } from "../hooks/useQuizState";
 import { QuizQuestion } from "./QuizQuestion";
 import { QuizResult } from "./QuizResult";
 import { QuizQuestion as QuizQuestionType } from "../types/quiz";
+import { useEffect } from "react";
 
 interface QuizContentProps {
   quizId: string;
 }
 
 export function QuizContent({ quizId }: QuizContentProps) {
+  const { data: existingAttempt } = useQuery({
+    queryKey: ["quiz-attempt", quizId],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+
+      const { data } = await supabase
+        .from("quiz_attempts")
+        .select("*")
+        .eq("quiz_id", quizId)
+        .eq("user_id", user.id)
+        .eq("is_completed", true)
+        .single();
+
+      return data;
+    },
+  });
+
   const { data: questions } = useQuery({
     queryKey: ["quiz-questions", quizId],
     queryFn: async () => {
@@ -34,9 +53,11 @@ export function QuizContent({ quizId }: QuizContentProps) {
 
       return questionsData?.map(q => ({
         ...q,
+        // Limit to 4 answers maximum and randomize their order
         answers: (q.quiz_answers || [])
-          .sort((a, b) => a.order_index - b.order_index)
+          .sort(() => Math.random() - 0.5)
           .slice(0, 4)
+          .sort((a, b) => a.order_index - b.order_index)
       })) as QuizQuestionType[] || [];
     },
   });
@@ -50,6 +71,17 @@ export function QuizContent({ quizId }: QuizContentProps) {
     handleAnswer,
     calculateScore
   } = useQuizState(questions);
+
+  // If quiz is already completed, show the result directly
+  if (existingAttempt) {
+    return (
+      <QuizResult 
+        score={existingAttempt.score}
+        totalQuestions={questions?.length || 0}
+        correctAnswers={Math.round((existingAttempt.score / 100) * (questions?.length || 0))}
+      />
+    );
+  }
 
   if (!questions?.length) {
     return (
@@ -107,7 +139,8 @@ export function QuizContent({ quizId }: QuizContentProps) {
       await supabase.from("quiz_attempts").insert({
         quiz_id: quizId,
         score: score,
-        user_id: user.id
+        user_id: user.id,
+        is_completed: true
       });
     }
   };
