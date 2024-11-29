@@ -46,6 +46,7 @@ export function BlockContent({ blockId, condensed = false }: BlockContentProps) 
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      // Modifié la requête pour inclure plus de détails sur les leçons
       const { data: chaptersData } = await supabase
         .from("chapters")
         .select(`
@@ -56,8 +57,15 @@ export function BlockContent({ blockId, condensed = false }: BlockContentProps) 
           lessons (
             id,
             title,
+            content,
             duration,
             order_index
+          ),
+          quizzes (
+            id,
+            title,
+            description,
+            quiz_type
           )
         `)
         .eq("block_id", blockId)
@@ -89,9 +97,9 @@ export function BlockContent({ blockId, condensed = false }: BlockContentProps) 
 
       const chaptersWithQuizzes = chaptersData?.map(chapter => ({
         ...chapter,
-        lessons: chapter.lessons.sort((a, b) => a.order_index - b.order_index),
+        lessons: (chapter.lessons || []).sort((a, b) => a.order_index - b.order_index),
         quizzes: quizzes.filter(q => q.chapter_id === chapter.id),
-        completedLessons: chapter.lessons.reduce(
+        completedLessons: (chapter.lessons || []).reduce(
           (acc, lesson) => acc + (completedLessons.has(lesson.id) ? 1 : 0),
           0
         )
@@ -99,10 +107,8 @@ export function BlockContent({ blockId, condensed = false }: BlockContentProps) 
 
       const blockQuizzes = quizzes.filter(q => q.quiz_type === 'block_quiz');
 
-      // Calculate block progress
       const progress = calculateBlockProgress(chaptersWithQuizzes, blockQuizzes, quizScores);
 
-      // Update block progress in database
       await supabase
         .from("block_enrollments")
         .update({ progress })
