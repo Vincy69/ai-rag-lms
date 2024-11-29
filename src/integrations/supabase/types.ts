@@ -15,6 +15,7 @@ export type Database = {
           completed_at: string | null
           enrolled_at: string
           id: string
+          last_accessed: string | null
           progress: number | null
           status: string
           user_id: string
@@ -24,6 +25,7 @@ export type Database = {
           completed_at?: string | null
           enrolled_at?: string
           id?: string
+          last_accessed?: string | null
           progress?: number | null
           status?: string
           user_id: string
@@ -33,6 +35,7 @@ export type Database = {
           completed_at?: string | null
           enrolled_at?: string
           id?: string
+          last_accessed?: string | null
           progress?: number | null
           status?: string
           user_id?: string
@@ -195,6 +198,7 @@ export type Database = {
           enrolled_at: string
           formation_id: string
           id: string
+          last_accessed: string | null
           progress: number | null
           status: string
           user_id: string
@@ -204,6 +208,7 @@ export type Database = {
           enrolled_at?: string
           formation_id: string
           id?: string
+          last_accessed?: string | null
           progress?: number | null
           status?: string
           user_id: string
@@ -213,6 +218,7 @@ export type Database = {
           enrolled_at?: string
           formation_id?: string
           id?: string
+          last_accessed?: string | null
           progress?: number | null
           status?: string
           user_id?: string
@@ -277,6 +283,7 @@ export type Database = {
           created_at: string | null
           id: string
           is_completed: boolean | null
+          last_accessed: string | null
           lesson_id: string
           user_id: string
         }
@@ -287,6 +294,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           is_completed?: boolean | null
+          last_accessed?: string | null
           lesson_id: string
           user_id: string
         }
@@ -297,6 +305,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           is_completed?: boolean | null
+          last_accessed?: string | null
           lesson_id?: string
           user_id?: string
         }

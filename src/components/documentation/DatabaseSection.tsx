@@ -1,5 +1,102 @@
 import { Card } from "@/components/ui/card";
-import { Database, ArrowRight, Key } from "lucide-react";
+import { Database, ArrowRight } from "lucide-react";
+import { TableSection } from "./TableSection";
+
+const mainTables = [
+  {
+    name: "formations",
+    description: "Table principale des formations",
+    columns: [
+      { name: "name", type: "text", required: true },
+      { name: "description", type: "text" },
+      { name: "category", type: "text", required: true, description: "FK vers categories.name" },
+      { name: "created_at", type: "timestamp", required: true, description: "auto" },
+      { name: "updated_at", type: "timestamp", required: true, description: "auto" }
+    ]
+  },
+  {
+    name: "skill_blocks",
+    description: "Blocs de compétences",
+    columns: [
+      { name: "formation_id", type: "uuid", required: true, description: "FK vers formations.id" },
+      { name: "name", type: "text", required: true },
+      { name: "description", type: "text" },
+      { name: "order_index", type: "integer", required: true },
+      { name: "created_at", type: "timestamp", required: true, description: "auto" },
+      { name: "updated_at", type: "timestamp", required: true, description: "auto" }
+    ]
+  }
+];
+
+const structureTables = [
+  {
+    name: "chapters",
+    description: "Chapitres des blocs",
+    columns: [
+      { name: "block_id", type: "uuid", required: true, description: "FK vers skill_blocks.id" },
+      { name: "title", type: "text", required: true },
+      { name: "description", type: "text" },
+      { name: "order_index", type: "integer", required: true },
+      { name: "created_at", type: "timestamp", required: true, description: "auto" },
+      { name: "updated_at", type: "timestamp", required: true, description: "auto" }
+    ]
+  },
+  {
+    name: "lessons",
+    description: "Leçons des chapitres",
+    columns: [
+      { name: "chapter_id", type: "uuid", required: true, description: "FK vers chapters.id" },
+      { name: "title", type: "text", required: true },
+      { name: "content", type: "text", required: true },
+      { name: "duration", type: "integer", description: "en minutes" },
+      { name: "order_index", type: "integer", required: true },
+      { name: "created_at", type: "timestamp", required: true, description: "auto" },
+      { name: "updated_at", type: "timestamp", required: true, description: "auto" }
+    ]
+  }
+];
+
+const userTrackingTables = [
+  {
+    name: "formation_enrollments",
+    description: "Inscriptions aux formations",
+    columns: [
+      { name: "user_id", type: "uuid", required: true, description: "FK vers profiles.id" },
+      { name: "formation_id", type: "uuid", required: true, description: "FK vers formations.id" },
+      { name: "status", type: "text", required: true, description: "défaut: 'in_progress'" },
+      { name: "progress", type: "float" },
+      { name: "enrolled_at", type: "timestamp", required: true, description: "auto" },
+      { name: "completed_at", type: "timestamp" },
+      { name: "last_accessed", type: "timestamp", description: "dernière interaction" }
+    ]
+  },
+  {
+    name: "block_enrollments",
+    description: "Inscriptions aux blocs",
+    columns: [
+      { name: "user_id", type: "uuid", required: true, description: "FK vers profiles.id" },
+      { name: "block_id", type: "uuid", required: true, description: "FK vers skill_blocks.id" },
+      { name: "status", type: "text", required: true, description: "défaut: 'in_progress'" },
+      { name: "progress", type: "float" },
+      { name: "enrolled_at", type: "timestamp", required: true, description: "auto" },
+      { name: "completed_at", type: "timestamp" },
+      { name: "last_accessed", type: "timestamp", description: "dernière interaction" }
+    ]
+  },
+  {
+    name: "lesson_progress",
+    description: "Progression des leçons",
+    columns: [
+      { name: "user_id", type: "uuid", required: true, description: "FK vers profiles.id" },
+      { name: "lesson_id", type: "uuid", required: true, description: "FK vers lessons.id" },
+      { name: "chapter_id", type: "uuid", required: true, description: "FK vers chapters.id" },
+      { name: "block_id", type: "uuid", required: true, description: "FK vers skill_blocks.id" },
+      { name: "is_completed", type: "boolean", description: "défaut: false" },
+      { name: "completed_at", type: "timestamp" },
+      { name: "last_accessed", type: "timestamp", description: "dernière interaction" }
+    ]
+  }
+];
 
 export function DatabaseSection() {
   return (
@@ -13,240 +110,9 @@ export function DatabaseSection() {
         <Card className="doc-card">
           <h3 className="doc-subtitle">Tables principales</h3>
           <div className="prose prose-invert max-w-none">
-            <h4 className="text-foreground/90 font-medium mt-4 mb-3">Formations et Blocs</h4>
-            <ul className="doc-list">
-              <li className="doc-list-item">
-                <ArrowRight className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                <div>
-                  <span className="doc-link">formations</span>
-                  <span className="ml-2">Table principale des formations</span>
-                  <ul className="mt-2 space-y-1.5 text-sm">
-                    <li className="flex items-start gap-2">
-                      <Key className="h-4 w-4 text-primary mt-0.5" />
-                      <span className="font-medium">id</span>
-                      <span className="text-muted-foreground">(uuid, PK, auto-généré)</span>
-                    </li>
-                    <li>• name <span className="text-muted-foreground">(text, obligatoire)</span></li>
-                    <li>• description <span className="text-muted-foreground">(text, optionnel)</span></li>
-                    <li>• category <span className="text-muted-foreground">(text, FK vers categories.name)</span></li>
-                    <li>• created_at <span className="text-muted-foreground">(timestamp, auto)</span></li>
-                    <li>• updated_at <span className="text-muted-foreground">(timestamp, auto)</span></li>
-                  </ul>
-                </div>
-              </li>
-              <li className="doc-list-item">
-                <ArrowRight className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                <div>
-                  <span className="doc-link">skill_blocks</span>
-                  <span className="ml-2">Blocs de compétences</span>
-                  <ul className="mt-2 space-y-1.5 text-sm">
-                    <li className="flex items-start gap-2">
-                      <Key className="h-4 w-4 text-primary mt-0.5" />
-                      <span className="font-medium">id</span>
-                      <span className="text-muted-foreground">(uuid, PK, auto-généré)</span>
-                    </li>
-                    <li>• formation_id <span className="text-muted-foreground">(uuid, FK vers formations.id)</span></li>
-                    <li>• name <span className="text-muted-foreground">(text, obligatoire)</span></li>
-                    <li>• description <span className="text-muted-foreground">(text, optionnel)</span></li>
-                    <li>• order_index <span className="text-muted-foreground">(integer, obligatoire)</span></li>
-                    <li>• created_at <span className="text-muted-foreground">(timestamp, auto)</span></li>
-                    <li>• updated_at <span className="text-muted-foreground">(timestamp, auto)</span></li>
-                  </ul>
-                </div>
-              </li>
-            </ul>
-
-            <h4 className="text-foreground/90 font-medium mt-6 mb-3">Structure pédagogique</h4>
-            <ul className="doc-list">
-              <li className="doc-list-item">
-                <ArrowRight className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                <div>
-                  <span className="doc-link">chapters</span>
-                  <span className="ml-2">Chapitres des blocs</span>
-                  <ul className="mt-2 space-y-1.5 text-sm">
-                    <li className="flex items-start gap-2">
-                      <Key className="h-4 w-4 text-primary mt-0.5" />
-                      <span className="font-medium">id</span>
-                      <span className="text-muted-foreground">(uuid, PK, auto-généré)</span>
-                    </li>
-                    <li>• block_id <span className="text-muted-foreground">(uuid, FK vers skill_blocks.id)</span></li>
-                    <li>• title <span className="text-muted-foreground">(text, obligatoire)</span></li>
-                    <li>• description <span className="text-muted-foreground">(text, optionnel)</span></li>
-                    <li>• order_index <span className="text-muted-foreground">(integer, obligatoire)</span></li>
-                    <li>• created_at <span className="text-muted-foreground">(timestamp, auto)</span></li>
-                    <li>• updated_at <span className="text-muted-foreground">(timestamp, auto)</span></li>
-                  </ul>
-                </div>
-              </li>
-              <li className="doc-list-item">
-                <ArrowRight className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                <div>
-                  <span className="doc-link">lessons</span>
-                  <span className="ml-2">Leçons des chapitres</span>
-                  <ul className="mt-2 space-y-1.5 text-sm">
-                    <li className="flex items-start gap-2">
-                      <Key className="h-4 w-4 text-primary mt-0.5" />
-                      <span className="font-medium">id</span>
-                      <span className="text-muted-foreground">(uuid, PK, auto-généré)</span>
-                    </li>
-                    <li>• chapter_id <span className="text-muted-foreground">(uuid, FK vers chapters.id)</span></li>
-                    <li>• title <span className="text-muted-foreground">(text, obligatoire)</span></li>
-                    <li>• content <span className="text-muted-foreground">(text, obligatoire)</span></li>
-                    <li>• duration <span className="text-muted-foreground">(integer, optionnel, en minutes)</span></li>
-                    <li>• order_index <span className="text-muted-foreground">(integer, obligatoire)</span></li>
-                    <li>• created_at <span className="text-muted-foreground">(timestamp, auto)</span></li>
-                    <li>• updated_at <span className="text-muted-foreground">(timestamp, auto)</span></li>
-                  </ul>
-                </div>
-              </li>
-            </ul>
-
-            <h4 className="text-foreground/90 font-medium mt-6 mb-3">Évaluation et Quiz</h4>
-            <ul className="doc-list">
-              <li className="doc-list-item">
-                <ArrowRight className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                <div>
-                  <span className="doc-link">quizzes</span>
-                  <span className="ml-2">Quiz (chapitre ou bloc)</span>
-                  <ul className="mt-2 space-y-1.5 text-sm">
-                    <li className="flex items-start gap-2">
-                      <Key className="h-4 w-4 text-primary mt-0.5" />
-                      <span className="font-medium">id</span>
-                      <span className="text-muted-foreground">(uuid, PK, auto-généré)</span>
-                    </li>
-                    <li>• block_id <span className="text-muted-foreground">(uuid, FK vers skill_blocks.id)</span></li>
-                    <li>• chapter_id <span className="text-muted-foreground">(uuid, FK vers chapters.id, optionnel)</span></li>
-                    <li>• title <span className="text-muted-foreground">(text, obligatoire)</span></li>
-                    <li>• description <span className="text-muted-foreground">(text, optionnel)</span></li>
-                    <li>• quiz_type <span className="text-muted-foreground">(text, obligatoire)</span></li>
-                    <li>• created_at <span className="text-muted-foreground">(timestamp, auto)</span></li>
-                    <li>• updated_at <span className="text-muted-foreground">(timestamp, auto)</span></li>
-                  </ul>
-                </div>
-              </li>
-              <li className="doc-list-item">
-                <ArrowRight className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                <div>
-                  <span className="doc-link">quiz_questions</span>
-                  <span className="ml-2">Questions des quiz</span>
-                  <ul className="mt-2 space-y-1.5 text-sm">
-                    <li className="flex items-start gap-2">
-                      <Key className="h-4 w-4 text-primary mt-0.5" />
-                      <span className="font-medium">id</span>
-                      <span className="text-muted-foreground">(uuid, PK, auto-généré)</span>
-                    </li>
-                    <li>• quiz_id <span className="text-muted-foreground">(uuid, FK vers quizzes.id)</span></li>
-                    <li>• question <span className="text-muted-foreground">(text, obligatoire)</span></li>
-                    <li>• explanation <span className="text-muted-foreground">(text, optionnel)</span></li>
-                    <li>• order_index <span className="text-muted-foreground">(integer, obligatoire)</span></li>
-                    <li>• created_at <span className="text-muted-foreground">(timestamp, auto)</span></li>
-                  </ul>
-                </div>
-              </li>
-              <li className="doc-list-item">
-                <ArrowRight className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                <div>
-                  <span className="doc-link">quiz_answers</span>
-                  <span className="ml-2">Réponses aux questions</span>
-                  <ul className="mt-2 space-y-1.5 text-sm">
-                    <li className="flex items-start gap-2">
-                      <Key className="h-4 w-4 text-primary mt-0.5" />
-                      <span className="font-medium">id</span>
-                      <span className="text-muted-foreground">(uuid, PK, auto-généré)</span>
-                    </li>
-                    <li>• question_id <span className="text-muted-foreground">(uuid, FK vers quiz_questions.id)</span></li>
-                    <li>• answer <span className="text-muted-foreground">(text, obligatoire)</span></li>
-                    <li>• is_correct <span className="text-muted-foreground">(boolean, obligatoire)</span></li>
-                    <li>• explanation <span className="text-muted-foreground">(text, obligatoire)</span></li>
-                    <li>• order_index <span className="text-muted-foreground">(integer, obligatoire)</span></li>
-                    <li>• created_at <span className="text-muted-foreground">(timestamp, auto)</span></li>
-                  </ul>
-                </div>
-              </li>
-            </ul>
-
-            <h4 className="text-foreground/90 font-medium mt-6 mb-3">Suivi des utilisateurs</h4>
-            <ul className="doc-list">
-              <li className="doc-list-item">
-                <ArrowRight className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                <div>
-                  <span className="doc-link">profiles</span>
-                  <span className="ml-2">Profils utilisateurs</span>
-                  <ul className="mt-2 space-y-1.5 text-sm">
-                    <li className="flex items-start gap-2">
-                      <Key className="h-4 w-4 text-primary mt-0.5" />
-                      <span className="font-medium">id</span>
-                      <span className="text-muted-foreground">(uuid, PK, FK vers auth.users.id)</span>
-                    </li>
-                    <li>• first_name <span className="text-muted-foreground">(text, optionnel)</span></li>
-                    <li>• last_name <span className="text-muted-foreground">(text, optionnel)</span></li>
-                    <li>• role <span className="text-muted-foreground">(enum: student, teacher, manager, admin)</span></li>
-                    <li>• created_at <span className="text-muted-foreground">(timestamp, auto)</span></li>
-                  </ul>
-                </div>
-              </li>
-              <li className="doc-list-item">
-                <ArrowRight className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                <div>
-                  <span className="doc-link">formation_enrollments</span>
-                  <span className="ml-2">Inscriptions aux formations</span>
-                  <ul className="mt-2 space-y-1.5 text-sm">
-                    <li className="flex items-start gap-2">
-                      <Key className="h-4 w-4 text-primary mt-0.5" />
-                      <span className="font-medium">id</span>
-                      <span className="text-muted-foreground">(uuid, PK, auto-généré)</span>
-                    </li>
-                    <li>• user_id <span className="text-muted-foreground">(uuid, FK vers profiles.id)</span></li>
-                    <li>• formation_id <span className="text-muted-foreground">(uuid, FK vers formations.id)</span></li>
-                    <li>• status <span className="text-muted-foreground">(text, défaut: 'in_progress')</span></li>
-                    <li>• progress <span className="text-muted-foreground">(float, optionnel)</span></li>
-                    <li>• enrolled_at <span className="text-muted-foreground">(timestamp, auto)</span></li>
-                    <li>• completed_at <span className="text-muted-foreground">(timestamp, optionnel)</span></li>
-                  </ul>
-                </div>
-              </li>
-              <li className="doc-list-item">
-                <ArrowRight className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                <div>
-                  <span className="doc-link">block_enrollments</span>
-                  <span className="ml-2">Inscriptions aux blocs</span>
-                  <ul className="mt-2 space-y-1.5 text-sm">
-                    <li className="flex items-start gap-2">
-                      <Key className="h-4 w-4 text-primary mt-0.5" />
-                      <span className="font-medium">id</span>
-                      <span className="text-muted-foreground">(uuid, PK, auto-généré)</span>
-                    </li>
-                    <li>• user_id <span className="text-muted-foreground">(uuid, FK vers profiles.id)</span></li>
-                    <li>• block_id <span className="text-muted-foreground">(uuid, FK vers skill_blocks.id)</span></li>
-                    <li>• status <span className="text-muted-foreground">(text, défaut: 'in_progress')</span></li>
-                    <li>• progress <span className="text-muted-foreground">(float, optionnel)</span></li>
-                    <li>• enrolled_at <span className="text-muted-foreground">(timestamp, auto)</span></li>
-                    <li>• completed_at <span className="text-muted-foreground">(timestamp, optionnel)</span></li>
-                  </ul>
-                </div>
-              </li>
-              <li className="doc-list-item">
-                <ArrowRight className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                <div>
-                  <span className="doc-link">lesson_progress</span>
-                  <span className="ml-2">Progression des leçons</span>
-                  <ul className="mt-2 space-y-1.5 text-sm">
-                    <li className="flex items-start gap-2">
-                      <Key className="h-4 w-4 text-primary mt-0.5" />
-                      <span className="font-medium">id</span>
-                      <span className="text-muted-foreground">(uuid, PK, auto-généré)</span>
-                    </li>
-                    <li>• user_id <span className="text-muted-foreground">(uuid, FK vers profiles.id)</span></li>
-                    <li>• lesson_id <span className="text-muted-foreground">(uuid, FK vers lessons.id)</span></li>
-                    <li>• chapter_id <span className="text-muted-foreground">(uuid, FK vers chapters.id)</span></li>
-                    <li>• block_id <span className="text-muted-foreground">(uuid, FK vers skill_blocks.id)</span></li>
-                    <li>• is_completed <span className="text-muted-foreground">(boolean, défaut: false)</span></li>
-                    <li>• completed_at <span className="text-muted-foreground">(timestamp, optionnel)</span></li>
-                    <li>• created_at <span className="text-muted-foreground">(timestamp, auto)</span></li>
-                  </ul>
-                </div>
-              </li>
-            </ul>
+            <TableSection title="Formations et Blocs" tables={mainTables} />
+            <TableSection title="Structure pédagogique" tables={structureTables} />
+            <TableSection title="Suivi des utilisateurs" tables={userTrackingTables} />
           </div>
         </Card>
 
