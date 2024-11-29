@@ -1,8 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { BookOpen, ChevronRight, GraduationCap, Trophy } from "lucide-react";
+import { BookOpen, GraduationCap, Trophy } from "lucide-react";
 import { Block } from "@/types/learning";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -58,44 +57,31 @@ export function BlockList({ formationName, blocks, onSelectBlock }: BlockListPro
           return (
             <Card
               key={block.id}
-              className="group hover:shadow-md transition-all duration-300 bg-card/50 hover:bg-card"
+              className="group hover:shadow-md transition-all duration-300 bg-card/50 hover:bg-card cursor-pointer"
+              onClick={() => onSelectBlock(block.id)}
             >
               <CardContent className="p-6">
                 <div className="space-y-6">
                   {/* Header */}
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors shrink-0">
-                      <BookOpen className="w-5 h-5 text-primary" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2">
-                        <h3 className="font-semibold text-base leading-tight mb-1 line-clamp-3 group-hover:text-primary transition-colors">
-                          {block.name}
-                        </h3>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => onSelectBlock(block.id)}
-                          className="shrink-0 mt-[-4px]"
-                        >
-                          <ChevronRight className="w-4 h-4" />
-                        </Button>
-                      </div>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1.5">
-                          <BookOpen className="w-4 h-4" />
-                          {block.totalLessons}
-                        </span>
-                        <span className="flex items-center gap-1.5">
-                          <GraduationCap className="w-4 h-4" />
-                          {block.totalQuizzes}
-                        </span>
-                      </div>
+                  <div className="space-y-2">
+                    <h3 className="font-semibold text-base leading-tight mb-1 line-clamp-3 group-hover:text-primary transition-colors">
+                      {block.name}
+                    </h3>
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <span>{block.totalLessons} leçons</span>
+                      <span>{block.totalQuizzes} quiz</span>
                     </div>
                   </div>
 
+                  {/* Description if exists */}
+                  {block.description && (
+                    <p className="text-sm text-muted-foreground line-clamp-2 border-t border-border/50 pt-4">
+                      {block.description}
+                    </p>
+                  )}
+
                   {/* Progress */}
-                  <div className="space-y-2">
+                  <div className="space-y-2 pt-2">
                     <Progress value={block.progress} className="h-2" />
                     <div className="flex justify-between text-sm text-muted-foreground">
                       <span>Progression</span>
@@ -112,12 +98,6 @@ export function BlockList({ formationName, blocks, onSelectBlock }: BlockListPro
                       )} />
                       <span>Quiz final : {finalQuizScore}%</span>
                     </div>
-                  )}
-
-                  {block.description && (
-                    <p className="text-sm text-muted-foreground line-clamp-2 border-t border-border/50 pt-4">
-                      {block.description}
-                    </p>
                   )}
                 </div>
               </CardContent>
