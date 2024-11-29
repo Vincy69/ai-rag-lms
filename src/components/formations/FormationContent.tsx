@@ -4,7 +4,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Award, BookOpen, Check, GraduationCap } from "lucide-react";
+import { Award, BookOpen, Check, GraduationCap, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Skill {
@@ -20,6 +20,7 @@ interface Quiz {
   description: string | null;
   quiz_type: 'chapter_quiz' | 'block_quiz';
   chapter_id: string | null;
+  score?: number;
 }
 
 interface Block {
@@ -153,24 +154,47 @@ export function FormationContent({ formation }: FormationContentProps) {
                         Évaluations
                       </h4>
                       <div className="grid gap-2">
-                        {block.quizzes.map((quiz) => (
-                          <div
-                            key={quiz.id}
-                            className={cn(
-                              "flex items-center gap-3 text-sm p-3 rounded-lg transition-colors",
-                              quiz.quiz_type === 'block_quiz' 
-                                ? "bg-primary/10 hover:bg-primary/20" 
-                                : "bg-secondary/50 hover:bg-secondary/70"
-                            )}
-                          >
-                            {quiz.quiz_type === 'block_quiz' ? (
-                              <Award className="h-4 w-4 text-primary" />
-                            ) : (
-                              <GraduationCap className="h-4 w-4 text-primary" />
-                            )}
-                            <span className="flex-1">{quiz.title}</span>
-                          </div>
-                        ))}
+                        {block.quizzes.map((quiz) => {
+                          const isCompleted = quiz.score !== undefined;
+                          const isPassed = quiz.score !== undefined && quiz.score >= 70;
+                          
+                          return (
+                            <div
+                              key={quiz.id}
+                              className={cn(
+                                "flex items-center gap-3 text-sm p-3 rounded-lg transition-colors",
+                                quiz.quiz_type === 'block_quiz' 
+                                  ? "bg-primary/10 hover:bg-primary/20" 
+                                  : "bg-secondary/50 hover:bg-secondary/70"
+                              )}
+                            >
+                              {quiz.quiz_type === 'block_quiz' ? (
+                                <Award className={cn(
+                                  "h-4 w-4",
+                                  isCompleted ? (isPassed ? "text-green-500" : "text-red-500") : "text-primary"
+                                )} />
+                              ) : (
+                                <GraduationCap className="h-4 w-4 text-primary" />
+                              )}
+                              <span className="flex-1">{quiz.title}</span>
+                              {isCompleted && (
+                                <>
+                                  <span className={cn(
+                                    "text-xs",
+                                    isPassed ? "text-green-500" : "text-red-500"
+                                  )}>
+                                    {quiz.score}%
+                                  </span>
+                                  {isPassed ? (
+                                    <Check className="h-4 w-4 text-green-500" />
+                                  ) : (
+                                    <X className="h-4 w-4 text-red-500" />
+                                  )}
+                                </>
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   )}
