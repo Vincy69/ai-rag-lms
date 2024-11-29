@@ -13,13 +13,10 @@ export function useQuizState(questions: QuizQuestion[] | undefined) {
     selectedAnswerId: string, 
     isCorrect: boolean
   ) => {
-    const isFirstAttempt = !attempts[questionId];
-    
     setAttempts(prev => ({
       ...prev,
       [questionId]: {
         selectedAnswerId,
-        isFirstAttempt,
         isCorrect
       }
     }));
@@ -35,10 +32,10 @@ export function useQuizState(questions: QuizQuestion[] | undefined) {
 
   const calculateScore = () => {
     if (!questions) return 0;
-    const correctFirstAttempts = questions.filter(q => 
-      attempts[q.id]?.isFirstAttempt && attempts[q.id]?.isCorrect
+    const correctAnswers = questions.filter(q => 
+      attempts[q.id]?.isCorrect
     ).length;
-    return correctFirstAttempts / questions.length;
+    return correctAnswers / questions.length;
   };
 
   return {

@@ -36,7 +36,6 @@ export function QuizContent({ quizId }: QuizContentProps) {
         ...q,
         answers: (q.quiz_answers || [])
           .sort((a, b) => a.order_index - b.order_index)
-          .slice(0, 4)
       })) as QuizQuestionType[] || [];
     },
   });
@@ -64,7 +63,7 @@ export function QuizContent({ quizId }: QuizContentProps) {
   if (quizCompleted) {
     const score = calculateScore();
     const correctAnswers = questions.filter(q => 
-      attempts[q.id]?.isFirstAttempt && attempts[q.id]?.isCorrect
+      attempts[q.id]?.isCorrect
     ).length;
 
     return (
@@ -104,13 +103,14 @@ export function QuizContent({ quizId }: QuizContentProps) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Convertir le score en pourcentage pour la base de données
+      // Convertir le score en pourcentage
       const scorePercentage = Math.round(score * 100);
 
       await supabase.from("quiz_attempts").insert({
         quiz_id: quizId,
         score: scorePercentage,
-        user_id: user.id
+        user_id: user.id,
+        is_completed: true
       });
     }
   };
