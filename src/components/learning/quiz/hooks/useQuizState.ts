@@ -31,11 +31,15 @@ export function useQuizState(questions: QuizQuestion[] | undefined) {
   };
 
   const calculateScore = () => {
-    if (!questions) return 0;
+    if (!questions || questions.length === 0) return 0;
+    
     const correctAnswers = questions.filter(q => 
       attempts[q.id]?.isCorrect
     ).length;
-    return Math.round((correctAnswers / questions.length) * 100);
+    
+    // Calculate percentage and ensure it's an integer between 0 and 100
+    const percentage = Math.round((correctAnswers / questions.length) * 100);
+    return Math.min(Math.max(percentage, 0), 100);
   };
 
   return {
