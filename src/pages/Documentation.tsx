@@ -1,132 +1,120 @@
 import Layout from "@/components/Layout";
 import { Card } from "@/components/ui/card";
+import { ArrowRight } from "lucide-react";
 
 export default function Documentation() {
   return (
     <Layout>
-      <div className="container mx-auto py-8">
-        <h1 className="text-2xl font-bold mb-6">Documentation</h1>
+      <div className="container mx-auto py-8 max-w-4xl">
+        <h1 className="text-3xl font-bold mb-8 text-foreground">Documentation</h1>
         
-        <div className="space-y-8">
-          <section>
-            <h2 className="text-xl font-semibold mb-4">Base de données Supabase</h2>
+        <div className="space-y-10">
+          <section className="doc-section">
+            <h2 className="doc-title">Base de données Supabase</h2>
             
             <div className="space-y-6">
-              <Card className="p-6">
-                <h3 className="text-lg font-medium mb-4">Tables principales</h3>
-                <div className="prose dark:prose-invert max-w-none">
-                  <h4>Formations et Blocs</h4>
-                  <ul>
-                    <li><strong>formations</strong> : Table principale des formations
-                      <ul>
-                        <li>Liée à <code>categories</code> via <code>category</code></li>
-                        <li>Contient : nom, description, catégorie</li>
-                      </ul>
+              <Card className="doc-card">
+                <h3 className="doc-subtitle">Tables principales</h3>
+                <div className="prose prose-invert max-w-none">
+                  <h4 className="text-foreground/90 font-medium mt-4 mb-3">Formations et Blocs</h4>
+                  <ul className="doc-list">
+                    <li className="doc-list-item">
+                      <ArrowRight className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                      <div>
+                        <span className="doc-link">formations</span>
+                        <span className="ml-2">Table principale des formations</span>
+                        <ul className="mt-2 space-y-1.5 text-sm">
+                          <li>Liée à <span className="doc-link">categories</span> via <span className="doc-link">category</span></li>
+                          <li>Contient : nom, description, catégorie</li>
+                        </ul>
+                      </div>
                     </li>
-                    <li><strong>skill_blocks</strong> : Blocs de compétences
-                      <ul>
-                        <li>Liée à <code>formations</code> via <code>formation_id</code></li>
-                        <li>Contient : nom, description, ordre</li>
-                      </ul>
-                    </li>
-                  </ul>
-
-                  <h4>Structure pédagogique</h4>
-                  <ul>
-                    <li><strong>chapters</strong> : Chapitres des blocs
-                      <ul>
-                        <li>Liée à <code>skill_blocks</code> via <code>block_id</code></li>
-                        <li>Contient : titre, description, ordre</li>
-                      </ul>
-                    </li>
-                    <li><strong>lessons</strong> : Leçons des chapitres
-                      <ul>
-                        <li>Liée à <code>chapters</code> via <code>chapter_id</code></li>
-                        <li>Contient : titre, contenu, durée, ordre</li>
-                      </ul>
+                    <li className="doc-list-item">
+                      <ArrowRight className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                      <div>
+                        <span className="doc-link">skill_blocks</span>
+                        <span className="ml-2">Blocs de compétences</span>
+                        <ul className="mt-2 space-y-1.5 text-sm">
+                          <li>Liée à <span className="doc-link">formations</span> via <span className="doc-link">formation_id</span></li>
+                          <li>Contient : nom, description, ordre</li>
+                        </ul>
+                      </div>
                     </li>
                   </ul>
 
-                  <h4>Évaluation et Quiz</h4>
-                  <ul>
-                    <li><strong>quizzes</strong> : Quiz (chapitre ou bloc)
-                      <ul>
-                        <li>Liée à <code>chapters</code> via <code>chapter_id</code> (optionnel)</li>
-                        <li>Liée à <code>skill_blocks</code> via <code>block_id</code></li>
-                      </ul>
+                  <h4 className="text-foreground/90 font-medium mt-6 mb-3">Structure pédagogique</h4>
+                  <ul className="doc-list">
+                    <li className="doc-list-item">
+                      <ArrowRight className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                      <div>
+                        <span className="doc-link">chapters</span>
+                        <span className="ml-2">Chapitres des blocs</span>
+                        <ul className="mt-2 space-y-1.5 text-sm">
+                          <li>Liée à <span className="doc-link">skill_blocks</span> via <span className="doc-link">block_id</span></li>
+                          <li>Contient : titre, description, ordre</li>
+                        </ul>
+                      </div>
                     </li>
-                    <li><strong>quiz_questions</strong> : Questions des quiz
-                      <ul>
-                        <li>Liée à <code>quizzes</code> via <code>quiz_id</code></li>
-                      </ul>
-                    </li>
-                    <li><strong>quiz_answers</strong> : Réponses aux questions
-                      <ul>
-                        <li>Liée à <code>quiz_questions</code> via <code>question_id</code></li>
-                      </ul>
-                    </li>
-                  </ul>
-
-                  <h4>Suivi des utilisateurs</h4>
-                  <ul>
-                    <li><strong>profiles</strong> : Profils utilisateurs
-                      <ul>
-                        <li>Liée à <code>auth.users</code> via <code>id</code></li>
-                        <li>Contient : rôle, nom, prénom</li>
-                      </ul>
-                    </li>
-                    <li><strong>formation_enrollments</strong> : Inscriptions aux formations
-                      <ul>
-                        <li>Liée à <code>profiles</code> via <code>user_id</code></li>
-                        <li>Liée à <code>formations</code> via <code>formation_id</code></li>
-                      </ul>
-                    </li>
-                    <li><strong>block_enrollments</strong> : Inscriptions aux blocs
-                      <ul>
-                        <li>Liée à <code>profiles</code> via <code>user_id</code></li>
-                        <li>Liée à <code>skill_blocks</code> via <code>block_id</code></li>
-                      </ul>
-                    </li>
-                    <li><strong>lesson_progress</strong> : Progression dans les leçons
-                      <ul>
-                        <li>Liée à <code>profiles</code> via <code>user_id</code></li>
-                        <li>Liée à <code>lessons</code> via <code>lesson_id</code></li>
-                      </ul>
-                    </li>
-                    <li><strong>quiz_attempts</strong> : Tentatives de quiz
-                      <ul>
-                        <li>Liée à <code>profiles</code> via <code>user_id</code></li>
-                        <li>Liée à <code>quizzes</code> via <code>quiz_id</code></li>
-                      </ul>
+                    <li className="doc-list-item">
+                      <ArrowRight className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                      <div>
+                        <span className="doc-link">lessons</span>
+                        <span className="ml-2">Leçons des chapitres</span>
+                        <ul className="mt-2 space-y-1.5 text-sm">
+                          <li>Liée à <span className="doc-link">chapters</span> via <span className="doc-link">chapter_id</span></li>
+                          <li>Contient : titre, contenu, durée, ordre</li>
+                        </ul>
+                      </div>
                     </li>
                   </ul>
 
-                  <h4>Gestion documentaire</h4>
-                  <ul>
-                    <li><strong>categories</strong> : Catégories de documents
-                      <ul>
-                        <li>Utilisée par <code>documents</code> et <code>formations</code></li>
-                      </ul>
+                  <h4 className="text-foreground/90 font-medium mt-6 mb-3">Évaluation et Quiz</h4>
+                  <ul className="doc-list">
+                    <li className="doc-list-item">
+                      <ArrowRight className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                      <div>
+                        <span className="doc-link">quizzes</span>
+                        <span className="ml-2">Quiz (chapitre ou bloc)</span>
+                        <ul className="mt-2 space-y-1.5 text-sm">
+                          <li>Liée à <span className="doc-link">chapters</span> via <span className="doc-link">chapter_id</span> (optionnel)</li>
+                          <li>Liée à <span className="doc-link">skill_blocks</span> via <span className="doc-link">block_id</span></li>
+                        </ul>
+                      </div>
                     </li>
-                    <li><strong>documents</strong> : Documents
-                      <ul>
-                        <li>Liée à <code>categories</code> via <code>category</code></li>
-                      </ul>
+                    <li className="doc-list-item">
+                      <ArrowRight className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                      <div>
+                        <span className="doc-link">quiz_questions</span>
+                        <span className="ml-2">Questions des quiz</span>
+                        <ul className="mt-2 space-y-1.5 text-sm">
+                          <li>Liée à <span className="doc-link">quizzes</span> via <span className="doc-link">quiz_id</span></li>
+                        </ul>
+                      </div>
+                    </li>
+                    <li className="doc-list-item">
+                      <ArrowRight className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                      <div>
+                        <span className="doc-link">quiz_answers</span>
+                        <span className="ml-2">Réponses aux questions</span>
+                        <ul className="mt-2 space-y-1.5 text-sm">
+                          <li>Liée à <span className="doc-link">quiz_questions</span> via <span className="doc-link">question_id</span></li>
+                        </ul>
+                      </div>
                     </li>
                   </ul>
                 </div>
               </Card>
 
-              <Card className="p-6">
-                <h3 className="text-lg font-medium mb-4">Relations clés</h3>
-                <div className="prose dark:prose-invert max-w-none">
-                  <ul>
-                    <li>Une formation contient plusieurs blocs de compétences</li>
-                    <li>Un bloc contient plusieurs chapitres</li>
-                    <li>Un chapitre contient plusieurs leçons</li>
-                    <li>Les quiz peuvent être attachés à un chapitre ou à un bloc</li>
-                    <li>Les utilisateurs peuvent s'inscrire à plusieurs formations</li>
-                    <li>La progression est suivie au niveau des leçons et des quiz</li>
+              <Card className="doc-card">
+                <h3 className="doc-subtitle">Relations clés</h3>
+                <div className="prose prose-invert max-w-none">
+                  <ul className="space-y-2 text-foreground/80">
+                    <li>• Une formation contient plusieurs blocs de compétences</li>
+                    <li>• Un bloc contient plusieurs chapitres</li>
+                    <li>• Un chapitre contient plusieurs leçons</li>
+                    <li>• Les quiz peuvent être attachés à un chapitre ou à un bloc</li>
+                    <li>• Les utilisateurs peuvent s'inscrire à plusieurs formations</li>
+                    <li>• La progression est suivie au niveau des leçons et des quiz</li>
                   </ul>
                 </div>
               </Card>

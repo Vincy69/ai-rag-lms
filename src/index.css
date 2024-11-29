@@ -15,7 +15,7 @@
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
     --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted-foreground: 215 20.2% 85%;
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
@@ -39,4 +39,36 @@
 
 .glass {
   @apply bg-black/40 backdrop-blur-sm;
+}
+
+.doc-link {
+  @apply text-primary hover:text-primary/80 transition-colors font-mono px-1.5 py-0.5 bg-muted rounded;
+}
+
+.doc-section {
+  @apply space-y-4;
+}
+
+.doc-title {
+  @apply text-xl font-semibold text-foreground/90 mb-2;
+}
+
+.doc-subtitle {
+  @apply text-lg font-medium text-foreground/90 mt-6 mb-3;
+}
+
+.doc-text {
+  @apply text-foreground/80 leading-relaxed;
+}
+
+.doc-list {
+  @apply space-y-3 ml-4;
+}
+
+.doc-list-item {
+  @apply flex items-start space-x-2 text-foreground/80;
+}
+
+.doc-card {
+  @apply p-6 rounded-lg border bg-card/50 backdrop-blur-sm;
 }
