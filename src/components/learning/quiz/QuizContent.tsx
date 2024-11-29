@@ -21,7 +21,6 @@ export function QuizContent({ quizId }: QuizContentProps) {
           question,
           explanation,
           order_index,
-          skill_id,
           quiz_answers (
             id,
             answer,
@@ -37,8 +36,7 @@ export function QuizContent({ quizId }: QuizContentProps) {
         ...q,
         answers: (q.quiz_answers || [])
           .sort((a, b) => a.order_index - b.order_index)
-          .slice(0, 4),
-        skill_id: q.skill_id || null
+          .slice(0, 4)
       })) as QuizQuestionType[] || [];
     },
   });
@@ -90,15 +88,13 @@ export function QuizContent({ quizId }: QuizContentProps) {
     await handleAnswer(
       currentQuestion.id,
       answerId,
-      selectedAnswer.is_correct,
-      currentQuestion.skill_id
+      selectedAnswer.is_correct
     );
   };
 
   const handleNext = async () => {
-    // Ensure we have an answer before proceeding
     if (!currentAttempt?.selectedAnswerId) return;
-
+    
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
     } else {

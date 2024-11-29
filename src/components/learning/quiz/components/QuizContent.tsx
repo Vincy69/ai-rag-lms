@@ -21,7 +21,6 @@ export function QuizContent({ quizId }: QuizContentProps) {
           question,
           explanation,
           order_index,
-          skill_id,
           quiz_answers (
             id,
             answer,
@@ -30,13 +29,14 @@ export function QuizContent({ quizId }: QuizContentProps) {
             order_index
           )
         `)
-        .eq("quiz_id", quizId)  // Filtrer les questions par quiz_id
+        .eq("quiz_id", quizId)
         .order("order_index");
 
       return questionsData?.map(q => ({
         ...q,
-        answers: q.quiz_answers.sort((a, b) => a.order_index - b.order_index),
-        skill_id: q.skill_id || null // Ensure skill_id is always present
+        answers: (q.quiz_answers || [])
+          .sort((a, b) => a.order_index - b.order_index)
+          .slice(0, 4)
       })) as QuizQuestionType[] || [];
     },
   });
@@ -54,7 +54,9 @@ export function QuizContent({ quizId }: QuizContentProps) {
   if (!questions?.length) {
     return (
       <Card className="p-6">
-        <p className="text-muted-foreground">Aucune question trouvée pour ce quiz.</p>
+        <p className="text-muted-foreground">
+          Aucune question trouvée pour ce quiz.
+        </p>
       </Card>
     );
   }
@@ -86,12 +88,13 @@ export function QuizContent({ quizId }: QuizContentProps) {
     await handleAnswer(
       currentQuestion.id,
       answerId,
-      selectedAnswer.is_correct,
-      currentQuestion.skill_id
+      selectedAnswer.is_correct
     );
   };
 
   const handleNext = async () => {
+    if (!currentAttempt?.selectedAnswerId) return;
+    
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
     } else {
@@ -101,15 +104,11 @@ export function QuizContent({ quizId }: QuizContentProps) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { error } = await supabase.from("quiz_attempts").insert({
+      await supabase.from("quiz_attempts").insert({
         quiz_id: quizId,
         score: score,
         user_id: user.id
       });
-
-      if (error) {
-        console.error('Error saving quiz attempt:', error);
-      }
     }
   };
 
