@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { QuizAttemptState, QuizQuestion } from '../types';
+import { QuizAttemptState, QuizQuestion } from '../types/quiz';
 import { useToast } from '@/components/ui/use-toast';
 
 export function useQuizState(questions: QuizQuestion[] | undefined) {
@@ -35,7 +35,7 @@ export function useQuizState(questions: QuizQuestion[] | undefined) {
     const correctAnswers = questions.filter(q => 
       attempts[q.id]?.isCorrect
     ).length;
-    return correctAnswers / questions.length;
+    return Math.round((correctAnswers / questions.length) * 100);
   };
 
   return {

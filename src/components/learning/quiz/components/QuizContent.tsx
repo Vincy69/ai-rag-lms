@@ -64,7 +64,7 @@ export function QuizContent({ quizId }: QuizContentProps) {
   if (quizCompleted) {
     const score = calculateScore();
     const correctAnswers = questions.filter(q => 
-      attempts[q.id]?.isFirstAttempt && attempts[q.id]?.isCorrect
+      attempts[q.id]?.isCorrect
     ).length;
 
     return (
