@@ -104,9 +104,12 @@ export function QuizContent({ quizId }: QuizContentProps) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
+      // Convertir le score en pourcentage pour la base de données
+      const scorePercentage = Math.round(score * 100);
+
       await supabase.from("quiz_attempts").insert({
         quiz_id: quizId,
-        score: score,
+        score: scorePercentage,
         user_id: user.id
       });
     }
