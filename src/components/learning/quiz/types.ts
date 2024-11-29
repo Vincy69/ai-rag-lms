@@ -15,7 +15,6 @@ export interface QuizQuestion {
 export interface QuizAttemptState {
   [questionId: string]: {
     selectedAnswerId: string | null;
-    isFirstAttempt: boolean;
     isCorrect: boolean;
   };
 }
