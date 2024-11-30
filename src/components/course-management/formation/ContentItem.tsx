@@ -114,7 +114,7 @@ export function ContentItem({ item, isBeingDragged }: ContentItemProps) {
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="h-9"
+              className="h-9 min-w-[300px]"
               onClick={(e) => e.stopPropagation()}
             />
             <Button
