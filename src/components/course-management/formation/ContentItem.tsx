@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
+import { LessonDialog } from "../dialogs/LessonDialog";
 
 interface ContentItemProps {
   item: {
@@ -15,14 +16,15 @@ interface ContentItemProps {
     title: string;
     type: 'lesson' | 'quiz';
     duration?: number | null;
+    content?: string;
   };
   isBeingDragged?: boolean;
   onEdit?: (item: any) => void;
 }
 
-export function ContentItem({ item, isBeingDragged, onEdit }: ContentItemProps) {
+export function ContentItem({ item, isBeingDragged }: ContentItemProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [title, setTitle] = useState(item.title);
+  const [showLessonDialog, setShowLessonDialog] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -42,147 +44,64 @@ export function ContentItem({ item, isBeingDragged, onEdit }: ContentItemProps) 
 
   const Icon = item.type === 'lesson' ? BookOpen : ClipboardList;
 
-  const handleSave = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    const table = item.type === 'lesson' ? 'lessons' : 'quizzes';
-    const { error } = await supabase
-      .from(table)
-      .update({ title })
-      .eq('id', item.id);
+  const handleDelete = async () => {
+    try {
+      const table = item.type === 'lesson' ? 'lessons' : 'quizzes';
+      const { error } = await supabase
+        .from(table)
+        .delete()
+        .eq('id', item.id);
 
-    if (error) {
+      if (error) throw error;
+
+      await queryClient.invalidateQueries({ queryKey: ["formation-blocks"] });
+      
       toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la modification",
-        variant: "destructive",
+        title: "Suppression réussie",
+        description: "L'élément a été supprimé avec succès",
       });
-      return;
-    }
-
-    await queryClient.invalidateQueries({ queryKey: ["formation-blocks"] });
-    setIsEditing(false);
-    toast({
-      title: "Modification réussie",
-      description: "Le titre a été modifié avec succès",
-    });
-  };
-
-  const handleDelete = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    const table = item.type === 'lesson' ? 'lessons' : 'quizzes';
-    const { error } = await supabase
-      .from(table)
-      .delete()
-      .eq('id', item.id);
-
-    if (error) {
+    } catch (error) {
+      console.error("Error deleting item:", error);
       toast({
         title: "Erreur",
         description: "Une erreur est survenue lors de la suppression",
         variant: "destructive",
       });
-      return;
-    }
-
-    await queryClient.invalidateQueries({ queryKey: ["formation-blocks"] });
-    toast({
-      title: "Suppression réussie",
-      description: "L'élément a été supprimé avec succès",
-    });
-  };
-
-  const handleCancel = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsEditing(false);
-    setTitle(item.title);
-  };
-
-  const handleEdit = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (onEdit) {
-      onEdit(item);
-    } else {
-      setIsEditing(true);
     }
   };
 
-  const handleInputClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.stopPropagation();
-    setTitle(e.target.value);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    e.stopPropagation();
-    
-    if (e.key === 'Enter') {
-      handleSave(e as any);
-    } else if (e.key === 'Escape') {
-      handleCancel(e as any);
+  const handleEdit = () => {
+    if (item.type === 'lesson') {
+      setShowLessonDialog(true);
     }
   };
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={cn(
-        "flex items-center gap-2 rounded-lg border bg-background p-3",
-        isDragging && "opacity-50",
-        isBeingDragged && "shadow-lg"
-      )}
-    >
-      <button
-        {...attributes}
-        {...listeners}
-        className="p-1 hover:text-primary"
-        aria-label="Réorganiser le contenu"
-      >
-        <GripVertical className="h-4 w-4" />
-      </button>
-      <Icon className="h-4 w-4 text-muted-foreground" />
-      
-      <div className="flex-1">
-        {isEditing ? (
-          <div className="flex items-center gap-2">
-            <Input
-              value={title}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
-              className="h-9 min-w-[300px]"
-              onClick={handleInputClick}
-              autoFocus
-            />
-            <Button
-              size="sm"
-              onClick={handleSave}
-            >
-              Enregistrer
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleCancel}
-            >
-              Annuler
-            </Button>
-          </div>
-        ) : (
-          <span className="text-sm">{item.title}</span>
+    <>
+      <div
+        ref={setNodeRef}
+        style={style}
+        className={cn(
+          "flex items-center gap-2 rounded-lg border bg-background p-3",
+          isDragging && "opacity-50",
+          isBeingDragged && "shadow-lg",
+          item.type === 'quiz' ? "bg-primary/5" : "bg-secondary/30"
         )}
-      </div>
+      >
+        <button
+          {...attributes}
+          {...listeners}
+          className="p-1 hover:text-primary"
+          aria-label="Réorganiser le contenu"
+        >
+          <GripVertical className="h-4 w-4" />
+        </button>
+        <Icon className="h-4 w-4 text-muted-foreground" />
+        
+        <div className="flex-1">
+          <span className="text-sm">{item.title}</span>
+        </div>
 
-      {!isEditing && (
         <div className="flex items-center gap-2">
           {item.type === 'lesson' && item.duration && (
             <span className="text-xs text-muted-foreground">
@@ -204,7 +123,16 @@ export function ContentItem({ item, isBeingDragged, onEdit }: ContentItemProps) 
             <Trash2 className="h-4 w-4 text-destructive" />
           </Button>
         </div>
+      </div>
+
+      {item.type === 'lesson' && (
+        <LessonDialog
+          open={showLessonDialog}
+          onOpenChange={setShowLessonDialog}
+          chapterId={item.chapterId}
+          lesson={item}
+        />
       )}
-    </div>
+    </>
   );
 }

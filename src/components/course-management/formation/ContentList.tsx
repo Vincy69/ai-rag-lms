@@ -4,7 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   DndContext,
   DragEndEvent,
-  DragStartEvent,
   PointerSensor,
   useSensor,
   useSensors,
@@ -22,17 +21,14 @@ import { LessonDialog } from "../dialogs/LessonDialog";
 
 interface ContentListProps {
   chapterId: string;
-  lessons: any[];
-  quizzes: any[];
+  content: any[];
 }
 
-export function ContentList({ chapterId, lessons, quizzes }: ContentListProps) {
+export function ContentList({ chapterId, content }: ContentListProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [activeId, setActiveId] = useState<string | null>(null);
   const [showLessonDialog, setShowLessonDialog] = useState(false);
-  const [selectedLesson, setSelectedLesson] = useState<any>(null);
-
+  
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -41,13 +37,7 @@ export function ContentList({ chapterId, lessons, quizzes }: ContentListProps) {
     })
   );
 
-  // Combine lessons and quizzes into a single sorted array
-  const content = [
-    ...lessons.map(l => ({ ...l, type: 'lesson' })),
-    ...quizzes.map(q => ({ ...q, type: 'quiz' }))
-  ].sort((a, b) => a.order_index - b.order_index);
-
-  const updateOrder = useMutation({
+  const updateContentOrder = useMutation({
     mutationFn: async ({ id, type, order_index }: { id: string; type: 'lesson' | 'quiz'; order_index: number }) => {
       const table = type === 'lesson' ? 'lessons' : 'quizzes';
       const { error } = await supabase
@@ -64,24 +54,12 @@ export function ContentList({ chapterId, lessons, quizzes }: ContentListProps) {
         description: "L'ordre du contenu a été mis à jour avec succès",
       });
     },
-    onError: () => {
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la mise à jour de l'ordre",
-        variant: "destructive",
-      });
-    },
   });
-
-  const handleDragStart = (event: DragStartEvent) => {
-    setActiveId(event.active.id as string);
-  };
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
 
     if (!over || active.id === over.id) {
-      setActiveId(null);
       return;
     }
 
@@ -90,28 +68,15 @@ export function ContentList({ chapterId, lessons, quizzes }: ContentListProps) {
 
     const newContent = arrayMove(content, oldIndex, newIndex);
 
-    // Update order_index for all affected items
     await Promise.all(
       newContent.map((item, index) =>
-        updateOrder.mutateAsync({
+        updateContentOrder.mutateAsync({
           id: item.id,
           type: item.type,
           order_index: index,
         })
       )
     );
-
-    setActiveId(null);
-  };
-
-  const handleEditLesson = (lesson: any) => {
-    setSelectedLesson(lesson);
-    setShowLessonDialog(true);
-  };
-
-  const handleAddLesson = () => {
-    setSelectedLesson(null);
-    setShowLessonDialog(true);
   };
 
   return (
@@ -120,7 +85,7 @@ export function ContentList({ chapterId, lessons, quizzes }: ContentListProps) {
         <Button
           variant="outline"
           size="sm"
-          onClick={handleAddLesson}
+          onClick={() => setShowLessonDialog(true)}
         >
           <Plus className="h-4 w-4 mr-2" />
           Ajouter une leçon
@@ -129,20 +94,17 @@ export function ContentList({ chapterId, lessons, quizzes }: ContentListProps) {
 
       <DndContext
         sensors={sensors}
-        onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
         <div className="space-y-2">
           <SortableContext
-            items={content.map((item) => item.id)}
+            items={content?.map((item) => item.id) || []}
             strategy={verticalListSortingStrategy}
           >
-            {content.map((item) => (
+            {content?.map((item) => (
               <ContentItem
                 key={item.id}
                 item={item}
-                isBeingDragged={activeId === item.id}
-                onEdit={item.type === 'lesson' ? handleEditLesson : undefined}
               />
             ))}
           </SortableContext>
@@ -153,7 +115,6 @@ export function ContentList({ chapterId, lessons, quizzes }: ContentListProps) {
         open={showLessonDialog}
         onOpenChange={setShowLessonDialog}
         chapterId={chapterId}
-        lesson={selectedLesson}
       />
     </>
   );
