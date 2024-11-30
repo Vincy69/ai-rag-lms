@@ -15,6 +15,7 @@ import Login from "@/pages/Login";
 import ELearning from "@/pages/ELearning";
 import Documentation from "@/pages/Documentation";
 import CourseManagement from "@/pages/CourseManagement";
+import CourseEditor from "@/pages/CourseEditor";
 import "./App.css";
 
 const queryClient = new QueryClient();
@@ -158,6 +159,14 @@ function App() {
             element={
               <PrivateRoute>
                 <CourseManagement />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/courses/:formationId"
+            element={
+              <PrivateRoute>
+                <CourseEditor />
               </PrivateRoute>
             }
           />
