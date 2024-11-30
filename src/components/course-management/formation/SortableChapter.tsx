@@ -60,7 +60,9 @@ export function SortableChapter({ chapter }: SortableChapterProps) {
 
       if (error) throw error;
 
-      queryClient.invalidateQueries({ queryKey: ["formation-blocks"] });
+      // Invalider le cache pour forcer le rafraîchissement
+      await queryClient.invalidateQueries({ queryKey: ["formation-blocks"] });
+      
       setIsEditing(false);
       toast({
         title: "Chapitre modifié",
@@ -88,7 +90,9 @@ export function SortableChapter({ chapter }: SortableChapterProps) {
 
       if (error) throw error;
 
-      queryClient.invalidateQueries({ queryKey: ["formation-blocks"] });
+      // Invalider le cache pour forcer le rafraîchissement
+      await queryClient.invalidateQueries({ queryKey: ["formation-blocks"] });
+      
       toast({
         title: "Chapitre supprimé",
         description: "Le chapitre a été supprimé avec succès",
@@ -101,28 +105,6 @@ export function SortableChapter({ chapter }: SortableChapterProps) {
         variant: "destructive",
       });
     }
-  };
-
-  const handleCancel = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsEditing(false);
-    setTitle(chapter.title);
-  };
-
-  const handleEdit = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsEditing(true);
-  };
-
-  const handleInputClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setTitle(e.target.value);
   };
 
   return (
@@ -154,9 +136,9 @@ export function SortableChapter({ chapter }: SortableChapterProps) {
                   >
                     <Input
                       value={title}
-                      onChange={handleInputChange}
+                      onChange={(e) => setTitle(e.target.value)}
                       className="h-8"
-                      onClick={handleInputClick}
+                      onClick={(e) => e.stopPropagation()}
                     />
                     <Button
                       size="sm"
@@ -167,7 +149,12 @@ export function SortableChapter({ chapter }: SortableChapterProps) {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={handleCancel}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setIsEditing(false);
+                        setTitle(chapter.title);
+                      }}
                     >
                       Annuler
                     </Button>
@@ -185,7 +172,11 @@ export function SortableChapter({ chapter }: SortableChapterProps) {
               <Button
                 size="sm"
                 variant="ghost"
-                onClick={handleEdit}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsEditing(true);
+                }}
               >
                 <Pencil className="h-4 w-4" />
               </Button>

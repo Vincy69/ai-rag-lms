@@ -1,6 +1,6 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, Trash2, Pencil, Plus } from "lucide-react";
+import { GripVertical, Pencil, Trash2, Plus } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -63,7 +63,9 @@ export function SortableBlock({ block, onDelete }: SortableBlockProps) {
 
       if (error) throw error;
 
-      queryClient.invalidateQueries({ queryKey: ["formation-blocks"] });
+      // Invalider le cache pour forcer le rafraîchissement
+      await queryClient.invalidateQueries({ queryKey: ["formation-blocks"] });
+      
       setIsEditing(false);
       toast({
         title: "Bloc modifié",
