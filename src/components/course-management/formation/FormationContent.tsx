@@ -100,38 +100,41 @@ export function FormationContent({ formationId }: FormationContentProps) {
   };
 
   const handleAddBlock = async () => {
-    const { data: lastBlock } = await supabase
-      .from("skill_blocks")
-      .select("order_index")
-      .eq("formation_id", formationId)
-      .order("order_index", { ascending: false })
-      .limit(1)
-      .single();
+    try {
+      // Get the last order_index, defaulting to -1 if no blocks exist
+      const { data: lastBlock, error: queryError } = await supabase
+        .from("skill_blocks")
+        .select("order_index")
+        .eq("formation_id", formationId)
+        .order("order_index", { ascending: false })
+        .limit(1)
+        .single();
 
-    const newOrderIndex = lastBlock ? lastBlock.order_index + 1 : 0;
+      const newOrderIndex = (lastBlock?.order_index ?? -1) + 1;
 
-    const { error } = await supabase
-      .from("skill_blocks")
-      .insert({
-        formation_id: formationId,
-        name: "Nouveau bloc",
-        order_index: newOrderIndex,
+      const { error: insertError } = await supabase
+        .from("skill_blocks")
+        .insert({
+          formation_id: formationId,
+          name: "Nouveau bloc",
+          order_index: newOrderIndex,
+        });
+
+      if (insertError) throw insertError;
+
+      queryClient.invalidateQueries({ queryKey: ["formation-blocks", formationId] });
+      toast({
+        title: "Bloc créé",
+        description: "Le nouveau bloc a été créé avec succès",
       });
-
-    if (error) {
+    } catch (error) {
+      console.error("Error adding block:", error);
       toast({
         title: "Erreur",
         description: "Une erreur est survenue lors de la création du bloc",
         variant: "destructive",
       });
-      return;
     }
-
-    queryClient.invalidateQueries({ queryKey: ["formation-blocks", formationId] });
-    toast({
-      title: "Bloc créé",
-      description: "Le nouveau bloc a été créé avec succès",
-    });
   };
 
   const handleDeleteBlock = async (blockId: string) => {
