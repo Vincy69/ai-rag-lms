@@ -121,12 +121,6 @@ export function SortableChapter({ chapter }: SortableChapterProps) {
     setTitle(e.target.value);
   };
 
-  // Combine and sort lessons and quizzes by order_index
-  const content = [
-    ...chapter.lessons.map(l => ({ ...l, type: 'lesson' })),
-    ...chapter.quizzes.map(q => ({ ...q, type: 'quiz' }))
-  ].sort((a, b) => a.order_index - b.order_index);
-
   return (
     <div
       ref={setNodeRef}
@@ -150,7 +144,10 @@ export function SortableChapter({ chapter }: SortableChapterProps) {
             <AccordionTrigger className="flex-1 hover:no-underline" iconClassName="text-muted-foreground/50">
               <div className="flex items-center gap-4 flex-1">
                 {isEditing ? (
-                  <div className="flex items-center gap-2 flex-1">
+                  <div 
+                    className="flex items-center gap-2 flex-1"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <Input
                       value={title}
                       onChange={handleInputChange}
@@ -172,19 +169,15 @@ export function SortableChapter({ chapter }: SortableChapterProps) {
                     </Button>
                   </div>
                 ) : (
-                  <div className="flex flex-col items-start">
-                    <span className="font-medium">{chapter.title}</span>
-                    {chapter.description && (
-                      <span className="text-sm text-muted-foreground">
-                        {chapter.description}
-                      </span>
-                    )}
-                  </div>
+                  <span className="font-medium">{chapter.title}</span>
                 )}
               </div>
             </AccordionTrigger>
 
-            <div className="flex items-center gap-2 ml-4">
+            <div 
+              className="flex items-center gap-2 ml-4"
+              onClick={(e) => e.stopPropagation()}
+            >
               <Button
                 size="sm"
                 variant="ghost"
@@ -204,7 +197,10 @@ export function SortableChapter({ chapter }: SortableChapterProps) {
           <AccordionContent className="px-4 pb-4">
             <SortableContentList 
               chapterId={chapter.id} 
-              content={content}
+              content={[
+                ...(chapter.lessons || []).map(l => ({ ...l, type: 'lesson' })),
+                ...(chapter.quizzes || []).map(q => ({ ...q, type: 'quiz' }))
+              ].sort((a, b) => a.order_index - b.order_index)}
             />
           </AccordionContent>
         </AccordionItem>
