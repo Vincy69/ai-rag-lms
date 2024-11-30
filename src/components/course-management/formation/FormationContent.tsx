@@ -13,7 +13,8 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { SortableBlock } from "./SortableBlock";
 
 interface FormationContentProps {
@@ -98,32 +99,106 @@ export function FormationContent({ formationId }: FormationContentProps) {
     );
   };
 
+  const handleAddBlock = async () => {
+    const { data: lastBlock } = await supabase
+      .from("skill_blocks")
+      .select("order_index")
+      .eq("formation_id", formationId)
+      .order("order_index", { ascending: false })
+      .limit(1)
+      .single();
+
+    const newOrderIndex = lastBlock ? lastBlock.order_index + 1 : 0;
+
+    const { error } = await supabase
+      .from("skill_blocks")
+      .insert({
+        formation_id: formationId,
+        name: "Nouveau bloc",
+        order_index: newOrderIndex,
+      });
+
+    if (error) {
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la création du bloc",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    queryClient.invalidateQueries({ queryKey: ["formation-blocks", formationId] });
+    toast({
+      title: "Bloc créé",
+      description: "Le nouveau bloc a été créé avec succès",
+    });
+  };
+
+  const handleDeleteBlock = async (blockId: string) => {
+    const { error } = await supabase
+      .from("skill_blocks")
+      .delete()
+      .eq("id", blockId);
+
+    if (error) {
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la suppression du bloc",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    queryClient.invalidateQueries({ queryKey: ["formation-blocks", formationId] });
+    toast({
+      title: "Bloc supprimé",
+      description: "Le bloc a été supprimé avec succès",
+    });
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <Loader2 className="h-8 w-8 animate-spin" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <DndContext
-      sensors={sensors}
-      onDragEnd={handleDragEnd}
-    >
-      <div className="space-y-4">
-        <SortableContext
-          items={blocks?.map((block) => block.id) || []}
-          strategy={verticalListSortingStrategy}
-        >
-          {blocks?.map((block) => (
-            <SortableBlock
-              key={block.id}
-              block={block}
-            />
-          ))}
-        </SortableContext>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-lg font-semibold">Structure de la formation</h2>
+        <Button onClick={handleAddBlock} size="sm">
+          <Plus className="h-4 w-4 mr-2" />
+          Ajouter un bloc
+        </Button>
       </div>
-    </DndContext>
+
+      <DndContext
+        sensors={sensors}
+        onDragEnd={handleDragEnd}
+      >
+        <div className="space-y-4">
+          <SortableContext
+            items={blocks?.map((block) => block.id) || []}
+            strategy={verticalListSortingStrategy}
+          >
+            {blocks?.map((block) => (
+              <SortableBlock
+                key={block.id}
+                block={block}
+                onDelete={() => handleDeleteBlock(block.id)}
+              />
+            ))}
+          </SortableContext>
+        </div>
+      </DndContext>
+
+      {blocks?.length === 0 && (
+        <div className="text-center py-8 text-muted-foreground">
+          Aucun bloc n'a été créé pour cette formation
+        </div>
+      )}
+    </div>
   );
 }
