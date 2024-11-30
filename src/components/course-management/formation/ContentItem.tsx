@@ -14,7 +14,7 @@ interface ContentItemProps {
     id: string;
     title: string;
     type: 'lesson' | 'quiz';
-    duration?: number;
+    duration?: number | null;
   };
   isBeingDragged?: boolean;
 }
