@@ -16,6 +16,9 @@ import {
 } from "@dnd-kit/sortable";
 import { useToast } from "@/components/ui/use-toast";
 import { ContentItem } from "./ContentItem";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
+import { LessonDialog } from "../dialogs/LessonDialog";
 
 interface ContentListProps {
   chapterId: string;
@@ -27,6 +30,8 @@ export function ContentList({ chapterId, lessons, quizzes }: ContentListProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [showLessonDialog, setShowLessonDialog] = useState(false);
+  const [selectedLesson, setSelectedLesson] = useState<any>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -99,26 +104,57 @@ export function ContentList({ chapterId, lessons, quizzes }: ContentListProps) {
     setActiveId(null);
   };
 
+  const handleEditLesson = (lesson: any) => {
+    setSelectedLesson(lesson);
+    setShowLessonDialog(true);
+  };
+
+  const handleAddLesson = () => {
+    setSelectedLesson(null);
+    setShowLessonDialog(true);
+  };
+
   return (
-    <DndContext
-      sensors={sensors}
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
-    >
-      <div className="space-y-2">
-        <SortableContext
-          items={content.map((item) => item.id)}
-          strategy={verticalListSortingStrategy}
+    <>
+      <div className="flex justify-end mb-4">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleAddLesson}
         >
-          {content.map((item) => (
-            <ContentItem
-              key={item.id}
-              item={item}
-              isBeingDragged={activeId === item.id}
-            />
-          ))}
-        </SortableContext>
+          <Plus className="h-4 w-4 mr-2" />
+          Ajouter une leçon
+        </Button>
       </div>
-    </DndContext>
+
+      <DndContext
+        sensors={sensors}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+      >
+        <div className="space-y-2">
+          <SortableContext
+            items={content.map((item) => item.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            {content.map((item) => (
+              <ContentItem
+                key={item.id}
+                item={item}
+                isBeingDragged={activeId === item.id}
+                onEdit={item.type === 'lesson' ? handleEditLesson : undefined}
+              />
+            ))}
+          </SortableContext>
+        </div>
+      </DndContext>
+
+      <LessonDialog
+        open={showLessonDialog}
+        onOpenChange={setShowLessonDialog}
+        chapterId={chapterId}
+        lesson={selectedLesson}
+      />
+    </>
   );
 }

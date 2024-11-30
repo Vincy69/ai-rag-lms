@@ -17,9 +17,10 @@ interface ContentItemProps {
     duration?: number | null;
   };
   isBeingDragged?: boolean;
+  onEdit?: (item: any) => void;
 }
 
-export function ContentItem({ item, isBeingDragged }: ContentItemProps) {
+export function ContentItem({ item, isBeingDragged, onEdit }: ContentItemProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState(item.title);
   const { toast } = useToast();
@@ -60,7 +61,7 @@ export function ContentItem({ item, isBeingDragged }: ContentItemProps) {
       return;
     }
 
-    queryClient.invalidateQueries({ queryKey: ["formation-blocks"] });
+    await queryClient.invalidateQueries({ queryKey: ["formation-blocks"] });
     setIsEditing(false);
     toast({
       title: "Modification réussie",
@@ -87,7 +88,7 @@ export function ContentItem({ item, isBeingDragged }: ContentItemProps) {
       return;
     }
 
-    queryClient.invalidateQueries({ queryKey: ["formation-blocks"] });
+    await queryClient.invalidateQueries({ queryKey: ["formation-blocks"] });
     toast({
       title: "Suppression réussie",
       description: "L'élément a été supprimé avec succès",
@@ -104,7 +105,11 @@ export function ContentItem({ item, isBeingDragged }: ContentItemProps) {
   const handleEdit = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsEditing(true);
+    if (onEdit) {
+      onEdit(item);
+    } else {
+      setIsEditing(true);
+    }
   };
 
   const handleInputClick = (e: React.MouseEvent) => {
@@ -113,7 +118,18 @@ export function ContentItem({ item, isBeingDragged }: ContentItemProps) {
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.stopPropagation();
     setTitle(e.target.value);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    e.stopPropagation();
+    
+    if (e.key === 'Enter') {
+      handleSave(e as any);
+    } else if (e.key === 'Escape') {
+      handleCancel(e as any);
+    }
   };
 
   return (
@@ -142,8 +158,10 @@ export function ContentItem({ item, isBeingDragged }: ContentItemProps) {
             <Input
               value={title}
               onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
               className="h-9 min-w-[300px]"
               onClick={handleInputClick}
+              autoFocus
             />
             <Button
               size="sm"
