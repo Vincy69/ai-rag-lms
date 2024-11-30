@@ -45,8 +45,7 @@ export function FormationContent({ formationId }: FormationContentProps) {
               order_index
             ),
             quizzes (
-              *,
-              order_index
+              *
             ),
             order_index
           )
@@ -89,7 +88,6 @@ export function FormationContent({ formationId }: FormationContentProps) {
 
     const newBlocks = arrayMove(blocks, oldIndex, newIndex);
 
-    // Mettre à jour l'ordre dans la base de données
     await Promise.all(
       newBlocks.map((block, index) =>
         updateBlockOrder.mutateAsync({
