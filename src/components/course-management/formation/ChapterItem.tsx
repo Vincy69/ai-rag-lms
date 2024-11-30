@@ -51,51 +51,58 @@ export function ChapterItem({ chapter, isBeingDragged }: ChapterItemProps) {
     e.preventDefault();
     e.stopPropagation();
     
-    const { error } = await supabase
-      .from("chapters")
-      .update({ title })
-      .eq("id", chapter.id);
+    try {
+      const { error } = await supabase
+        .from("chapters")
+        .update({ title })
+        .eq("id", chapter.id);
 
-    if (error) {
+      if (error) throw error;
+
+      // Attendre que l'invalidation soit terminée
+      await queryClient.invalidateQueries({ queryKey: ["formation-blocks"] });
+      setIsEditing(false);
+      
+      toast({
+        title: "Chapitre modifié",
+        description: "Le chapitre a été modifié avec succès",
+      });
+    } catch (error) {
+      console.error("Error updating chapter:", error);
       toast({
         title: "Erreur",
         description: "Une erreur est survenue lors de la modification du chapitre",
         variant: "destructive",
       });
-      return;
     }
-
-    queryClient.invalidateQueries({ queryKey: ["formation-blocks"] });
-    setIsEditing(false);
-    toast({
-      title: "Chapitre modifié",
-      description: "Le chapitre a été modifié avec succès",
-    });
   };
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
-    const { error } = await supabase
-      .from("chapters")
-      .delete()
-      .eq("id", chapter.id);
+    try {
+      const { error } = await supabase
+        .from("chapters")
+        .delete()
+        .eq("id", chapter.id);
 
-    if (error) {
+      if (error) throw error;
+
+      await queryClient.invalidateQueries({ queryKey: ["formation-blocks"] });
+      
+      toast({
+        title: "Chapitre supprimé",
+        description: "Le chapitre a été supprimé avec succès",
+      });
+    } catch (error) {
+      console.error("Error deleting chapter:", error);
       toast({
         title: "Erreur",
         description: "Une erreur est survenue lors de la suppression du chapitre",
         variant: "destructive",
       });
-      return;
     }
-
-    queryClient.invalidateQueries({ queryKey: ["formation-blocks"] });
-    toast({
-      title: "Chapitre supprimé",
-      description: "Le chapitre a été supprimé avec succès",
-    });
   };
 
   const handleCancel = (e: React.MouseEvent) => {
@@ -144,12 +151,16 @@ export function ChapterItem({ chapter, isBeingDragged }: ChapterItemProps) {
             <AccordionTrigger className="flex-1 hover:no-underline">
               <div className="flex items-center gap-4 flex-1">
                 {isEditing ? (
-                  <div className="flex items-center gap-2 flex-1">
+                  <div 
+                    className="flex items-center gap-2 flex-1"
+                    onClick={handleInputClick}
+                  >
                     <Input
                       value={title}
                       onChange={handleInputChange}
                       className="h-8"
                       onClick={handleInputClick}
+                      autoFocus
                     />
                     <Button
                       size="sm"
@@ -171,7 +182,10 @@ export function ChapterItem({ chapter, isBeingDragged }: ChapterItemProps) {
               </div>
             </AccordionTrigger>
 
-            <div className="flex items-center gap-2 ml-4">
+            <div 
+              className="flex items-center gap-2 ml-4"
+              onClick={(e) => e.stopPropagation()}
+            >
               <Button
                 size="sm"
                 variant="ghost"
