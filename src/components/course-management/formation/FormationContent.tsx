@@ -1,11 +1,8 @@
-import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
   DndContext,
   DragEndEvent,
-  DragOverlay,
-  DragStartEvent,
   PointerSensor,
   useSensor,
   useSensors,
@@ -15,9 +12,9 @@ import {
   arrayMove,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { FormationBlock } from "./FormationBlock";
 import { useToast } from "@/components/ui/use-toast";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Loader2 } from "lucide-react";
+import { SortableBlock } from "./SortableBlock";
 
 interface FormationContentProps {
   formationId: string;
@@ -26,8 +23,6 @@ interface FormationContentProps {
 export function FormationContent({ formationId }: FormationContentProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [activeId, setActiveId] = useState<string | null>(null);
-
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -50,7 +45,8 @@ export function FormationContent({ formationId }: FormationContentProps) {
               order_index
             ),
             quizzes (
-              *
+              *,
+              order_index
             ),
             order_index
           )
@@ -79,33 +75,21 @@ export function FormationContent({ formationId }: FormationContentProps) {
         description: "L'ordre des blocs a été mis à jour avec succès",
       });
     },
-    onError: () => {
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la mise à jour de l'ordre",
-        variant: "destructive",
-      });
-    },
   });
-
-  const handleDragStart = (event: DragStartEvent) => {
-    setActiveId(event.active.id as string);
-  };
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
 
-    if (!over || active.id === over.id) {
-      setActiveId(null);
+    if (!over || active.id === over.id || !blocks) {
       return;
     }
 
-    const oldIndex = blocks!.findIndex((block) => block.id === active.id);
-    const newIndex = blocks!.findIndex((block) => block.id === over.id);
+    const oldIndex = blocks.findIndex((block) => block.id === active.id);
+    const newIndex = blocks.findIndex((block) => block.id === over.id);
 
-    const newBlocks = arrayMove(blocks!, oldIndex, newIndex);
+    const newBlocks = arrayMove(blocks, oldIndex, newIndex);
 
-    // Update order_index for all affected blocks
+    // Mettre à jour l'ordre dans la base de données
     await Promise.all(
       newBlocks.map((block, index) =>
         updateBlockOrder.mutateAsync({
@@ -114,16 +98,12 @@ export function FormationContent({ formationId }: FormationContentProps) {
         })
       )
     );
-
-    setActiveId(null);
   };
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        {[1, 2, 3].map((i) => (
-          <Skeleton key={i} className="h-32 w-full" />
-        ))}
+      <div className="flex items-center justify-center py-8">
+        <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
   }
@@ -131,7 +111,6 @@ export function FormationContent({ formationId }: FormationContentProps) {
   return (
     <DndContext
       sensors={sensors}
-      onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
       <div className="space-y-4">
@@ -140,23 +119,13 @@ export function FormationContent({ formationId }: FormationContentProps) {
           strategy={verticalListSortingStrategy}
         >
           {blocks?.map((block) => (
-            <FormationBlock
+            <SortableBlock
               key={block.id}
               block={block}
-              isBeingDragged={activeId === block.id}
             />
           ))}
         </SortableContext>
       </div>
-
-      <DragOverlay>
-        {activeId && blocks ? (
-          <FormationBlock
-            block={blocks.find((b) => b.id === activeId)!}
-            isBeingDragged
-          />
-        ) : null}
-      </DragOverlay>
     </DndContext>
   );
 }
