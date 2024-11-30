@@ -16,14 +16,26 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 
-interface ChapterItemProps {
-  chapter: {
+interface Chapter {
+  id: string;
+  title: string;
+  description: string | null;
+  lessons: Array<{
     id: string;
     title: string;
-    description: string | null;
-    lessons: any[];
-    quizzes: any[];
-  };
+    content: string;
+    duration: number | null;
+    chapter_id: string;
+  }>;
+  quizzes: Array<{
+    id: string;
+    title: string;
+    chapter_id: string;
+  }>;
+}
+
+interface ChapterItemProps {
+  chapter: Chapter;
   isBeingDragged?: boolean;
 }
 
@@ -59,10 +71,9 @@ export function ChapterItem({ chapter, isBeingDragged }: ChapterItemProps) {
 
       if (error) throw error;
 
-      // Attendre que l'invalidation soit terminée avant de fermer l'édition
       await queryClient.invalidateQueries({ queryKey: ["formation-blocks"] });
-      setIsEditing(false);
       
+      setIsEditing(false);
       toast({
         title: "Chapitre modifié",
         description: "Le chapitre a été modifié avec succès",
@@ -105,39 +116,6 @@ export function ChapterItem({ chapter, isBeingDragged }: ChapterItemProps) {
     }
   };
 
-  const handleCancel = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsEditing(false);
-    setTitle(chapter.title);
-  };
-
-  const handleEdit = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsEditing(true);
-  };
-
-  const handleInputClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.stopPropagation();
-    setTitle(e.target.value);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    e.stopPropagation();
-    
-    if (e.key === 'Enter') {
-      handleSave(e as any);
-    } else if (e.key === 'Escape') {
-      handleCancel(e as any);
-    }
-  };
-
   return (
     <div
       ref={setNodeRef}
@@ -159,19 +137,17 @@ export function ChapterItem({ chapter, isBeingDragged }: ChapterItemProps) {
               <GripVertical className="h-4 w-4" />
             </button>
             <AccordionTrigger className="flex-1 hover:no-underline">
-              <div className="flex items-center gap-4 flex-1" onClick={(e) => isEditing && e.stopPropagation()}>
+              <div className="flex items-center gap-4 flex-1">
                 {isEditing ? (
                   <div 
                     className="flex items-center gap-2 flex-1"
-                    onClick={handleInputClick}
+                    onClick={(e) => e.stopPropagation()}
                   >
                     <Input
                       value={title}
-                      onChange={handleInputChange}
-                      onKeyDown={handleKeyDown}
+                      onChange={(e) => setTitle(e.target.value)}
                       className="h-8"
-                      onClick={handleInputClick}
-                      autoFocus
+                      onClick={(e) => e.stopPropagation()}
                     />
                     <Button
                       size="sm"
@@ -182,7 +158,12 @@ export function ChapterItem({ chapter, isBeingDragged }: ChapterItemProps) {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={handleCancel}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setIsEditing(false);
+                        setTitle(chapter.title);
+                      }}
                     >
                       Annuler
                     </Button>
@@ -200,7 +181,11 @@ export function ChapterItem({ chapter, isBeingDragged }: ChapterItemProps) {
               <Button
                 size="sm"
                 variant="ghost"
-                onClick={handleEdit}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsEditing(true);
+                }}
               >
                 <Pencil className="h-4 w-4" />
               </Button>
@@ -216,8 +201,10 @@ export function ChapterItem({ chapter, isBeingDragged }: ChapterItemProps) {
           <AccordionContent className="px-4 pb-4">
             <ContentList
               chapterId={chapter.id}
-              lessons={chapter.lessons}
-              quizzes={chapter.quizzes}
+              content={[
+                ...(chapter.lessons || []).map(l => ({ ...l, type: 'lesson' as const })),
+                ...(chapter.quizzes || []).map(q => ({ ...q, type: 'quiz' as const }))
+              ].sort((a, b) => (a.order_index || 0) - (b.order_index || 0))}
             />
           </AccordionContent>
         </AccordionItem>

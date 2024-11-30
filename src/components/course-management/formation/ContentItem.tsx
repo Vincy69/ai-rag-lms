@@ -4,7 +4,6 @@ import { GripVertical, BookOpen, ClipboardList, Pencil, Trash2 } from "lucide-re
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
@@ -17,13 +16,12 @@ interface ContentItemProps {
     type: 'lesson' | 'quiz';
     duration?: number | null;
     content?: string;
+    chapter_id: string;
   };
   isBeingDragged?: boolean;
-  onEdit?: (item: any) => void;
 }
 
 export function ContentItem({ item, isBeingDragged }: ContentItemProps) {
-  const [isEditing, setIsEditing] = useState(false);
   const [showLessonDialog, setShowLessonDialog] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -129,8 +127,13 @@ export function ContentItem({ item, isBeingDragged }: ContentItemProps) {
         <LessonDialog
           open={showLessonDialog}
           onOpenChange={setShowLessonDialog}
-          chapterId={item.chapterId}
-          lesson={item}
+          chapterId={item.chapter_id}
+          lesson={{
+            id: item.id,
+            title: item.title,
+            content: item.content || '',
+            duration: item.duration || null,
+          }}
         />
       )}
     </>

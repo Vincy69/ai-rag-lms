@@ -19,9 +19,18 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { LessonDialog } from "../dialogs/LessonDialog";
 
+interface ContentItem {
+  id: string;
+  title: string;
+  type: 'lesson' | 'quiz';
+  duration?: number | null;
+  content?: string;
+  chapter_id: string;
+}
+
 interface ContentListProps {
   chapterId: string;
-  content: any[];
+  content: ContentItem[];
 }
 
 export function ContentList({ chapterId, content }: ContentListProps) {
