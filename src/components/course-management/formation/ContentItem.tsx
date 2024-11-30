@@ -41,7 +41,10 @@ export function ContentItem({ item, isBeingDragged }: ContentItemProps) {
 
   const Icon = item.type === 'lesson' ? BookOpen : ClipboardList;
 
-  const handleSave = async () => {
+  const handleSave = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     const table = item.type === 'lesson' ? 'lessons' : 'quizzes';
     const { error } = await supabase
       .from(table)
@@ -65,7 +68,10 @@ export function ContentItem({ item, isBeingDragged }: ContentItemProps) {
     });
   };
 
-  const handleDelete = async () => {
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     const table = item.type === 'lesson' ? 'lessons' : 'quizzes';
     const { error } = await supabase
       .from(table)
@@ -86,6 +92,28 @@ export function ContentItem({ item, isBeingDragged }: ContentItemProps) {
       title: "Suppression réussie",
       description: "L'élément a été supprimé avec succès",
     });
+  };
+
+  const handleCancel = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsEditing(false);
+    setTitle(item.title);
+  };
+
+  const handleEdit = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsEditing(true);
+  };
+
+  const handleInputClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTitle(e.target.value);
   };
 
   return (
@@ -113,9 +141,9 @@ export function ContentItem({ item, isBeingDragged }: ContentItemProps) {
           <div className="flex items-center gap-2">
             <Input
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={handleInputChange}
               className="h-9 min-w-[300px]"
-              onClick={(e) => e.stopPropagation()}
+              onClick={handleInputClick}
             />
             <Button
               size="sm"
@@ -126,10 +154,7 @@ export function ContentItem({ item, isBeingDragged }: ContentItemProps) {
             <Button
               size="sm"
               variant="outline"
-              onClick={() => {
-                setIsEditing(false);
-                setTitle(item.title);
-              }}
+              onClick={handleCancel}
             >
               Annuler
             </Button>
@@ -149,7 +174,7 @@ export function ContentItem({ item, isBeingDragged }: ContentItemProps) {
           <Button
             size="sm"
             variant="ghost"
-            onClick={() => setIsEditing(true)}
+            onClick={handleEdit}
           >
             <Pencil className="h-4 w-4" />
           </Button>
