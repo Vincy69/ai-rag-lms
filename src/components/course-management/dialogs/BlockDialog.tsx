@@ -77,7 +77,8 @@ export function BlockDialog({ open, onOpenChange, formationId, block }: BlockDia
         });
       }
 
-      queryClient.invalidateQueries({ queryKey: ["formation-blocks"] });
+      // Attendre que l'invalidation soit terminée avant de fermer
+      await queryClient.invalidateQueries({ queryKey: ["formation-blocks"] });
       onOpenChange(false);
     } catch (error) {
       console.error("Error saving block:", error);

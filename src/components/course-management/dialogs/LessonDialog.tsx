@@ -84,7 +84,7 @@ export function LessonDialog({ open, onOpenChange, chapterId, lesson }: LessonDi
         });
       }
 
-      // Invalider le cache pour forcer le rafraîchissement
+      // Attendre que l'invalidation soit terminée avant de fermer
       await queryClient.invalidateQueries({ queryKey: ["formation-blocks"] });
       onOpenChange(false);
     } catch (error) {
