@@ -47,7 +47,10 @@ export function ChapterItem({ chapter, isBeingDragged }: ChapterItemProps) {
     transition,
   };
 
-  const handleSave = async () => {
+  const handleSave = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     const { error } = await supabase
       .from("chapters")
       .update({ title })
@@ -70,7 +73,10 @@ export function ChapterItem({ chapter, isBeingDragged }: ChapterItemProps) {
     });
   };
 
-  const handleDelete = async () => {
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     const { error } = await supabase
       .from("chapters")
       .delete()
@@ -90,6 +96,28 @@ export function ChapterItem({ chapter, isBeingDragged }: ChapterItemProps) {
       title: "Chapitre supprimé",
       description: "Le chapitre a été supprimé avec succès",
     });
+  };
+
+  const handleCancel = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsEditing(false);
+    setTitle(chapter.title);
+  };
+
+  const handleEdit = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsEditing(true);
+  };
+
+  const handleInputClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTitle(e.target.value);
   };
 
   return (
@@ -119,27 +147,20 @@ export function ChapterItem({ chapter, isBeingDragged }: ChapterItemProps) {
                   <div className="flex items-center gap-2 flex-1">
                     <Input
                       value={title}
-                      onChange={(e) => setTitle(e.target.value)}
+                      onChange={handleInputChange}
                       className="h-8"
-                      onClick={(e) => e.stopPropagation()}
+                      onClick={handleInputClick}
                     />
                     <Button
                       size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleSave();
-                      }}
+                      onClick={handleSave}
                     >
                       Enregistrer
                     </Button>
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setIsEditing(false);
-                        setTitle(chapter.title);
-                      }}
+                      onClick={handleCancel}
                     >
                       Annuler
                     </Button>
@@ -154,20 +175,14 @@ export function ChapterItem({ chapter, isBeingDragged }: ChapterItemProps) {
               <Button
                 size="sm"
                 variant="ghost"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsEditing(true);
-                }}
+                onClick={handleEdit}
               >
                 <Pencil className="h-4 w-4" />
               </Button>
               <Button
                 size="sm"
                 variant="ghost"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDelete();
-                }}
+                onClick={handleDelete}
               >
                 <Trash2 className="h-4 w-4 text-destructive" />
               </Button>
