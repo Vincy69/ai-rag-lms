@@ -1,6 +1,6 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, Trash2, Pencil, ChevronDown } from "lucide-react";
+import { GripVertical, Trash2, Pencil } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -92,7 +92,7 @@ export function SortableBlock({ block, onDelete }: SortableBlockProps) {
               <GripVertical className="h-4 w-4" />
             </button>
 
-            <AccordionTrigger className="flex-1 hover:no-underline">
+            <AccordionTrigger className="flex-1 hover:no-underline" iconClassName="text-muted-foreground/50">
               <div className="flex items-center gap-4 flex-1">
                 {isEditing ? (
                   <div className="flex items-center gap-2 flex-1">
@@ -127,7 +127,6 @@ export function SortableBlock({ block, onDelete }: SortableBlockProps) {
                   <span className="font-medium">{block.name}</span>
                 )}
               </div>
-              <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground/50 transition-transform duration-200" />
             </AccordionTrigger>
 
             <div className="flex items-center gap-2 ml-4">
