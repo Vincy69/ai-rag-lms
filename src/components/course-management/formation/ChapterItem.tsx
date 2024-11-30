@@ -59,7 +59,10 @@ export function ChapterItem({ chapter, isBeingDragged }: ChapterItemProps) {
             >
               <GripVertical className="h-4 w-4" />
             </button>
-            <AccordionTrigger className="flex-1 hover:no-underline">
+            <AccordionTrigger 
+              className="flex-1 hover:no-underline [&[data-state=open]>div>svg]:rotate-180"
+              iconClassName="hidden"
+            >
               <div className="flex flex-col items-start">
                 <span className="text-base font-medium">{chapter.title}</span>
                 {chapter.description && (
