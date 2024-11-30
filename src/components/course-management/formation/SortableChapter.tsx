@@ -52,51 +52,55 @@ export function SortableChapter({ chapter }: SortableChapterProps) {
     e.preventDefault();
     e.stopPropagation();
     
-    const { error } = await supabase
-      .from("chapters")
-      .update({ title })
-      .eq("id", chapter.id);
+    try {
+      const { error } = await supabase
+        .from("chapters")
+        .update({ title })
+        .eq("id", chapter.id);
 
-    if (error) {
+      if (error) throw error;
+
+      queryClient.invalidateQueries({ queryKey: ["formation-blocks"] });
+      setIsEditing(false);
+      toast({
+        title: "Chapitre modifié",
+        description: "Le chapitre a été modifié avec succès",
+      });
+    } catch (error) {
+      console.error("Error updating chapter:", error);
       toast({
         title: "Erreur",
         description: "Une erreur est survenue lors de la modification du chapitre",
         variant: "destructive",
       });
-      return;
     }
-
-    queryClient.invalidateQueries({ queryKey: ["formation-blocks"] });
-    setIsEditing(false);
-    toast({
-      title: "Chapitre modifié",
-      description: "Le chapitre a été modifié avec succès",
-    });
   };
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
-    const { error } = await supabase
-      .from("chapters")
-      .delete()
-      .eq("id", chapter.id);
+    try {
+      const { error } = await supabase
+        .from("chapters")
+        .delete()
+        .eq("id", chapter.id);
 
-    if (error) {
+      if (error) throw error;
+
+      queryClient.invalidateQueries({ queryKey: ["formation-blocks"] });
+      toast({
+        title: "Chapitre supprimé",
+        description: "Le chapitre a été supprimé avec succès",
+      });
+    } catch (error) {
+      console.error("Error deleting chapter:", error);
       toast({
         title: "Erreur",
         description: "Une erreur est survenue lors de la suppression du chapitre",
         variant: "destructive",
       });
-      return;
     }
-
-    queryClient.invalidateQueries({ queryKey: ["formation-blocks"] });
-    toast({
-      title: "Chapitre supprimé",
-      description: "Le chapitre a été supprimé avec succès",
-    });
   };
 
   const handleCancel = (e: React.MouseEvent) => {
