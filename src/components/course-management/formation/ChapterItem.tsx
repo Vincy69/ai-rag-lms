@@ -15,24 +15,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
-
-interface Chapter {
-  id: string;
-  title: string;
-  description: string | null;
-  lessons: Array<{
-    id: string;
-    title: string;
-    content: string;
-    duration: number | null;
-    chapter_id: string;
-  }>;
-  quizzes: Array<{
-    id: string;
-    title: string;
-    chapter_id: string;
-  }>;
-}
+import { Chapter } from "./types";
 
 interface ChapterItemProps {
   chapter: Chapter;
@@ -115,6 +98,11 @@ export function ChapterItem({ chapter, isBeingDragged }: ChapterItemProps) {
       });
     }
   };
+
+  const content = [
+    ...(chapter.lessons || []).map(l => ({ ...l, type: 'lesson' as const })),
+    ...(chapter.quizzes || []).map(q => ({ ...q, type: 'quiz' as const }))
+  ].sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
 
   return (
     <div
@@ -201,10 +189,7 @@ export function ChapterItem({ chapter, isBeingDragged }: ChapterItemProps) {
           <AccordionContent className="px-4 pb-4">
             <ContentList
               chapterId={chapter.id}
-              content={[
-                ...(chapter.lessons || []).map(l => ({ ...l, type: 'lesson' as const })),
-                ...(chapter.quizzes || []).map(q => ({ ...q, type: 'quiz' as const }))
-              ].sort((a, b) => (a.order_index || 0) - (b.order_index || 0))}
+              content={content}
             />
           </AccordionContent>
         </AccordionItem>

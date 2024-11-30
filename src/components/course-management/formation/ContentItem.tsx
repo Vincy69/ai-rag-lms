@@ -8,16 +8,10 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { LessonDialog } from "../dialogs/LessonDialog";
+import { ContentItem as ContentItemType } from "./types";
 
 interface ContentItemProps {
-  item: {
-    id: string;
-    title: string;
-    type: 'lesson' | 'quiz';
-    duration?: number | null;
-    content?: string;
-    chapter_id: string;
-  };
+  item: ContentItemType;
   isBeingDragged?: boolean;
 }
 
