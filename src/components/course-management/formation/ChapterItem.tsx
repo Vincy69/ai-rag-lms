@@ -59,7 +59,7 @@ export function ChapterItem({ chapter, isBeingDragged }: ChapterItemProps) {
 
       if (error) throw error;
 
-      // Attendre que l'invalidation soit terminée
+      // Attendre que l'invalidation soit terminée avant de fermer l'édition
       await queryClient.invalidateQueries({ queryKey: ["formation-blocks"] });
       setIsEditing(false);
       
@@ -124,7 +124,18 @@ export function ChapterItem({ chapter, isBeingDragged }: ChapterItemProps) {
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.stopPropagation();
     setTitle(e.target.value);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    e.stopPropagation();
+    
+    if (e.key === 'Enter') {
+      handleSave(e as any);
+    } else if (e.key === 'Escape') {
+      handleCancel(e as any);
+    }
   };
 
   return (
@@ -133,8 +144,7 @@ export function ChapterItem({ chapter, isBeingDragged }: ChapterItemProps) {
       style={style}
       className={cn(
         "rounded-lg border bg-accent/50",
-        isDragging && "opacity-50",
-        isBeingDragged && "shadow-lg"
+        isDragging && "opacity-50"
       )}
     >
       <Accordion type="single" collapsible>
@@ -149,7 +159,7 @@ export function ChapterItem({ chapter, isBeingDragged }: ChapterItemProps) {
               <GripVertical className="h-4 w-4" />
             </button>
             <AccordionTrigger className="flex-1 hover:no-underline">
-              <div className="flex items-center gap-4 flex-1">
+              <div className="flex items-center gap-4 flex-1" onClick={(e) => isEditing && e.stopPropagation()}>
                 {isEditing ? (
                   <div 
                     className="flex items-center gap-2 flex-1"
@@ -158,6 +168,7 @@ export function ChapterItem({ chapter, isBeingDragged }: ChapterItemProps) {
                     <Input
                       value={title}
                       onChange={handleInputChange}
+                      onKeyDown={handleKeyDown}
                       className="h-8"
                       onClick={handleInputClick}
                       autoFocus
