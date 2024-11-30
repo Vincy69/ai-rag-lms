@@ -13,7 +13,8 @@ import {
   ChevronLeft,
   ChevronRight,
   MessageSquare,
-  FileText
+  FileText,
+  Layers
 } from "lucide-react";
 import { Header } from "./Header";
 import { supabase } from "@/integrations/supabase/client";
@@ -43,6 +44,7 @@ const mainNavItems: NavSection[] = [
   {
     title: "Administration",
     items: [
+      { icon: Layers, label: "Gestion des formations", path: "/admin/courses" },
       { icon: UploadIcon, label: "Upload", path: "/upload" },
       { icon: Files, label: "Documents", path: "/documents" },
       { icon: History, label: "Historique", path: "/history" },

@@ -14,6 +14,7 @@ import Admin from "@/pages/Admin";
 import Login from "@/pages/Login";
 import ELearning from "@/pages/ELearning";
 import Documentation from "@/pages/Documentation";
+import CourseManagement from "@/pages/CourseManagement";
 import "./App.css";
 
 const queryClient = new QueryClient();
@@ -149,6 +150,14 @@ function App() {
             element={
               <PrivateRoute>
                 <Admin />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/courses"
+            element={
+              <PrivateRoute>
+                <CourseManagement />
               </PrivateRoute>
             }
           />
