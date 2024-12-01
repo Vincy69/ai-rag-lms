@@ -113,7 +113,7 @@ export function ChapterItem({ chapter, isBeingDragged }: ChapterItemProps) {
     >
       <Accordion type="single" collapsible>
         <AccordionItem value={chapter.id} className="border-0">
-          <AccordionTrigger className="hover:no-underline">
+          <AccordionTrigger className="hover:no-underline px-0">
             <ChapterHeader
               title={chapter.title}
               isEditing={isEditing}
