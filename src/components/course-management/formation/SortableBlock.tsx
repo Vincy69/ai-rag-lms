@@ -23,6 +23,7 @@ interface Block {
   name: string;
   description: string | null;
   chapters: any[];
+  formation_id: string;
 }
 
 interface SortableBlockProps {
@@ -91,7 +92,7 @@ export function SortableBlock({ block, onDelete }: SortableBlockProps) {
       >
         <Accordion type="single" collapsible>
           <AccordionItem value={block.id} className="border-0">
-            <AccordionTrigger className="hover:no-underline">
+            <AccordionTrigger>
               <BlockHeader
                 name={block.name}
                 isEditing={isEditing}
@@ -109,6 +110,7 @@ export function SortableBlock({ block, onDelete }: SortableBlockProps) {
             </AccordionTrigger>
             <AccordionContent className="space-y-4 px-4 pb-4">
               <BlockActions
+                formationId={block.formation_id}
                 onAddChapter={() => setShowChapterDialog(true)}
                 onAddQuiz={() => setShowQuizDialog(true)}
               />
@@ -122,7 +124,7 @@ export function SortableBlock({ block, onDelete }: SortableBlockProps) {
       <BlockDialog
         open={showBlockDialog}
         onOpenChange={setShowBlockDialog}
-        formationId={block.id}
+        formationId={block.formation_id}
         block={block}
       />
 
