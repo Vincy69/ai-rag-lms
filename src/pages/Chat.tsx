@@ -6,6 +6,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
+import { UserLearningData } from "@/types/userLearning";
 
 interface Message {
   id: string;
@@ -39,18 +40,20 @@ export default function Chat() {
 
         if (userError) throw userError;
 
+        const typedUserData = userData as UserLearningData;
+
         // Construire un message personnalisé basé sur les données
         let customMessage = "👋 Bonjour";
-        if (userData?.first_name) {
-          customMessage += ` ${userData.first_name}`;
+        if (typedUserData?.first_name) {
+          customMessage += ` ${typedUserData.first_name}`;
         }
         customMessage += "!\n\n";
 
         // Ajouter des informations sur la progression
-        const formations = userData?.formations || [];
-        const blocks = userData?.blocks || [];
-        const inProgressFormations = formations.filter((f: any) => f.status === 'in_progress');
-        const completedBlocks = blocks.filter((b: any) => b.progress === 100);
+        const formations = typedUserData?.formations || [];
+        const blocks = typedUserData?.blocks || [];
+        const inProgressFormations = formations.filter((f) => f.status === 'in_progress');
+        const completedBlocks = blocks.filter((b) => b.progress === 100);
 
         if (inProgressFormations.length > 0) {
           customMessage += `📚 Vous suivez actuellement ${inProgressFormations.length} formation${inProgressFormations.length > 1 ? 's' : ''}.\n`;
