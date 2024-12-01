@@ -1,6 +1,6 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, BookOpen, ClipboardList, Pencil, Trash2 } from "lucide-react";
+import { BookOpen, GraduationCap, GripVertical, Pencil, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -16,7 +16,7 @@ interface ContentItemProps {
 }
 
 export function ContentItem({ item, isBeingDragged }: ContentItemProps) {
-  const [showLessonDialog, setShowLessonDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -34,7 +34,7 @@ export function ContentItem({ item, isBeingDragged }: ContentItemProps) {
     transition,
   };
 
-  const Icon = item.type === 'lesson' ? BookOpen : ClipboardList;
+  const Icon = item.type === 'lesson' ? BookOpen : GraduationCap;
 
   const handleDelete = async () => {
     try {
@@ -46,11 +46,11 @@ export function ContentItem({ item, isBeingDragged }: ContentItemProps) {
 
       if (error) throw error;
 
-      await queryClient.invalidateQueries({ queryKey: ["formation-blocks"] });
+      queryClient.invalidateQueries({ queryKey: ["formation-blocks"] });
       
       toast({
         title: "Suppression réussie",
-        description: "L'élément a été supprimé avec succès",
+        description: item.type === 'lesson' ? "La leçon a été supprimée" : "Le quiz a été supprimé",
       });
     } catch (error) {
       console.error("Error deleting item:", error);
@@ -62,12 +62,6 @@ export function ContentItem({ item, isBeingDragged }: ContentItemProps) {
     }
   };
 
-  const handleEdit = () => {
-    if (item.type === 'lesson') {
-      setShowLessonDialog(true);
-    }
-  };
-
   return (
     <>
       <div
@@ -76,7 +70,6 @@ export function ContentItem({ item, isBeingDragged }: ContentItemProps) {
         className={cn(
           "flex items-center gap-2 rounded-lg border bg-background p-3",
           isDragging && "opacity-50",
-          isBeingDragged && "shadow-lg",
           item.type === 'quiz' ? "bg-primary/5" : "bg-secondary/30"
         )}
       >
@@ -100,13 +93,15 @@ export function ContentItem({ item, isBeingDragged }: ContentItemProps) {
               {item.duration} min
             </span>
           )}
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={handleEdit}
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
+          {item.type === 'lesson' && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setShowEditDialog(true)}
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+          )}
           <Button
             size="sm"
             variant="ghost"
@@ -119,8 +114,8 @@ export function ContentItem({ item, isBeingDragged }: ContentItemProps) {
 
       {item.type === 'lesson' && (
         <LessonDialog
-          open={showLessonDialog}
-          onOpenChange={setShowLessonDialog}
+          open={showEditDialog}
+          onOpenChange={setShowEditDialog}
           chapterId={item.chapter_id}
           lesson={{
             id: item.id,
