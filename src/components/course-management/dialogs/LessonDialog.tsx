@@ -36,17 +36,6 @@ export function LessonDialog({ open, onOpenChange, chapterId, lesson }: LessonDi
     e.preventDefault();
 
     try {
-      // Get the last order_index
-      const { data: lastLesson } = await supabase
-        .from("lessons")
-        .select("order_index")
-        .eq("chapter_id", chapterId)
-        .order("order_index", { ascending: false })
-        .limit(1)
-        .single();
-
-      const newOrderIndex = (lastLesson?.order_index ?? -1) + 1;
-
       if (lesson) {
         // Update
         const { error } = await supabase
@@ -65,6 +54,17 @@ export function LessonDialog({ open, onOpenChange, chapterId, lesson }: LessonDi
           description: "La leçon a été modifiée avec succès",
         });
       } else {
+        // Get the last order_index
+        const { data: lastLesson } = await supabase
+          .from("lessons")
+          .select("order_index")
+          .eq("chapter_id", chapterId)
+          .order("order_index", { ascending: false })
+          .limit(1)
+          .single();
+
+        const newOrderIndex = (lastLesson?.order_index ?? -1) + 1;
+
         // Create
         const { error } = await supabase
           .from("lessons")
