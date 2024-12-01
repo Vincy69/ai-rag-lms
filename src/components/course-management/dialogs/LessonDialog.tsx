@@ -37,7 +37,7 @@ export function LessonDialog({ open, onOpenChange, chapterId, lesson }: LessonDi
 
     try {
       if (lesson) {
-        // Update
+        // Update existing lesson
         const { error } = await supabase
           .from("lessons")
           .update({
@@ -54,18 +54,21 @@ export function LessonDialog({ open, onOpenChange, chapterId, lesson }: LessonDi
           description: "La leçon a été modifiée avec succès",
         });
       } else {
-        // Get the last order_index, handle the case where there are no lessons yet
+        // Get the last order_index
         const { data: lessons, error: queryError } = await supabase
           .from("lessons")
           .select("order_index")
           .eq("chapter_id", chapterId)
-          .order("order_index", { ascending: false });
+          .order("order_index", { ascending: false })
+          .limit(1);
 
         if (queryError) throw queryError;
 
-        const newOrderIndex = lessons && lessons.length > 0 ? (lessons[0].order_index + 1) : 0;
+        // If no lessons exist yet, start with order_index 0
+        const lastOrderIndex = lessons && lessons.length > 0 ? lessons[0].order_index : -1;
+        const newOrderIndex = lastOrderIndex + 1;
 
-        // Create
+        // Create new lesson
         const { error } = await supabase
           .from("lessons")
           .insert({
@@ -84,14 +87,13 @@ export function LessonDialog({ open, onOpenChange, chapterId, lesson }: LessonDi
         });
       }
 
-      // Attendre que l'invalidation soit terminée avant de fermer
       await queryClient.invalidateQueries({ queryKey: ["formation-blocks"] });
       onOpenChange(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving lesson:", error);
       toast({
         title: "Erreur",
-        description: "Une erreur est survenue lors de l'enregistrement",
+        description: error.message || "Une erreur est survenue lors de l'enregistrement",
         variant: "destructive",
       });
     }
