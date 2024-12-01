@@ -54,16 +54,16 @@ export function LessonDialog({ open, onOpenChange, chapterId, lesson }: LessonDi
           description: "La leçon a été modifiée avec succès",
         });
       } else {
-        // Get the last order_index
-        const { data: lastLesson } = await supabase
+        // Get the last order_index, handle the case where there are no lessons yet
+        const { data: lessons, error: queryError } = await supabase
           .from("lessons")
           .select("order_index")
           .eq("chapter_id", chapterId)
-          .order("order_index", { ascending: false })
-          .limit(1)
-          .single();
+          .order("order_index", { ascending: false });
 
-        const newOrderIndex = (lastLesson?.order_index ?? -1) + 1;
+        if (queryError) throw queryError;
+
+        const newOrderIndex = lessons && lessons.length > 0 ? (lessons[0].order_index + 1) : 0;
 
         // Create
         const { error } = await supabase
@@ -84,6 +84,7 @@ export function LessonDialog({ open, onOpenChange, chapterId, lesson }: LessonDi
         });
       }
 
+      // Attendre que l'invalidation soit terminée avant de fermer
       await queryClient.invalidateQueries({ queryKey: ["formation-blocks"] });
       onOpenChange(false);
     } catch (error) {
