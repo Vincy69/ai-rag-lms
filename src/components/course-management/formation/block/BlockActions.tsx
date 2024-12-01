@@ -1,14 +1,15 @@
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
-export interface BlockActionsProps {
+interface BlockActionsProps {
+  formationId: string;
   onAddChapter: () => void;
   onAddQuiz: () => void;
 }
 
-export function BlockActions({ onAddChapter, onAddQuiz }: BlockActionsProps) {
+export function BlockActions({ formationId, onAddChapter, onAddQuiz }: BlockActionsProps) {
   return (
-    <div className="flex gap-2">
+    <div className="flex items-center gap-2">
       <Button
         variant="outline"
         size="sm"
@@ -23,7 +24,7 @@ export function BlockActions({ onAddChapter, onAddQuiz }: BlockActionsProps) {
         onClick={onAddQuiz}
       >
         <Plus className="h-4 w-4 mr-2" />
-        Ajouter un quiz de bloc
+        Ajouter un quiz
       </Button>
     </div>
   );

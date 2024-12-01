@@ -1,15 +1,21 @@
+import { useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { BlockHeader } from "../block/BlockHeader";
-import { BlockActions } from "./BlockActions";
+import { BlockActions } from "../block/BlockActions";
 import { ChapterDialog } from "../../dialogs/ChapterDialog";
 import { QuizDialog } from "../../dialogs/QuizDialog";
 import { SortableChapterList } from "../SortableChapterList";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface Block {
   id: string;
@@ -103,29 +109,35 @@ export function SortableBlock({ block }: SortableBlockProps) {
         isDragging && "opacity-50"
       )}
     >
-      <BlockHeader
-        name={block.name}
-        isEditing={isEditing}
-        editedName={name}
-        onEditChange={setName}
-        onSave={handleSave}
-        onCancelEdit={() => {
-          setIsEditing(false);
-          setName(block.name);
-        }}
-        onStartEdit={() => setIsEditing(true)}
-        onDelete={handleDelete}
-        dragHandleProps={{ ...attributes, ...listeners }}
-      />
+      <Accordion type="single" collapsible>
+        <AccordionItem value={block.id} className="border-0">
+          <AccordionTrigger>
+            <BlockHeader
+              name={block.name}
+              isEditing={isEditing}
+              editedName={name}
+              onEditChange={setName}
+              onSave={handleSave}
+              onCancelEdit={() => {
+                setIsEditing(false);
+                setName(block.name);
+              }}
+              onStartEdit={() => setIsEditing(true)}
+              onDelete={handleDelete}
+              dragHandleProps={{ ...attributes, ...listeners }}
+            />
+          </AccordionTrigger>
+          <AccordionContent className="space-y-4 px-4 pb-4">
+            <BlockActions
+              formationId={block.id}
+              onAddChapter={() => setShowChapterDialog(true)}
+              onAddQuiz={() => setShowQuizDialog(true)}
+            />
 
-      <div className="space-y-4 px-4 pb-4">
-        <BlockActions
-          onAddChapter={() => setShowChapterDialog(true)}
-          onAddQuiz={() => setShowQuizDialog(true)}
-        />
-
-        <SortableChapterList blockId={block.id} chapters={block.chapters} />
-      </div>
+            <SortableChapterList blockId={block.id} chapters={block.chapters} />
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
 
       <ChapterDialog
         open={showChapterDialog}
