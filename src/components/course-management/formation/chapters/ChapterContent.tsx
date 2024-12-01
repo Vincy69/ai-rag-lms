@@ -1,19 +1,5 @@
 import { ContentList } from "../ContentList";
-
-interface Chapter {
-  lessons?: Array<{
-    id: string;
-    title: string;
-    content: string;
-    duration: number | null;
-    order_index: number;
-  }>;
-  quizzes?: Array<{
-    id: string;
-    title: string;
-    order_index: number;
-  }>;
-}
+import { Chapter } from "../types";
 
 interface ChapterContentProps {
   chapterId: string;
@@ -22,8 +8,16 @@ interface ChapterContentProps {
 
 export function ChapterContent({ chapterId, content }: ChapterContentProps) {
   const sortedContent = [
-    ...(content.lessons || []).map(l => ({ ...l, type: 'lesson' as const })),
-    ...(content.quizzes || []).map(q => ({ ...q, type: 'quiz' as const }))
+    ...(content.lessons || []).map(l => ({ 
+      ...l, 
+      type: 'lesson' as const,
+      chapter_id: chapterId 
+    })),
+    ...(content.quizzes || []).map(q => ({ 
+      ...q, 
+      type: 'quiz' as const,
+      chapter_id: chapterId 
+    }))
   ].sort((a, b) => a.order_index - b.order_index);
 
   return (

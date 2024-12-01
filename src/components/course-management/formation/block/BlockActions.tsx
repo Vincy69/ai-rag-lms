@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
-interface BlockActionsProps {
+export interface BlockActionsProps {
   onAddChapter: () => void;
   onAddQuiz: () => void;
 }
