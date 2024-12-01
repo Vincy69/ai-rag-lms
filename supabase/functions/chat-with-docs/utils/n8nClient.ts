@@ -5,7 +5,7 @@ interface N8nResponse {
   confidence?: number;
 }
 
-export async function callN8nWebhook(requestBody: { sessionId: string; input: string; userId: string }): Promise<N8nResponse> {
+export async function callN8nWebhook(requestBody: { sessionId: string; input?: string; userId: string; action?: string; userData?: any }): Promise<N8nResponse> {
   // Remove any trailing slashes and ensure proper URL format
   const baseUrl = 'https://elephorm.app.n8n.cloud';
   const webhookPath = '/webhook/a7cc35a6-3fdf-4e2e-859a-5c16a15f0b99/chat';
