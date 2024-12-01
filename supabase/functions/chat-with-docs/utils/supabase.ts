@@ -6,45 +6,39 @@ const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
 export async function getUserData(userId: string) {
-  const { data: profile, error: profileError } = await supabase
-    .from('profiles')
+  console.log('Getting user data for userId:', userId);
+
+  // Get user learning data from the view
+  const { data: learningData, error: learningError } = await supabase
+    .from('user_learning_data')
     .select('*')
-    .eq('id', userId)
+    .eq('user_id', userId)
     .single();
 
-  if (profileError) throw profileError;
+  if (learningError) {
+    console.error('Error fetching user learning data:', learningError);
+    throw learningError;
+  }
 
-  const { data: formations, error: formationsError } = await supabase
-    .from('formation_enrollments')
-    .select(`
-      formations (
-        id,
-        name,
-        description
-      ),
-      progress,
-      status
-    `)
-    .eq('user_id', userId);
+  console.log('Retrieved learning data:', learningData);
 
-  if (formationsError) throw formationsError;
+  // If no data is found, get basic profile info
+  if (!learningData) {
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
 
-  const { data: blocks, error: blocksError } = await supabase
-    .from('block_enrollments')
-    .select(`
-      skill_blocks (
-        id,
-        name,
-        description
-      ),
-      progress,
-      status
-    `)
-    .eq('user_id', userId);
+    if (profileError) {
+      console.error('Error fetching profile:', profileError);
+      throw profileError;
+    }
 
-  if (blocksError) throw blocksError;
+    return { profile };
+  }
 
-  return { profile, formations, blocks };
+  return learningData;
 }
 
 export async function findSimilarFeedback(embedding: number[]) {
