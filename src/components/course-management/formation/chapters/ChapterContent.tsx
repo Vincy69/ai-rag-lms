@@ -1,8 +1,23 @@
 import { ContentList } from "../ContentList";
 
+interface Chapter {
+  lessons?: Array<{
+    id: string;
+    title: string;
+    content: string;
+    duration: number | null;
+    order_index: number;
+  }>;
+  quizzes?: Array<{
+    id: string;
+    title: string;
+    order_index: number;
+  }>;
+}
+
 interface ChapterContentProps {
   chapterId: string;
-  content: any[];
+  content: Chapter;
 }
 
 export function ChapterContent({ chapterId, content }: ChapterContentProps) {

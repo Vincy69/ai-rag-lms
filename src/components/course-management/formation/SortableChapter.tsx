@@ -1,16 +1,10 @@
 import { useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { ChapterHeader } from "./chapters/ChapterHeader";
 import { ChapterContent } from "./chapters/ChapterContent";
 
@@ -18,8 +12,8 @@ interface Chapter {
   id: string;
   title: string;
   description: string | null;
-  lessons: any[];
-  quizzes: any[];
+  lessons?: any[];
+  quizzes?: any[];
 }
 
 interface SortableChapterProps {
@@ -112,34 +106,27 @@ export function SortableChapter({ chapter }: SortableChapterProps) {
         isDragging && "opacity-50"
       )}
     >
-      <Accordion type="single" collapsible>
-        <AccordionItem value={chapter.id} className="border-0">
-          <AccordionTrigger className="hover:no-underline">
-            <ChapterHeader
-              title={chapter.title}
-              isEditing={isEditing}
-              editedTitle={title}
-              onEditChange={setTitle}
-              onSave={handleSave}
-              onCancelEdit={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setIsEditing(false);
-                setTitle(chapter.title);
-              }}
-              onStartEdit={() => setIsEditing(true)}
-              onDelete={handleDelete}
-              dragHandleProps={{ ...attributes, ...listeners }}
-            />
-          </AccordionTrigger>
-          <AccordionContent>
-            <ChapterContent 
-              chapterId={chapter.id}
-              content={chapter}
-            />
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
+      <ChapterHeader
+        title={chapter.title}
+        isEditing={isEditing}
+        editedTitle={title}
+        onEditChange={setTitle}
+        onSave={handleSave}
+        onCancelEdit={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setIsEditing(false);
+          setTitle(chapter.title);
+        }}
+        onStartEdit={() => setIsEditing(true)}
+        onDelete={handleDelete}
+        dragHandleProps={{ ...attributes, ...listeners }}
+      />
+
+      <ChapterContent 
+        chapterId={chapter.id}
+        content={chapter}
+      />
     </div>
   );
 }
