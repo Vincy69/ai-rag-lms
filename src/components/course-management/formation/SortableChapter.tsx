@@ -7,14 +7,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ChapterHeader } from "./chapters/ChapterHeader";
 import { ChapterContent } from "./chapters/ChapterContent";
-
-interface Chapter {
-  id: string;
-  title: string;
-  description: string | null;
-  lessons?: any[];
-  quizzes?: any[];
-}
+import { Chapter } from "./types";
 
 interface SortableChapterProps {
   chapter: Chapter;
@@ -40,10 +33,7 @@ export function SortableChapter({ chapter }: SortableChapterProps) {
     transition,
   };
 
-  const handleSave = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
+  const handleSave = async () => {
     try {
       const { error } = await supabase
         .from("chapters")
@@ -69,10 +59,7 @@ export function SortableChapter({ chapter }: SortableChapterProps) {
     }
   };
 
-  const handleDelete = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
+  const handleDelete = async () => {
     try {
       const { error } = await supabase
         .from("chapters")
@@ -81,8 +68,7 @@ export function SortableChapter({ chapter }: SortableChapterProps) {
 
       if (error) throw error;
 
-      await queryClient.invalidateQueries({ queryKey: ["formation-blocks"] });
-      
+      queryClient.invalidateQueries({ queryKey: ["formation-blocks"] });
       toast({
         title: "Chapitre supprimé",
         description: "Le chapitre a été supprimé avec succès",
@@ -112,9 +98,7 @@ export function SortableChapter({ chapter }: SortableChapterProps) {
         editedTitle={title}
         onEditChange={setTitle}
         onSave={handleSave}
-        onCancelEdit={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
+        onCancelEdit={() => {
           setIsEditing(false);
           setTitle(chapter.title);
         }}
