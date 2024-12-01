@@ -1,6 +1,6 @@
+import { useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, Pencil, Trash2 } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -9,13 +9,11 @@ import {
 } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
 import { ContentList } from "./ContentList";
-import { Button } from "@/components/ui/button";
-import { useState } from "react";
-import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { Chapter } from "./types";
+import { ChapterHeader } from "./chapter/ChapterHeader";
 
 interface ChapterItemProps {
   chapter: Chapter;
@@ -115,77 +113,24 @@ export function ChapterItem({ chapter, isBeingDragged }: ChapterItemProps) {
     >
       <Accordion type="single" collapsible>
         <AccordionItem value={chapter.id} className="border-0">
-          <div className="flex items-center px-4">
-            <button
-              {...attributes}
-              {...listeners}
-              className="p-2 hover:text-primary"
-              aria-label="Réorganiser le chapitre"
-            >
-              <GripVertical className="h-4 w-4" />
-            </button>
-            <AccordionTrigger className="flex-1 hover:no-underline">
-              <div className="flex items-center gap-4 flex-1">
-                {isEditing ? (
-                  <div 
-                    className="flex items-center gap-2 flex-1"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <Input
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      className="h-8"
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                    <Button
-                      size="sm"
-                      onClick={handleSave}
-                    >
-                      Enregistrer
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setIsEditing(false);
-                        setTitle(chapter.title);
-                      }}
-                    >
-                      Annuler
-                    </Button>
-                  </div>
-                ) : (
-                  <span className="font-medium">{chapter.title}</span>
-                )}
-              </div>
-            </AccordionTrigger>
-
-            <div 
-              className="flex items-center gap-2 ml-4"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setIsEditing(true);
-                }}
-              >
-                <Pencil className="h-4 w-4" />
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={handleDelete}
-              >
-                <Trash2 className="h-4 w-4 text-destructive" />
-              </Button>
-            </div>
-          </div>
+          <AccordionTrigger className="hover:no-underline">
+            <ChapterHeader
+              title={chapter.title}
+              isEditing={isEditing}
+              editedTitle={title}
+              onEditChange={setTitle}
+              onSave={handleSave}
+              onCancelEdit={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setIsEditing(false);
+                setTitle(chapter.title);
+              }}
+              onStartEdit={() => setIsEditing(true)}
+              onDelete={handleDelete}
+              dragHandleProps={{ ...attributes, ...listeners }}
+            />
+          </AccordionTrigger>
           <AccordionContent className="px-4 pb-4">
             <ContentList 
               chapterId={chapter.id}

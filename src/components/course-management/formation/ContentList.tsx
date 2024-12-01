@@ -15,10 +15,9 @@ import {
 } from "@dnd-kit/sortable";
 import { useToast } from "@/components/ui/use-toast";
 import { ContentItem } from "./ContentItem";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
 import { LessonDialog } from "../dialogs/LessonDialog";
 import { ContentItem as ContentItemType } from "./types";
+import { ContentActions } from "./content/ContentActions";
 
 interface ContentListProps {
   chapterId: string;
@@ -82,16 +81,7 @@ export function ContentList({ chapterId, content }: ContentListProps) {
 
   return (
     <>
-      <div className="flex justify-end mb-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setShowLessonDialog(true)}
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Ajouter une leçon
-        </Button>
-      </div>
+      <ContentActions onAddLesson={() => setShowLessonDialog(true)} />
 
       <DndContext
         sensors={sensors}

@@ -101,8 +101,7 @@ export function FormationContent({ formationId }: FormationContentProps) {
 
   const handleAddBlock = async () => {
     try {
-      // Get the last order_index, defaulting to -1 if no blocks exist
-      const { data: lastBlock, error: queryError } = await supabase
+      const { data: lastBlock } = await supabase
         .from("skill_blocks")
         .select("order_index")
         .eq("formation_id", formationId)
@@ -112,7 +111,7 @@ export function FormationContent({ formationId }: FormationContentProps) {
 
       const newOrderIndex = (lastBlock?.order_index ?? -1) + 1;
 
-      const { error: insertError } = await supabase
+      const { error } = await supabase
         .from("skill_blocks")
         .insert({
           formation_id: formationId,
@@ -120,7 +119,7 @@ export function FormationContent({ formationId }: FormationContentProps) {
           order_index: newOrderIndex,
         });
 
-      if (insertError) throw insertError;
+      if (error) throw error;
 
       queryClient.invalidateQueries({ queryKey: ["formation-blocks", formationId] });
       toast({
@@ -138,25 +137,27 @@ export function FormationContent({ formationId }: FormationContentProps) {
   };
 
   const handleDeleteBlock = async (blockId: string) => {
-    const { error } = await supabase
-      .from("skill_blocks")
-      .delete()
-      .eq("id", blockId);
+    try {
+      const { error } = await supabase
+        .from("skill_blocks")
+        .delete()
+        .eq("id", blockId);
 
-    if (error) {
+      if (error) throw error;
+
+      queryClient.invalidateQueries({ queryKey: ["formation-blocks", formationId] });
+      toast({
+        title: "Bloc supprimé",
+        description: "Le bloc a été supprimé avec succès",
+      });
+    } catch (error) {
+      console.error("Error deleting block:", error);
       toast({
         title: "Erreur",
         description: "Une erreur est survenue lors de la suppression du bloc",
         variant: "destructive",
       });
-      return;
     }
-
-    queryClient.invalidateQueries({ queryKey: ["formation-blocks", formationId] });
-    toast({
-      title: "Bloc supprimé",
-      description: "Le bloc a été supprimé avec succès",
-    });
   };
 
   if (isLoading) {
