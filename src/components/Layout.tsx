@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { 
-  User, 
   BookOpen, 
   GraduationCap, 
   Upload as UploadIcon, 
@@ -35,7 +34,6 @@ interface NavSection {
 const mainNavItems: NavSection[] = [
   {
     items: [
-      { icon: User, label: "Mon compte", path: "/account" },
       { icon: MessageSquare, label: "Chat", path: "/chat" },
       { icon: BookOpen, label: "Ma formation", path: "/elearning" },
       { icon: GraduationCap, label: "Formations", path: "/formations" },
@@ -224,3 +222,4 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
+

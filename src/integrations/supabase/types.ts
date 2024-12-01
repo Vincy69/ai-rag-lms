@@ -55,6 +55,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "block_enrollments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_learning_data"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       categories: {
@@ -145,6 +152,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_history_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_learning_data"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -237,6 +251,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "formation_enrollments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_learning_data"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -337,6 +358,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_progress_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_learning_data"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -482,6 +510,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quiz_attempts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_learning_data"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -655,6 +690,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "skill_progress_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_learning_data"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       skills: {
@@ -697,7 +739,21 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      user_learning_data: {
+        Row: {
+          blocks: Json | null
+          first_name: string | null
+          formations: Json | null
+          last_name: string | null
+          lessons: Json | null
+          quizzes: Json | null
+          role: Database["public"]["Enums"]["user_role"] | null
+          skills: Json | null
+          user_created_at: string | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       binary_quantize:
