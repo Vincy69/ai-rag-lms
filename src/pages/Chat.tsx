@@ -30,11 +30,49 @@ export default function Chat() {
           return;
         }
 
+        // Récupérer les données d'apprentissage de l'utilisateur
+        const { data: userData, error: userError } = await supabase
+          .from('user_learning_data')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+
+        if (userError) throw userError;
+
+        // Construire un message personnalisé basé sur les données
+        let customMessage = "👋 Bonjour";
+        if (userData?.first_name) {
+          customMessage += ` ${userData.first_name}`;
+        }
+        customMessage += "!\n\n";
+
+        // Ajouter des informations sur la progression
+        const formations = userData?.formations || [];
+        const blocks = userData?.blocks || [];
+        const inProgressFormations = formations.filter((f: any) => f.status === 'in_progress');
+        const completedBlocks = blocks.filter((b: any) => b.progress === 100);
+
+        if (inProgressFormations.length > 0) {
+          customMessage += `📚 Vous suivez actuellement ${inProgressFormations.length} formation${inProgressFormations.length > 1 ? 's' : ''}.\n`;
+          if (completedBlocks.length > 0) {
+            customMessage += `🎯 Vous avez déjà complété ${completedBlocks.length} bloc${completedBlocks.length > 1 ? 's' : ''} de compétences !\n`;
+          }
+        } else {
+          customMessage += "🚀 Vous n'avez pas encore commencé de formation. C'est le moment de se lancer !\n";
+        }
+
+        customMessage += "\nJe suis là pour vous aider dans votre apprentissage. N'hésitez pas à me poser des questions sur :\n";
+        customMessage += "- Le contenu des formations\n";
+        customMessage += "- Des explications sur des concepts\n";
+        customMessage += "- Des conseils pour progresser\n";
+        customMessage += "- Des recommandations personnalisées\n";
+
         const { data, error } = await supabase.functions.invoke('chat-with-docs', {
           body: { 
             sessionId: crypto.randomUUID(),
             action: "getWelcomeMessage",
-            userId: user.id
+            userId: user.id,
+            customMessage
           }
         });
 
@@ -42,6 +80,8 @@ export default function Chat() {
         
         if (data?.response) {
           setWelcomeMessage(data.response);
+        } else {
+          setWelcomeMessage(customMessage);
         }
       } catch (error) {
         console.error('Error getting welcome message:', error);
@@ -143,9 +183,9 @@ export default function Chat() {
     <Layout>
       <div className="flex h-[calc(100vh-8rem)] flex-col gap-4 animate-fade-in">
         <div className="space-y-2">
-          <h1 className="text-4xl font-bold tracking-tight">Chat avec l'Assistant IA</h1>
+          <h1 className="text-4xl font-bold tracking-tight">Assistant IA Personnel</h1>
           <p className="text-white/80">
-            Posez vos questions à l'assistant IA qui utilise vos documents comme source de connaissances
+            Votre compagnon d'apprentissage personnalisé, basé sur le contenu de vos formations
           </p>
         </div>
 
@@ -165,7 +205,7 @@ export default function Chat() {
           {messages.length === 0 ? (
             <div className="flex h-full items-center justify-center">
               <p className="text-center text-white/80">
-                Aucun message. Commencez la conversation !
+                Commencez la conversation en posant votre première question !
               </p>
             </div>
           ) : (
