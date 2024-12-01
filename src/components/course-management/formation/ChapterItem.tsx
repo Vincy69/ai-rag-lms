@@ -187,7 +187,7 @@ export function ChapterItem({ chapter, isBeingDragged }: ChapterItemProps) {
             </div>
           </div>
           <AccordionContent className="px-4 pb-4">
-            <ContentList
+            <ContentList 
               chapterId={chapter.id}
               content={content}
             />
