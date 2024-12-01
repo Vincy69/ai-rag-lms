@@ -54,6 +54,14 @@ export function ContentList({ chapterId, content }: ContentListProps) {
         description: "L'ordre du contenu a été mis à jour avec succès",
       });
     },
+    onError: (error) => {
+      console.error("Error updating order:", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la mise à jour de l'ordre",
+        variant: "destructive",
+      });
+    }
   });
 
   const handleDragEnd = async (event: DragEndEvent) => {
@@ -68,15 +76,19 @@ export function ContentList({ chapterId, content }: ContentListProps) {
 
     const newContent = arrayMove(content, oldIndex, newIndex);
 
-    await Promise.all(
-      newContent.map((item, index) =>
-        updateContentOrder.mutateAsync({
-          id: item.id,
-          type: item.type,
-          order_index: index,
-        })
-      )
-    );
+    try {
+      await Promise.all(
+        newContent.map((item, index) =>
+          updateContentOrder.mutateAsync({
+            id: item.id,
+            type: item.type,
+            order_index: index,
+          })
+        )
+      );
+    } catch (error) {
+      console.error("Error updating content order:", error);
+    }
   };
 
   return (

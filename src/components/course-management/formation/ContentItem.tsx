@@ -46,7 +46,7 @@ export function ContentItem({ item, isBeingDragged }: ContentItemProps) {
 
       if (error) throw error;
 
-      queryClient.invalidateQueries({ queryKey: ["formation-blocks"] });
+      await queryClient.invalidateQueries({ queryKey: ["formation-blocks"] });
       
       toast({
         title: "Suppression réussie",
